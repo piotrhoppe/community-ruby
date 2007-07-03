@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="ruby" default="build" basedir=".">
+    <property name="nbroot" location=".."/>
+    
+    <target name="build">
+        <ant dir="${nbroot}/nbbuild" target="init"/>
+        <subant target="netbeans" inheritAll="false">
+            <property name="scan.binaries" value="true"/>
+            
+            <buildpath location="gsf/api"/>
+            <buildpath location="gsf/platform"/>
+            <buildpath location="gsf"/>
+            
+            <buildpath location="platform"/>
+            <buildpath location="jruby"/>
+            <buildpath location="bundledjruby"/>
+            <buildpath location="editing"/>
+            <buildpath location="rake"/>
+            <buildpath location="rhtml"/>
+            <buildpath location="projects"/>
+            <buildpath location="refactoring"/>
+            <buildpath location="railsprojects"/>
+            <buildpath location="javaint"/>
+            
+            <buildpath location="kxml2"/>
+            <buildpath location="debug-commons-java"/>
+            <buildpath location="debugger"/>
+            
+            <buildpath location="../languages/yaml"/>
+            
+            <buildpath location="kit"/>
+        </subant>
+        <!-- ruby/gsf/tools is for module development purposes only
+        <subant target="netbeans" inheritAll="false">
+            <property name="scan.binaries" value="true"/>
+            <buildpath location="gsf/tools" />
+        </subant>
+        -->
+    </target>
+    
+    <target name="build-zip" depends="build">
+        <zip destfile="netbeans-ruby.zip">
+            <zipfileset dir="${nbroot}/nbbuild/netbeans/ruby1" prefix="ruby1"/>
+        </zip>
+    </target>
+    
+    <target name="clean">
+        <ant dir="${nbroot}/nbbuild" target="init"/>
+        <subant target="clean" inheritAll="false">
+            <property name="scan.binaries" value="true"/>            
+            
+            <buildpath location="gsf/api"/>
+            <buildpath location="gsf/platform"/>
+            <buildpath location="gsf"/>
+            
+            <buildpath location="platform"/>
+            <buildpath location="jruby"/>
+            <buildpath location="bundledjruby"/>
+            <buildpath location="editing"/>
+            <buildpath location="rake"/>
+            <buildpath location="rhtml"/>
+            <buildpath location="projects"/>
+            <buildpath location="refactoring"/>
+            <buildpath location="railsprojects"/>
+            <buildpath location="javaint"/>
+            
+            <buildpath location="kxml2"/>
+            <buildpath location="debug-commons-java"/>
+            <buildpath location="debugger"/>
+            
+            <buildpath location="../languages/yaml"/>
+            
+            <buildpath location="kit"/>
+        </subant>
+    </target>
+    
+    <target name="runtests">
+        <ant dir="editing/test" target="runtests" inheritall="false" inheritrefs="false"/>
+        <ant dir="rhtml/test" target="runtests" inheritall="false" inheritrefs="false"/>
+        <ant dir="projects/test" target="runtests" inheritall="false" inheritrefs="false"/>
+        <ant dir="railsprojects/test" target="runtests" inheritall="false" inheritrefs="false"/>
+    </target>
+    
+    <target name="tests-junit-format" description="Produce JUnit-format results, e.g. for publishing to Hudson.">
+        <property name="xtest.home" location="../xtest"/>
+        <property name="rubyide.home" location="rubyide/build"/>
+        <taskdef name="xtest2junit" classname="org.netbeans.nbbuild.XTest2JUnitResultFormatter" classpath="../nbbuild/nbantext.jar"/>
+        <delete dir="${rubyide.home}/instance/results/junit-format" failonerror="false"/>
+        <mkdir dir="${rubyide.home}/instance/results/junit-format"/>
+        <xtest2junit outputdir="${rubyide.home}/instance/results/junit-format">
+            <input dir="ruby" includes="*/test/results/testrun_*/testbag_*/xmlresults/suites/TEST-*.xml"/>
+        </xtest2junit>
+    </target>
+    
+</project>
