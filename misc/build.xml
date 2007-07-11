@@ -96,11 +96,21 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="runtests">
-        <ant dir="editing/test" target="runtests" inheritall="false" inheritrefs="false"/>
-        <ant dir="rhtml/test" target="runtests" inheritall="false" inheritrefs="false"/>
-        <ant dir="projects/test" target="runtests" inheritall="false" inheritrefs="false"/>
-        <ant dir="railsprojects/test" target="runtests" inheritall="false" inheritrefs="false"/>
-        <ant dir="hints/test" target="runtests" inheritall="false" inheritrefs="false"/>
+        <ant dir="editing/test" target="runtests" inheritall="false" inheritrefs="false">
+            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
+        </ant>
+        <ant dir="rhtml/test" target="runtests" inheritall="false" inheritrefs="false">
+            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
+        </ant>
+        <ant dir="projects/test" target="runtests" inheritall="false" inheritrefs="false">
+            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
+        </ant>
+        <ant dir="railsprojects/test" target="runtests" inheritall="false" inheritrefs="false">
+            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
+        </ant>
+        <ant dir="hints/test" target="runtests" inheritall="false" inheritrefs="false">
+            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
+        </ant>
     </target>
     
     <target name="tests-junit-format" description="Produce JUnit-format results, e.g. for publishing to Hudson.">
