@@ -100,6 +100,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="rhtml/test" target="runtests" inheritall="false" inheritrefs="false"/>
         <ant dir="projects/test" target="runtests" inheritall="false" inheritrefs="false"/>
         <ant dir="railsprojects/test" target="runtests" inheritall="false" inheritrefs="false"/>
+        <ant dir="hints/test" target="runtests" inheritall="false" inheritrefs="false"/>
     </target>
     
     <target name="tests-junit-format" description="Produce JUnit-format results, e.g. for publishing to Hudson.">
