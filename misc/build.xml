@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${rubyide.home}/instance/results/junit-format" failonerror="false"/>
         <mkdir dir="${rubyide.home}/instance/results/junit-format"/>
         <xtest2junit outputdir="${rubyide.home}/instance/results/junit-format">
-            <input dir="." includes="*/test/results/testrun_*/testbag_*/xmlresults/suites/TEST-*.xml"/>
+            <input dir="." includes="rubyide/build/results/testrun_*/testbag_*/xmlresults/suites/TEST-*.xml"/>
         </xtest2junit>
     </target>
     
