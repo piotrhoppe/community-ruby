@@ -59,6 +59,15 @@ Microsystems, Inc. All Rights Reserved.
         -->
     </target>
     
+    <target name="experimental">
+        <ant dir="${nbroot}/nbbuild" target="init"/>
+        <subant target="netbeans" inheritAll="false">
+            <property name="scan.binaries" value="true"/>
+            
+            <buildpath location="hints/extrahints"/>
+        </subant>
+    </target>
+    
     <target name="build-zip" depends="build">
         <zip destfile="netbeans-ruby.zip">
             <zipfileset dir="${nbroot}/nbbuild/netbeans/ruby1" prefix="ruby1"/>
