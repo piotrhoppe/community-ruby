@@ -68,10 +68,16 @@ Microsystems, Inc. All Rights Reserved.
         </subant>
     </target>
     
-    <target name="build-zip" depends="build">
+    <target name="zip">
         <zip destfile="netbeans-ruby.zip">
             <zipfileset dir="${nbroot}/nbbuild/netbeans/ruby1" prefix="ruby1"/>
         </zip>
+    </target>
+    
+    <target name="build-zip" depends="build,zip">
+    </target>
+    
+    <target name="build-experimental-zip" depends="build,experimental,zip">
     </target>
     
     <target name="clean">
