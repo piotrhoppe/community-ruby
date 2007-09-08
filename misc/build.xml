@@ -113,6 +113,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="runtests">
+        <ant dir="platform/test" target="runtests" inheritall="false" inheritrefs="false">
+            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
+        </ant>
         <ant dir="editing/test" target="runtests" inheritall="false" inheritrefs="false">
             <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
         </ant>
@@ -130,9 +133,6 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
         <ant dir="hints/extrahints" target="netbeans" inheritall="false" inheritrefs="false"/>
         <ant dir="hints/extrahints/test" target="runtests" inheritall="false" inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
-        </ant>
-        <ant dir="platform/test" target="runtests" inheritall="false" inheritrefs="false">
             <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
         </ant>
     </target>
