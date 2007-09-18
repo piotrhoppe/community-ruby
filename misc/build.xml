@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
             <buildpath location="../languages/yaml"/>
             
             <buildpath location="kit"/>
+            <buildpath location="samples/depot-sample"/>
         </subant>
         <!-- ruby/gsf/tools is for module development purposes only
         <subant target="netbeans" inheritAll="false">
@@ -109,6 +110,7 @@ Microsystems, Inc. All Rights Reserved.
             <buildpath location="../languages/yaml"/>
             
             <buildpath location="kit"/>
+            <buildpath location="samples/depot-sample"/>
         </subant>
     </target>
     
