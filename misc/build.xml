@@ -127,6 +127,17 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="projects/test" target="runtests" inheritall="false" inheritrefs="false">
             <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
         </ant>
+
+        <!-- Only way to build test dependencies (?) -->
+        <property name="buildfile" location="railsprojects/build.xml"/>
+        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
+            <arg value="-f"/>
+            <arg value="${buildfile}"/>
+            <arg value="test-build"/>
+        </java> 
+        <!-- The following does not work since inheritall does not always work correctly. -->
+        <!--ant dir="railsprojects" target="test-build" inheritall="false" inheritrefs="false"/-->
+
         <ant dir="railsprojects/test" target="runtests" inheritall="false" inheritrefs="false">
             <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
         </ant>
