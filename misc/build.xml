@@ -137,40 +137,24 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
     
-    <target name="runtests">
-        <ant dir="platform/test" target="runtests" inheritall="false" inheritrefs="false">
+    <target name="runtests" depends="build">
+        <!-- Builds tests first -->
+        <subant buildpath="railsprojects:platform:editing:rhtml:projects" 
+            target="test-build"
+            inheritall="false"
+            inheritrefs="false"/>
+        <!-- Builds hints/extrahints -->
+            <ant dir="hints/extrahints"
+            target="netbeans"
+            inheritall="false"
+            inheritrefs="false"/>
+        <!-- Runs tests-->
+        <subant buildpath="platform/test:editing/test:rhtml/test:projects/test:railsprojects/test:hints/test:hints/extrahints/test"
+            target="runtests"
+            inheritall="false"
+            inheritrefs="false">
             <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
-        </ant>
-        <ant dir="editing/test" target="runtests" inheritall="false" inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
-        </ant>
-        <ant dir="rhtml/test" target="runtests" inheritall="false" inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
-        </ant>
-        <ant dir="projects/test" target="runtests" inheritall="false" inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
-        </ant>
-
-        <!-- Only way to build test dependencies (?) -->
-        <property name="buildfile" location="railsprojects/build.xml"/>
-        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
-            <arg value="-f"/>
-            <arg value="${buildfile}"/>
-            <arg value="test-build"/>
-        </java> 
-        <!-- The following does not work since inheritall does not always work correctly. -->
-        <!--ant dir="railsprojects" target="test-build" inheritall="false" inheritrefs="false"/-->
-
-        <ant dir="railsprojects/test" target="runtests" inheritall="false" inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
-        </ant>
-        <ant dir="hints/test" target="runtests" inheritall="false" inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
-        </ant>
-        <ant dir="hints/extrahints" target="netbeans" inheritall="false" inheritrefs="false"/>
-        <ant dir="hints/extrahints/test" target="runtests" inheritall="false" inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
-        </ant>
+        </subant>
     </target>
     
     <target name="tests-junit-format" description="Produce JUnit-format results, e.g. for publishing to Hudson.">
