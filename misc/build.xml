@@ -89,6 +89,7 @@ made subject to such option by the copyright holder.
             <property name="scan.binaries" value="true"/>
             
             <buildpath location="hints/extrahints"/>
+            <buildpath location="themes"/>
         </subant>
     </target>
     
