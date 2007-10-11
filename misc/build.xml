@@ -90,6 +90,7 @@ made subject to such option by the copyright holder.
             
             <buildpath location="hints/extrahints"/>
             <buildpath location="themes"/>
+            <buildpath location="rspec"/>
         </subant>
     </target>
     
