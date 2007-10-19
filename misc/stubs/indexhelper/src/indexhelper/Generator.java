@@ -89,20 +89,38 @@ public class Generator {
         try {
             writer.write(BEGINMARKER);
             writer.write("\n");
+            
+            // Constants we'll need
+            writer.write("public static final String HASH_KEY_BOOL = \"bool\";\n");
+            writer.write("public static final String HASH_KEY_STRING = \"string\";\n");
+            writer.write("public static final String HASH_KEY_INTEGER = \"string\";\n\n");
+    
             if (GENERATE_DEBUG_VERSION) {
                 generateDebugList(writer);
             }
             //generateNameMap(writer);
             generateAttributeIndexer(writer);
             writer.write(ENDMARKER);
-            writer.write("\n");
             writer.flush();
 
             String newSection = sw.toString();
             // Indent
-            newSection = newSection.replace("\n", "\n    ");
-            
+            //newSection = newSection.replace("\n", "\n    ");
+            String[] lines = newSection.split("\n");
             StringBuilder sb = new StringBuilder();
+            for (String line : lines) {
+                if (sb.length() > 0) {
+                    sb.append("\n");
+                }
+                sb.append("    "); // indent
+                sb.append(line);
+                if (line.indexOf('\"') != -1) {
+                    sb.append(" // NOI18N");
+                }
+            }
+            newSection = sb.toString();
+            
+            sb = new StringBuilder();
             BufferedReader br = new BufferedReader(new FileReader(file));
             while (true) {
                 String s = br.readLine();
@@ -218,7 +236,7 @@ public class Generator {
         // Ensure all filenames have at least two chars
 
         // Emit switch block
-        writer.write("\n    String n = file.getName();\n    if (n.length() < 2) {\n        return null;\n    }\n");
+        writer.write("    String n = file.getName();\n    if (n.length() < 2) {\n        return null;\n    }\n");
         writer.write("    char c = n.charAt(0);\n");
         writer.write("    switch (c) {\n");
 
