@@ -47,6 +47,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -104,6 +106,7 @@ public class Main {
         output.mkdirs();
 
         File[] files = rdoc.listFiles();
+        sortFilesByName(files);
 
         for (File f : files) {
             if (f.isDirectory()) {
@@ -113,6 +116,7 @@ public class Main {
 
         if (extrdoc != null) {
             files = extrdoc.listFiles();
+            sortFilesByName(files);
 
             for (File f : files) {
                 if (f.isDirectory()) {
@@ -121,19 +125,27 @@ public class Main {
             }
         }
     }
+    
+    private void sortFilesByName(File[] files) {
+        if (files != null) {
+            Arrays.sort(files,new Comparator<File>() {
+                public int compare(File o1, File o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+        }
+    }
 
     private boolean processDir(File f, BufferedWriter bw, File output, String relativeName,
         String module, boolean isExt) throws IOException {
         boolean wroteSomething = false;
         System.out.println("Processing " + f.getPath());
 
-        if (f.getName().equals("File")) {
-            System.out.println("HERE!");
-        }
         assert f.isDirectory();
 
         // This dir either corresponds to a class, or a module, or something else
         File[] children = f.listFiles();
+        sortFilesByName(children);
 
         if (children == null) {
             System.err.println("WARNING: No contents in " + f.getPath());
