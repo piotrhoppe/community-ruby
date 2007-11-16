@@ -53,11 +53,11 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf/platform"/>
             <buildpath location="gsf"/>
             
+            <buildpath location="rake"/>
             <buildpath location="platform"/>
             <buildpath location="jruby"/>
             <buildpath location="bundledjruby"/>
             <buildpath location="editing"/>
-            <buildpath location="rake"/>
             <buildpath location="rhtml"/>
             <buildpath location="projects"/>
             <buildpath location="refactoring"/>
