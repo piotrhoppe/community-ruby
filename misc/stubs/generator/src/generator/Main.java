@@ -61,6 +61,9 @@ import java.util.logging.Logger;
  * @todo Handle the "Document-method" etc. classes/comments?
  * @todo Try to prune out "empty" definitions like just "module Kernel\nend" etc. which I see
  *   in some places, such as ext/bigdecimal.
+ * @todo  Suggestion from Mike McKinney:
+ *    one suggestion would be to have the actual location of the C files those stubs were build from if possible... i.e.:
+ *    OpenSSL::Cipher::Cipher could have ext/openssl/ossl_ssl.c  in a comment atop the file or something along those lines. 
  *
  * @author Tor Norbye
  */
