@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,32 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.railsprojects.server.nodes;
+package org.netbeans.modules.ruby.debugger.breakpoints;
 
-import org.netbeans.modules.ruby.railsprojects.server.*;
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.BooleanStateAction;
 
-/**
- * A node for displaying <code>RubyServer<code>s under the servers node.
- *
- * @author Erno Mononen
- */
-public class RubyServerNode extends AbstractNode {
-    
-    private final RubyServer server;
+public final class BreakpointEnableAction extends BooleanStateAction {
 
-    public RubyServerNode(RubyServer server) {
-        super(Children.create(RailsAppChildrenFactory.create(server), false));
-        this.server = server;
-        setDisplayName(server.getNodeName());
-        setIconBaseWithExtension("org/netbeans/modules/ruby/railsprojects/ui/resources/rails_server_16.png");
+    @Override
+    public boolean isEnabled() {
+        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
+        if (bp != null) {
+            super.setBooleanState(bp.isEnabled());
+            return true;
+        }
+        return false;
+    }
+
+    public String getName() {
+        return NbBundle.getMessage(BreakpointEnableAction.class, "CTL_enabled");
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{};
+    public void setBooleanState(boolean value) {
+        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
+        if (value) {
+            bp.enable();
+        } else {
+            bp.disable();
+        }
+        super.setBooleanState(value);
     }
-    
+
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
 }
