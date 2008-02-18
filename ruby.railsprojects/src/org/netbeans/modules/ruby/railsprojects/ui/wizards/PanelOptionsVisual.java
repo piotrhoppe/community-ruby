@@ -157,6 +157,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         org.openide.awt.Mnemonics.setLocalizedText(warCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
 
+        rubyPlatformLabel.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyPlatformLabel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyHomeBrowse")); // NOI18N
@@ -172,7 +173,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(serverLabel, "Server:");
+        serverLabel.setLabelFor(serverComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "PanelOptionsVisual.Server")); // NOI18N
 
         serverComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
