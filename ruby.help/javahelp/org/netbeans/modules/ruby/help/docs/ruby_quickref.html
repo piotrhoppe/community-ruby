@@ -1,0 +1,328 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright (c) 2007 Sun Microsystems, Inc.
+* All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Working With NetBeans Ruby</title>
+<link href="nbdocs:/org/netbeans/modules/usersguide/ide.css"  rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<h2>Working With NetBeans Ruby<a name="toclink"></a></h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>
+This topic describes common tasks that you can perform with NetBeans Ruby and Ruby on Rails projects that are open in the <a href="rubyprojectnode.html">Projects Window</a>. For more detailed information, click the links in the right column. </p>
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left">To perform this task...</th>
+    <th scope="col" align="left">Follow these steps</th>
+  </tr>
+  <tr valign="top"> 
+    <td>Create a new Ruby or Ruby on Rails project </td>
+    <td><ol>
+        <li> Choose File &gt; New Project from the main menu to open the New Project wizard.
+          
+
+</li>
+        <li>Select Ruby in the Categories list.</li>
+        <li>In the projects list, select either  Ruby Application or  Ruby on Rails Application. </li>
+        <ul>
+<li>If you choose Ruby Application, see <a href="newrubyappwiz-nameandloc.html">New Ruby Application Wizard: Name and Location</a>.</li>
+<li>If you choose Ruby on Rails Application, see <a href="newrailsappwiz-nameandloc.html">New Ruby on Rails Application Wizard: Name and Location</a>.</li>
+        </ul>
+      </ol></td>
+  </tr>
+<tr valign="top">
+    <td>Import an existing Ruby or Ruby on Rails application </td>
+    <td><ol>
+      <li> Choose File &gt; New Project from the main menu to open the New Project wizard.
+          
+      </li>
+      <li>Select Ruby in the Categories list.</li>
+      <li>In the projects list, select either  Ruby Application with Existing Sources or Ruby on Rails Application with Existing Sources.</li>
+      <ul>
+        <li>If you choose Ruby Application with Existing Sources, see <a href="newrubyappwsourcewiz-nameandloc.html">New Ruby Application with Existing Sources Wizard: Name and Location</a>.</li>
+        <li>If you choose Ruby on Rails Application with Existing Source, see <a href="newrailsappwsourcewiz-nameandloc.html">New Ruby on Rails Application 
+          with Existing Sources Wizard: Name and Location</a>.</li>
+      </ul>
+      </ol></td>
+  </tr>
+<tr valign="top">
+  <td>Add files to your project</td>
+  <td><ol>
+    <li>In the Projects window, select the main project node and right-click<a href="usingirb.html"></a> it.</li>
+  <li>Select New and choose the type of file you would like to add.</li>
+  <li>In the New File wizard, specify the file name, location, and so on as needed, and then click Finish to create the file.</li>
+  </ol></td>
+</tr>
+<tr valign="top">
+  <td>Generate a model, a controller, a migration, an integration test, and so on</td>
+  <td><ol>
+    <li>In the Projects window, select the main node for your Ruby on Rails project and right-click<a href="usingirb.html"></a> it.</li>
+    <li>Select Generate to open the Rails Generator dialog box.</li>
+    <li>Expand the Generate drop-down list and choose the item you would like to generate.
+</li>
+  </ol>
+<p>For examples of generating a model and a controller, see  &nbsp;
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/rapid-ruby-weblog.html">
+    <param name="text" value="<html><u>Creating a Ruby Weblog in 10 Minutes</u></html>.">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object></p>
+</td>
+</tr>
+<tr valign="top">
+  <td>Edit files </td>
+  <td><ol>
+      <li>In the Projects window, select the node for your project and, if necessary, double-click it to open the node.</li>
+      <li>Navigate to the file you want to edit and double-click it to open it in the editor.
+</li>
+      </ol>
+<p>For more information on the editor, see:
+</p>
+      
+    <ul>
+      <li><a href="editor_shortcuts_codetemplates.html">Ruby Editor Shortcut Keys and Code Templates</a></li>
+    <li>The links under &quot;Using the Ruby Editor&quot; on the
+      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="viewerActivator" value="javax.help.LinkButton">
+      <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/index.html">
+      <param name="text" value="<html><u>Ruby Documentation web page</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+</li>
+    </ul>
+
+</td>
+</tr>
+<tr valign="top">
+  <td>Jump between a Rails action (a method in a controller file) and its corresponding view (an .rhtml or .erb file)</td>
+  <td><ul>
+    <li> 
+        Ctrl-Shift-A </li>
+  <li> Command-Shift-A  (Mac shortcut)
+  </li>
+  </ul>
+    </td>
+</tr>
+<tr valign="top">
+  <td>Jump between a test file and its tested file</td>
+  <td><ul>
+    <li> 
+        Ctrl-Shift-T </li>
+  <li>        Command-Shift-T   (Mac shortcut)</li>
+  </ul>
+    <p>For more Editor shortcuts, see &nbsp;&nbsp; 
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="viewerActivator" value="javax.help.LinkButton">
+        <param name="content" value=
+        "http://wiki.netbeans.org/wiki/view/RubyShortcuts">
+        <param name="text" value="<html><u>Ruby Shortcuts</u></html>.">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+
+</p></td>
+</tr>
+<tr valign="top">
+  <td>Choose a database server for a Ruby on Rails project </td>
+  <td><ul>
+      <li>When you create a Ruby on Rails project (see above) and use the JRuby interpreter, you can use the <a href="newrailsappwiz-nameandloc.html">New Ruby on Rails Application Wizard: Name and Location</a> panel to set the database server.
+          <p>For more information, see <a href="usedatabase.html">Using Database Servers with JRuby</a>.</p>
+      </li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Migrate a database </td>
+  <td><ul>
+      <li>To migrate a database for a Ruby on Rails project (for example, add tables that you have defined in a model), right-click the main project node in the Projects window and choose Migrate Database &gt; To Current Version.</li>
+  <li>You can also revert the database to an earlier version by choosing one of the other To Version choices.</li>
+  <li>For an example, see&nbsp;
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="viewerActivator" value="javax.help.LinkButton">
+      <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/rapid-ruby-weblog.html#06">
+      <param name="text" value="<html><u>Migrating the Database</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>in the tutorial "Creating a Ruby Weblog in 10 Minutes".
+&nbsp; </li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Register a database server</td>
+  <td><ul>
+    <li>See &quot;Registering a Database&quot; in <a href="usedatabase.html#regdb">Using Database Servers with JRuby</a>.</li>
+
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Add a database to the IDE </td>
+  <td><ul>
+    <li>For instructions on adding some common databases, see&nbsp;
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/setting-up.html#database">
+            <param name="text" value="<html><u>Adding Databases</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>in the &quot;Installing and Configuring Ruby Support&quot; web article.</li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td><a name="runproject"></a>Run a Ruby or Rails application from the IDE.</td>
+  <td>
+    <ol>
+      <li>If your project is not the main one, right-click the project node and choose Set as Main Project.</li>
+      <li>Click the Run Main Project <img src="images/runprojicon.gif" alt="Run Project button" width="11" height="20" align="texttop">&nbsp;toolbar button or press F6 or choose Run &gt; Run Main Project from the main menu. </li>
+    </ol>    <ul>
+      <ul>
+          <li>You see a Ruby project's output in a window at the bottom of the IDE.</li>
+          <li>A Ruby on Rails project runs in the server configured for Rails  and displays in your default browser.</li>
+          <ul class="note">        
+            <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the server window at the bottom of the IDE.</li>
+          </ul>
+        </ul>
+    </ul></td>
+</tr>
+<tr valign="top">
+  <td>Run  a controller or view file</td>
+  <td><ul>
+    <li>
+    
+      If you're in a controller or view file, press Shift-F6 to run the current file. Doing so starts the web server unless it's already running, then opens the browser on the URL corresponding to the current file.</li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Run tests on your project </td>
+  <td><ul>
+      <li>For quick testing when editing a  view or controller file, use Ctrl-F6, or Command-F6 on a Mac platform, to run the tests associated with the file.
+        <p>For full details on testing Ruby and Rails projects, see
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+              <param name="viewerActivator" value="javax.help.LinkButton">
+              <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/unittest.html">
+              <param name="text" value="<html><u>Test Driven Rails Development</u></html>.">
+              <param name="textFontSize" value="medium">
+              <param name="textColor" value="blue">
+            </object>
+        </p>
+      </li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Debug a Ruby on Rails application </td>
+  <td><p>If you are using the default JRuby interpreter, you can use only the standard debugger.</p>
+    <p>If you have <a href="rubyoptions.html">changed your interpreter</a> to the native Ruby interpreter, you can use the Fast Debugger.</p>
+    <ul>
+      <li>To debug a Ruby on Rails application, choose Run &gt; Debug Main Project from the main menu.
+
+          <p>For more information, see the following links:</p>
+      <ul>
+            <li>
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
+        "http://wiki.netbeans.org/wiki/view/RubyDebugging">
+            <param name="text" value="<html><u>Ruby Debugging</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+</li>
+          <li>The "Debugging and Testing" links at 
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/index.html">
+            <param name="text" value="<html><u>NetBeans IDE 6.0 Ruby Documentation</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+</li>
+      </ul>
+      </li>
+    </ul></td>
+</tr>
+<tr valign="top">
+  <td>Deploy a JRuby application </td>
+  <td><ul>
+      <li>See &nbsp;
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/setting-up.html#glassfish">
+            <param name="text" value="<html><u>Deploying a JRuby Application to Glassfish</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+  &nbsp; in Installing and Configuring Ruby Support. </li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Manage your Ruby gems </td>
+  <td><ul>
+    <li>Choose Tools &gt; Ruby Gems to open the <a href="gemmanager.html">Ruby Gems Manager</a>.</li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Manage your Rails plugins</td>
+  <td><ul>
+      <li>Choose Tools &gt; Rail Plugins to open the <a href="railspluginmanager.html">Rails Plugins Manager</a>.</li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Run Rake tasks </td>
+  <td><ol>
+      <li>In the Projects window, select the name of your project and right-click<a href="usingirb.html"></a> it.</li>
+      <li>Select Run Rake Task and choose the type of task you would like to run.</li>
+      <li>Check the progress of the task in the Output window at the bottom of the IDE.</li>
+  </ol></td>
+</tr>
+<tr valign="top">
+  <td>Use the interactive Ruby shell (irb) in NetBeans </td>
+  <td><ul>
+      <li>Choose Window &gt; Other &gt; Ruby Shell (IRB). For more information, see <a href="usingirb.html">Using Interactive Ruby (IRB)</a>.</li>
+  </ul></td>
+</tr>
+</table>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about_ruby.html">About Ruby Development in NetBeans</a></dd>
+</dl>
+
+
+
+<hr>
+
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Component Tasks: Quick Reference">
+    <param name="text" value="<html><u><html><u>Click here to send feedback</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
+

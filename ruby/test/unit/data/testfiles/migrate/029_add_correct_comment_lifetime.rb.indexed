@@ -1,0 +1,85 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/029_add_correct_comment_lifetime.rb
+
+
+
+Document 1
+Indexed:
+  class : AddCorrectCommentLifetime
+  class-ig : addcorrectcommentlifetime
+  extends : ActiveRecord::Migration
+  fqn : AddCorrectCommentLifetime
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |CLASS|
+
+
+Document 2
+Indexed:
+  class : Article
+  class-ig : article
+  extends : Content
+  fqn : AddCorrectCommentLifetime::Article
+
+Not Indexed:
+  attrs : |CLASS|
+  in : AddCorrectCommentLifetime
+
+
+Document 3
+Indexed:
+  class : Content
+  class-ig : content
+  extends : ActiveRecord::Base
+  fqn : AddCorrectCommentLifetime::Content
+
+Not Indexed:
+  attrs : |CLASS|
+  in : AddCorrectCommentLifetime
+
+
+Document 4
+Indexed:
+  class : Site
+  class-ig : site
+  extends : ActiveRecord::Base
+  fqn : AddCorrectCommentLifetime::Site
+
+Not Indexed:
+  attrs : |CLASS|
+  in : AddCorrectCommentLifetime
+
+
+Document 5
+Indexed:
+  dbtable : content_versions
+
+Not Indexed:
+  dbcolumn : expire_comments_at;datetime
+  dbversion : 029
+
+
+Document 6
+Indexed:
+  dbtable : contents
+
+Not Indexed:
+  dbcolumn : expire_comments_at;datetime
+  dbversion : 029
+
+
+Document 7
+Indexed:
+  dbtable : sites
+
+Not Indexed:
+  dbcolumn : accept_comments;boolean
+  dbcolumn : approve_comments;boolean
+  dbcolumn : comment_age;integer
+  dbcolumn : comment_lifetime;-
+  dbcolumn : comment_link_max;-
+  dbversion : 029
