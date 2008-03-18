@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,39 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.ruby.platform.gems;
 
-package org.netbeans.modules.refactoring.ruby.plugins;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-import org.netbeans.modules.ruby.RubyUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+public final class GemRunnerTest extends RubyTestBase {
 
-/**
- *
- * @author Jan Becicka
- */
-public class RubyRefactoringsFactory implements RefactoringPluginFactory {
-   
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup look = refactoring.getRefactoringSource();
-        FileObject file = look.lookup(FileObject.class);
-        RubyElementCtx handle = look.lookup(RubyElementCtx.class);
-        if (refactoring instanceof WhereUsedQuery) {
-            if (handle!=null) {
-                return new RubyWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
-            }
-        } else if (refactoring instanceof RenameRefactoring) {
-            if (handle!=null || ((file!=null) && RubyUtils.isRubyOrRhtmlFile(file))) {
-                //rename java file, class, method etc..
-                return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
-            }
+    public GemRunnerTest(String testName) {
+        super(testName);
+    }
+
+    public void testGemsAreFetchedWithDescriptions() { // # issue 125508
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        GemManager gm = jruby.getGemManager();
+        List<String> errors = new ArrayList<String>();
+        List<Gem> installed = gm.getInstalledGems(errors);
+        assertFalse("has some installed gems in default platform", installed.isEmpty());
+        for (Gem gem : installed) {
+            assertNotNull(gem.getName() + " has description", gem.getDescription());
         }
-        return null;
     }
 }
