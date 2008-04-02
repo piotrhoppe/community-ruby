@@ -73,7 +73,7 @@ public class Generator {
      */
     private static final boolean GENERATE_DEBUG_VERSION = false;
     
-    private static final String BEGINMARKER = "// BEGIN AUTOMATICALLY GENERATED CODE. SEE THE ruby/indexhelper PROJECT FOR DETAILS.";
+    private static final String BEGINMARKER = "// BEGIN AUTOMATICALLY GENERATED CODE. SEE THE http://hg.netbeans.org/main/misc/ruby/indexhelper PROJECT FOR DETAILS.";
     private static final String ENDMARKER = "// END AUTOMATICALLY GENERATED CODE";
     
     private List<MethodDef> methods;
@@ -165,6 +165,7 @@ public class Generator {
 
         writer.write("    Runtime.getRuntime().addShutdownHook(new Thread() {\n");
         writer.write("        public void run() {\n");
+        writer.write("            if (unused.size() > 0) {\n                for (int i = 0; i < 5; i++) java.awt.Toolkit.getDefaultToolkit().beep();\n            }\n");
         writer.write("            System.err.println(\"***Unused index entries (\" + unused.size() + \")=\" + unused);\n");
         writer.write("        }\n");
         writer.write("    });\n");
@@ -172,6 +173,7 @@ public class Generator {
         writer.write("public static void showUnused() {\n");
         writer.write("    System.err.println(\"***Unused index entries (\" + unused.size() + \")=\" + unused);\n");
         writer.write("}\n");
+        
     }
         
     private void generateNameMap(Writer writer) throws IOException {
@@ -209,7 +211,9 @@ public class Generator {
         writer.write("private static String sig(MethodDefNode method) {\n");
         writer.write("    return AstUtilities.getDefSignature(method);\n");
         writer.write("}\n\n");
-        writer.write("private static String getAttribute(FileObject file, Node root, MethodDefNode method) {\n");
+        writer.write("private static String getAttribute(" + 
+                (GENERATE_DEBUG_VERSION ? "RubyParseResult result, " : "") +
+                "FileObject file, Node root, MethodDefNode method) {\n");
 
         // Get files
         Set<String> fileSet = new HashSet<String>();
@@ -276,7 +280,27 @@ public class Generator {
                     }
                     first = false;
                     writer.write("            if (\"" + m.classname + "\".equals(clz)) {\n");
-                    writer.write("                  String sig = sig(method);\n");
+                    
+                    if (GENERATE_DEBUG_VERSION) {
+                        writer.write("                Map<String,String> classMap = new HashMap<String,String>();\n");
+                        // Iterate over the signatures
+                        String clz = m.classname;
+                        for (MethodDef ml : l) {
+                            String name = ml.methodPrefix;
+                            int paren = name.indexOf('(');
+                            if (paren != -1) {
+                                name = name.substring(0, paren);
+                            }
+                            String fqn = clz + "." + name;
+                            String args = ml.arguments.replace("\"", "\\\"");
+                            writer.write("                classMap.put(\"" + fqn + "\", \"" + args + "\");\n");
+                        }
+                        writer.write("                verify(result, classMap);\n\n");
+                        
+                    }
+                    
+                    
+                    writer.write("                 String sig = sig(method);\n");
                 }
 
                 writer.write("                 if (sig.startsWith(\"" + m.methodPrefix + "\")) {\n");
@@ -285,12 +309,31 @@ public class Generator {
                     writer.write("                     unused.remove(\"" + item + "\");\n");
                 }
                 String args = m.arguments;
-                if (args.indexOf('"') != -1) {
-                    args = args.replace("\"", "\\\"");
+                
+                if (m.previousVersion != null) {
+                    // This item is version dependent
+                    writer.write("                         String path = file.getPath();\n");
+                    writer.write("                         if (path.indexOf(\"-2\") != -1 || path.indexOf(\"-1\") == -1) {\n");
+                    if (args.indexOf('"') != -1) {
+                        args = args.replace("\"", "\\\"");
+                    }
+                    writer.write("                             return \"" + args + "\"; // NOI18N\n");
+                    writer.write("                         } else {\n");
+                    
+                    String argsOld = m.previousVersion.arguments;
+                    if (argsOld.indexOf('"') != -1) {
+                        argsOld = argsOld.replace("\"", "\\\"");
+                    }
+                    
+                    writer.write("                             return \"" + argsOld + "\"; // NOI18N\n");
+                    writer.write("                         }\n");
+                } else {
+                    if (args.indexOf('"') != -1) {
+                        args = args.replace("\"", "\\\"");
+                    }
+                    writer.write("                     return \"" + args + "\";\n");
                 }
-                writer.write("                     return \"" + args + "\";\n");
                 writer.write("                 }\n");
-
                 prevClassName = m.classname;
             }
             if (prevClassName.length() > 0) {
@@ -313,6 +356,63 @@ public class Generator {
         writer.write("    }\n");
         writer.write("    return null;\n");
         writer.write("}\n");
+        
+        String helperCode = 
+"    private static AstElement findElement(List<? extends AstElement> children, String signature) {\n" +
+"        for (AstElement child : children) {\n" +
+"            if (child.getKind() == ElementKind.METHOD) {\n" +
+"                if (signature.endsWith(\".\"+child.getName())) {\n" +
+"                    if (signature.endsWith(child.getIn()+\".\"+child.getName())) {\n" +
+"                        return child;\n" +
+"                    } else {\n" +
+"                        System.err.println(\"WARNING - couldn't find element - but it sure looked similar - signature=\" + signature + \" and element=\" + child);\n" +
+"                    }\n" +
+"                }\n" +
+"            }\n" +
+"            AstElement result = findElement(child.getChildren(), signature);\n" +
+"            if (result != null) {\n" +
+"                return result;\n" +
+"            }\n" +
+"        }\n" +
+" \n" +
+"        return null;\n" +
+"    }\n" +
+"    \n" +
+"    private static void verify(RubyParseResult result, Map<String,String> signatureToArgumentsMap) {\n" +
+"        List<? extends AstElement> elements = result.getStructure().getElements();\n" +
+"        for (String signature : signatureToArgumentsMap.keySet()) {\n" +
+"            AstElement element = findElement(elements, signature);\n" +
+"            if (element == null) {\n" +
+"                System.err.println(\"WARNING: No element found for \" + signature);\n" +
+"                continue;\n" +
+"            }\n" +
+"            // Check that the parameters are all there\n" +
+"            List<String> parameters = ((AstMethodElement) element).getParameters();\n" +
+"            Set<String> parametersSet = new HashSet<String>();\n" +
+"            for (String s : parameters) {\n" +
+"                if (s.startsWith(\"*\")) {\n" +
+"                    s = s.substring(1);\n" +
+"                } else if (s.startsWith(\"&\")) {\n" +
+"                    s = s.substring(1);\n" +
+"                }\n" +
+"                parametersSet.add(s);\n" +
+"            }\n" +
+"            String attributeString = signatureToArgumentsMap.get(signature);\n" +
+"            String[] args = attributeString.split(\",\");\n" +
+"            for (String s : args) {\n" +
+"                int paren = s.indexOf('(');\n" +
+"                if (paren != -1) {\n" +
+"                    s = s.substring(0, paren);\n" +
+"                }\n" +
+"                if (!parametersSet.contains(s)) {\n" +
+"                    System.err.println(\"WARNING: \" + signature + \" does not contain documented parameter \" + s);\n" +
+"                }\n" +
+"            }\n" +
+"        }\n" +
+"    }\n";           
+        if (GENERATE_DEBUG_VERSION) {
+            writer.write(helperCode);
+        }
     }
 
     /**
@@ -320,7 +420,7 @@ public class Generator {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-args = new String[] { "/Users/tor/netbeans/work/ruby/editing/src/org/netbeans/modules/ruby/RubyIndexerHelper.java" };
+args = new String[] { "/Users/tor/netbeans/hg/main/ruby/src/org/netbeans/modules/ruby/RubyIndexerHelper.java" };
         if (args.length != 1) {
             System.err.println("Usage: " + Generator.class.getName() + " <path to RubyIndexerHelper.java>\n\n" +
                     "The RubyIndexerHelper.java file should be in the ruby/editing module. Running this program\n" +
@@ -386,9 +486,20 @@ args = new String[] { "/Users/tor/netbeans/work/ruby/editing/src/org/netbeans/mo
                 "column_name(" + COLUMNNAME + ")," +                        
                 "options"+TABLE_COLUMN_OPTIONS + "," +
                 "type" + TABLE_COLUMN_TYPE));
-        methods.add(new MethodDef(clzSchemaStatementsFile, clzSchemaStatements,
+        
+        // Rails 1:
+        MethodDef renameTableV1 = new MethodDef(clzSchemaStatementsFile, clzSchemaStatements,
                         "rename_table(",
-                    "name(" + TABLENAME + ")"));
+                    "name(" + TABLENAME + ")", RailsVersion.V1);
+        
+        // Rails 2: Renamed parameter name to table_name
+        MethodDef renameTable = new MethodDef(clzSchemaStatementsFile, clzSchemaStatements,
+                        "rename_table(",
+                    "table_name(" + TABLENAME + ")", RailsVersion.V2);
+        renameTable.setPreviousVersion(renameTableV1);
+        methods.add(renameTable);
+        
+        
         methods.add(new MethodDef(clzSchemaStatementsFile, clzSchemaStatements,
                 "rename_column(",
                     "table_name(" + TABLENAME + ")," +
@@ -397,9 +508,19 @@ args = new String[] { "/Users/tor/netbeans/work/ruby/editing/src/org/netbeans/mo
                 "change_column_default(",
                     "table_name(" + TABLENAME + ")," +
                            "column_name(" + COLUMNNAME + ")"));
-        methods.add(new MethodDef(clzSchemaStatementsFile, clzSchemaStatements,
+
+        
+        // Rails 1:
+        MethodDef dropTableV1 = new MethodDef(clzSchemaStatementsFile, clzSchemaStatements,
                 "drop_table(",
-                    "name(" + TABLENAME + ")"));
+                    "name(" + TABLENAME + ")", RailsVersion.V1);
+        // Rails 2: Renamed parameter name to table_name
+        MethodDef dropTable = new MethodDef(clzSchemaStatementsFile, clzSchemaStatements,
+                "drop_table(",
+                    "table_name(" + TABLENAME + ")", RailsVersion.V2);
+        dropTable.setPreviousVersion(dropTableV1);
+        methods.add(dropTable);
+        
         methods.add(new MethodDef(clzSchemaStatementsFile, clzSchemaStatements,
                 "add_index(",
                     "table_name(" + TABLENAME + ")," +
@@ -479,23 +600,23 @@ args = new String[] { "/Users/tor/netbeans/work/ruby/editing/src/org/netbeans/mo
         String calculationsClz = "ActiveRecord::Calculations::ClassMethods";
         methods.add(new MethodDef(calculationsFile, calculationsClz,
                 "calculate(",
-                    "options" + CALCULATE_OPTIONS + ",operation(:count|:avg|:min|:max|:sum),column_name" + COLUMNNAME + ")"));
+                    "options" + CALCULATE_OPTIONS + ",operation(:count|:avg|:min|:max|:sum),column_name(" + COLUMNNAME + ")"));
         methods.add(new MethodDef(calculationsFile, calculationsClz,
                 "count(",
                 // XXX will the "*" match work?
                 "args" + COUNT_OPTIONS));
         methods.add(new MethodDef(calculationsFile, calculationsClz,
                 "minimum(",
-                "options" + CALCULATE_OPTIONS + ",column_name" + COLUMNNAME + ")"));
+                "options" + CALCULATE_OPTIONS + ",column_name(" + COLUMNNAME + ")"));
         methods.add(new MethodDef(calculationsFile, calculationsClz,
                         "average(",
-                "options" + CALCULATE_OPTIONS + ",column_name" + COLUMNNAME + ")"));
+                "options" + CALCULATE_OPTIONS + ",column_name(" + COLUMNNAME + ")"));
         methods.add(new MethodDef(calculationsFile, calculationsClz,
                         "sum(",
-                "options" + CALCULATE_OPTIONS + ",column_name" + COLUMNNAME + ")"));
+                "options" + CALCULATE_OPTIONS + ",column_name(" + COLUMNNAME + ")"));
         methods.add(new MethodDef(calculationsFile, calculationsClz,
                         "maximum(",
-                    "options" + CALCULATE_OPTIONS + ",column_name" + COLUMNNAME + ")"));
+                    "options" + CALCULATE_OPTIONS + ",column_name(" + COLUMNNAME + ")"));
 
         String validationsFile = "validations";
         String validationsClz = "ActiveRecord::Validations::ClassMethods";
@@ -596,16 +717,39 @@ args = new String[] { "/Users/tor/netbeans/work/ruby/editing/src/org/netbeans/mo
         // Nothing for Layout, Dependencies, Benchmarking, Flash, Macros, AutoComplete, Caching, Cookies
             
         // ActionView
-        methods.add(new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
+        
+        // Rails 1
+        MethodDef formForV1 = new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
             "form_for(",
-                "object_name(" + MODELNAME + "),options(=>url:hash|html:hash|builder)"));
-        methods.add(new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
+                "object_name(" + MODELNAME + "),args(=>url:hash|html:hash|builder)", RailsVersion.V1);
+        // Rails 2: Renamed parameter name to record_or_name_or_array
+        MethodDef formFor = new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
+            "form_for(",
+                "record_or_name_or_array(" + MODELNAME + "),(rgs=>url:hash|html:hash|builder)", RailsVersion.V2);
+        formFor.setPreviousVersion(formForV1);
+        methods.add(formFor);
+        
+        // Rails 1
+        MethodDef fieldsForV1 = new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
             "fields_for(",
-                "object_name(" + MODELNAME + "),options(=>url:hash)"));
+                "object_name(" + MODELNAME + "),args(=>url:hash)", RailsVersion.V1);
+        // Rails 2
+        MethodDef fieldsFor = new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
+            "fields_for(",
+                "record_or_name_or_array(" + MODELNAME + "),args(=>url:hash)", RailsVersion.V2);
+        fieldsFor.setPreviousVersion(fieldsForV1);
+        methods.add(fieldsFor);
+
         String[] mtds = {"text_field(","password_field(","hidden_field(","file_field(","text_area(","check_box(","radio_button(" };
         for (String mtd : mtds) {
-            methods.add(new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
-                    mtd, "object_name(" + MODELNAME + ")"));
+            // Rails 1
+            MethodDef defV1 = new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
+                    mtd, "object_name(" + MODELNAME + ")", RailsVersion.V1);
+            // Rails 2
+            MethodDef def = new MethodDef("form_helper", "ActionView::Helpers::FormHelper",
+                    mtd, "record_or_name_or_array(" + MODELNAME + ")", RailsVersion.V2);
+            def.setPreviousVersion(defV1);
+            methods.add(def);
         }
 
         methods.add(new MethodDef("prototype_helper", "ActionView::Helpers::PrototypeHelper",
@@ -636,9 +780,10 @@ args = new String[] { "/Users/tor/netbeans/work/ruby/editing/src/org/netbeans/mo
             "number_to_currency(", "options(=>precision|unit|separator|delimiter)"));
         methods.add(new MethodDef("number_helper", "ActionView::Helpers::NumberHelper",
             "number_to_percentage(","options(=>precision|separator)"));
-        methods.add(new MethodDef("number_helper", "ActionView::Helpers::NumberHelper",
-            "number_with_delimiter(",
-                "options(=>delimiter|separator)"));
+        // This was wrong in Rails 1 as well - these aren't option
+        //methods.add(new MethodDef("number_helper", "ActionView::Helpers::NumberHelper",
+        //    "number_with_delimiter(",
+        //        "options(=>delimiter|separator)"));
         
         methods.add(new MethodDef("date_helper", "ActionView::Helpers::DateHelper",
                 "date_select(","options(=>discard_year:bool|discard_month:bool|discard_day:bool|order|disabled:bool)"));
@@ -686,6 +831,8 @@ args = new String[] { "/Users/tor/netbeans/work/ruby/editing/src/org/netbeans/mo
                 // Behavior types seem to be controller,model,helper,view
                 "args(=>behaviour_type|shared:bool)"));
     }
+    
+    enum RailsVersion { V1, V2 };
 
     /** Method definition */
     private class MethodDef {
@@ -693,12 +840,23 @@ args = new String[] { "/Users/tor/netbeans/work/ruby/editing/src/org/netbeans/mo
         private String classname;
         private String methodPrefix;
         private String arguments;
+        private RailsVersion version;
+        private MethodDef previousVersion;
         
         MethodDef(String filename, String classname, String methodPrefix, String arguments) {
             this.filename = filename;
             this.classname = classname;
             this.methodPrefix = methodPrefix;
             this.arguments = arguments;
+        }
+
+        MethodDef(String filename, String classname, String methodPrefix, String arguments, RailsVersion version) {
+            this(filename, classname, methodPrefix, arguments);
+            this.version = version;
+        }
+        
+        public void setPreviousVersion(MethodDef previousVersion) {
+            this.previousVersion = previousVersion;
         }
         
         public String toString() {
