@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,40 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.hints;
+package org.netbeans.modules.ruby.platform.gems;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author tor
+ * @author Erno Mononen
  */
-public class RetryOutsideRescueTest extends HintTestBase  {
+public class GemInfoTest extends NbTestCase {
     
-    public RetryOutsideRescueTest(String testName) {
+    public GemInfoTest(String testName) {
         super(testName);
-    }            
-
-    public void testNoHint1() throws Exception {
-        findHints(this, new RetryOutsideRescue(), "testfiles/reverseif.rb", null);
     }
 
-    public void testHints1() throws Exception {
-        findHints(this, new RetryOutsideRescue(), "testfiles/retry.rb", null);
+    public void testCompareTo() throws IOException {
+        GemInfo rails1 = new GemInfo("rails", "1.2.5", getWorkDir());
+        GemInfo rails2 = new GemInfo("rails", "2.0.2", getWorkDir());
+        assertTrue(rails1.compareTo(rails2) > 0);
+
+        GemInfo mongrel1 = new GemInfo("mongrel", "1.1", getWorkDir());
+        assertTrue(mongrel1.compareTo(rails1) < 0);
+
+        GemInfo mongrel2 = new GemInfo("mongrel", "1.1.2", getWorkDir());
+        assertTrue(mongrel1.compareTo(mongrel2) > 0);
+
+        GemInfo mongrel3 = new GemInfo("mongrel", "10.1.3", getWorkDir());
+        assertTrue(mongrel2.compareTo(mongrel3) > 0);
+
+        GemInfo mongrel4 = new GemInfo("mongrel", "9.1.1", getWorkDir());
+        assertTrue(mongrel3.compareTo(mongrel4) < 0);
     }
 
-    public void testNoPositives() throws Exception {
-        try {
-            parseErrorsOk = true;
-            Set<String> exceptions = new HashSet<String>();
-            
-            // Known exceptions
-            exceptions.add("invokemethod.rb");
-        
-            assertNoJRubyMatches(new RetryOutsideRescue(), exceptions);
-            
-        } finally {
-            parseErrorsOk = false;
-        }
-    }
 }
