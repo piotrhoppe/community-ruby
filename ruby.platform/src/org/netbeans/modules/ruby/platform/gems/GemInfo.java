@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,53 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.platform.gems;
 
-package org.netbeans.modules.ruby.hints;
-
-import java.util.HashSet;
-import java.util.Set;
+import java.io.File;
+import org.openide.util.Parameters;
 
 /**
+ * Encapsulates info of an installed gem.
  *
- * @author tor
+ * TODO: merge with <code>Gem</code>
+ * 
+ * @author Erno Mononen
  */
-public class RetryOutsideRescueTest extends HintTestBase  {
-    
-    public RetryOutsideRescueTest(String testName) {
-        super(testName);
-    }            
+public class GemInfo implements Comparable<GemInfo> {
 
-    public void testNoHint1() throws Exception {
-        findHints(this, new RetryOutsideRescue(), "testfiles/reverseif.rb", null);
+    private final String name;
+    private final String version;
+    private final File specFile;
+
+    public GemInfo(String name, String version, File specFile) {
+        Parameters.notEmpty("name", name);
+        Parameters.notEmpty("version", version);
+        Parameters.notNull("specFile", specFile);
+        this.name = name;
+        this.version = version;
+        this.specFile = specFile;
     }
 
-    public void testHints1() throws Exception {
-        findHints(this, new RetryOutsideRescue(), "testfiles/retry.rb", null);
+    public String getName() {
+        return name;
     }
 
-    public void testNoPositives() throws Exception {
-        try {
-            parseErrorsOk = true;
-            Set<String> exceptions = new HashSet<String>();
-            
-            // Known exceptions
-            exceptions.add("invokemethod.rb");
+    public String getVersion() {
+        return version;
+    }
+
+    public File getSpecFile() {
+        return specFile;
+    }
+
+    public int compareTo(GemInfo o) {
+        int nameComparison = getName().compareTo(o.getName());
         
-            assertNoJRubyMatches(new RetryOutsideRescue(), exceptions);
-            
-        } finally {
-            parseErrorsOk = false;
-        }
+        return nameComparison == 0 
+                ? GemManager.compareGemVersions(o.getVersion(), getVersion())
+                : nameComparison;
     }
+    
 }
