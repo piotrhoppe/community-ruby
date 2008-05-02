@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
@@ -39,23 +39,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.rubyproject.ui;
+package org.netbeans.modules.ruby.rubyproject.rake;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
-import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.Util;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTaskChooser.TaskDescriptor;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
-public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
-    
-    public ProjectRootNodeFactoryTest(String testName) {
-        super(testName);
-    }            
+/**
+ * Shows convenient runner for running or debugging Rake tasks, similar to e.g.
+ * Go To File dialog.
+ */
+public final class RakeRunnerAction extends CallableSystemAction {
 
-    public void testCreateNodes() throws Exception {
-        Project p = createTestProject("rubyprj");
-        ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
-        NodeList result = instance.createNodes(p);
-        assertSame("four children (lib, test, spec, README, LICENSE), but was: " + result.keys(), 5, result.keys().size());
+    public void performAction() {
+        RubyBaseProject project = Util.inferRubyProject();
+        if (project == null) {
+            return;
+        }
+
+        if (!RubyPlatform.platformFor(project).showWarningIfInvalid()) {
+            return;
+        }
+
+        TaskDescriptor taskDesc = RakeTaskChooser.select(project);
+        if (taskDesc != null) {
+            RakeRunner.runTask(project, taskDesc.getRakeTask(), taskDesc.isDebug());
+        }
     }
 
+    public String getName() {
+        return NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.RunDebugRakeTask");
+    }
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }
