@@ -36,66 +36,40 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.testrunner;
 
-package org.netbeans.modules.ruby.rubyproject.spi;
-
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
- * An interface for unit test runner implementations.
- *<p/>
- * <i>A work in progress, bound to change</i>.
+ * Settings for the test runner. 
  * 
  * @author Erno Mononen
  */
-public interface TestRunner {
-    
-    enum TestType {
-        /**
-         * Represents Test::Unit tests.
-         */
-        TEST_UNIT,
-        /**
-         * Represents RSpec tests.
-         */
-        RSPEC
-    
+public final class TestRunnerSettings {
+
+    private static final String RESULTS_SPLITPANE_DIVIDER = "resultsSplitDivider"; //NOI18N
+    private static final int DEFAULT_DIVIDER_LOCATION = 300;
+
+    private static final TestRunnerSettings INSTANCE = new TestRunnerSettings();
+
+    private TestRunnerSettings() {
     }
 
-    TestRunner getInstance();
+    public static TestRunnerSettings getDefault() {
+        return INSTANCE;
+    }
     
-    /**
-     * Checks whether this test runner supports running of tests of the
-     * given <code>type</code>.
-     * 
-     * @param type the type of the tests to run.
-     * @return true if this test runner supports the given <code>type</code>.
-     */
-    boolean supports(TestType type);
-    
-    /**
-     * Runs the given test file, i.e runs all tests
-     * in it.
-     * 
-     * @param testFile the file representing a unit test class.
-     */
-    void runTest(FileObject testFile);
-    
-    /**
-     * Runs a single test method.
-     * 
-     * @param testFile the file representing the unit test class
-     * whose test method to run.
-     * @param testMethod the name of the test method to run.
-     */
-    void runSingleTest(FileObject testFile, String testMethod);
-    
-    /**
-     * Runs all units tests in the given project.
-     * 
-     * @param project the project whose unit tests to run.
-     */
-    void runAllTests(Project project);
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(TestRunnerSettings.class);
+    }
 
+    public int getResultsSplitPaneDivider() {        
+        return getPreferences().getInt(RESULTS_SPLITPANE_DIVIDER, DEFAULT_DIVIDER_LOCATION);
+    }
+
+    public void setResultsSplitPaneDivider(int dividerLocation) {
+        getPreferences().putInt(RESULTS_SPLITPANE_DIVIDER, dividerLocation);
+    }    
+    
 }
