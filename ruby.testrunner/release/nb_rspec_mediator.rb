@@ -1,7 +1,8 @@
+# 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-#
-# Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
-#
+# 
+# Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+# 
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
 # Development and Distribution License("CDDL") (collectively, the
@@ -19,13 +20,7 @@
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
 # "Portions Copyrighted [year] [name of copyright owner]"
-#
-# Contributor(s):
-#
-# The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
-# Microsystems, Inc. All Rights Reserved.
-#
+# 
 # If you wish your version of this file to be governed by only the CDDL
 # or only the GPL Version 2, indicate your decision by adding
 # "[Contributor] elects to include this software in this distribution
@@ -36,23 +31,76 @@
 # However, if you add GPL Version 2 code and therefore, elected the GPL
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
-#Actions
+# 
+# Contributor(s):
+# 
+# Portions Copyrighted 2008 Sun Microsystems, Inc.
 
-LBL_CleanAction_Name=Clean
-LBL_BuildGemAction_Name=Build Gem
-LBL_RebuildAction_Name=Clean and Build Gem
-LBL_RunAction_Name=Run
-LBL_DebugAction_Name=Debug
-LBL_RDocAction_Name=Generate RDoc
-LBL_TestAction_Name=Test
-LBL_Properties_Action=Properties
-LBL_AutoTest=Auto Test
-LBL_RSpec=RSpec Test
 
-# FolderListSettings
-TXT_RubyProjectFolderList=RubyProjectFolderList
-LBL_Fix_Broken_Links_Action=Resolve Reference Problems...
+class NbRspecMediator < Spec::Runner::ExampleGroupRunner
 
-# RubyLogicalViewProvider
-RubyLogicalViewProvider.ProjectTooltipDescription=<html>Ruby project in <i>{0}</i>.<br>Active platform: <i>{1}</i></html>
-RubyLogicalViewProvider.PlatformNotFound=Platform not found
+  def initialize(options, args)
+    super(options)
+  end
+
+  def load_files(files)
+    super(files)
+  end
+
+  def run
+    prepare
+    success = true
+    example_groups.each do |example_group|
+      start_time = Time.now
+      puts "%SUITE_STARTING% #{example_group.description}"
+      success = success & example_group.run
+      elapsed_time = Time.now - start_time
+      puts "%SUITE_FINISHED% #{example_group.description} time=#{elapsed_time}"
+    end
+    return success
+  ensure
+    finish
+  end
+
+  protected
+  def reporter
+    Reporter.new(@options)
+  end
+
+end
+
+# TODO: probably would be better to use a formatter instead
+class Reporter < Spec::Runner::Reporter
+
+  def example_started(example)
+    start_timer
+    puts "%TEST_STARTED% #{example.description}"
+    super
+  end
+      
+  def failure(example, error)
+    puts "%TEST_FAILED% #{example.description} time=#{elapsed_time}"
+    super
+  end
+  alias_method :example_failed, :failure
+
+  private
+  def example_passed(example)
+    puts "%TEST_FINISHED% #{example.description} time=#{elapsed_time}"
+    super
+  end
+      
+  def example_pending(example_group, example, message="Not Yet Implemented")
+    puts "%TEST_PENDING% #{example.description}"
+    super
+  end
+  
+  def start_timer
+    @start_time = Time.now
+  end
+  
+  def elapsed_time
+    Time.now - @start_time
+  end
+
+end
