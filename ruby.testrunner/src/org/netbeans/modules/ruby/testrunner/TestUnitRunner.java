@@ -40,7 +40,6 @@ package org.netbeans.modules.ruby.testrunner;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,6 +53,7 @@ import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -63,11 +63,11 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author Erno Mononen
  */
-public final class TestRunnerImpl implements TestRunner {
+public final class TestUnitRunner implements TestRunner {
 
-    private static final Logger LOGGER = Logger.getLogger(TestRunnerImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TestUnitRunner.class.getName());
     private static final String MEDIATOR_SCRIPT = "nb_test_mediator.rb";
-    private static final TestRunner INSTANCE = new TestRunnerImpl();
+    private static final TestRunner INSTANCE = new TestUnitRunner();
 
     public TestRunner getInstance() {
         return INSTANCE;
@@ -122,7 +122,10 @@ public final class TestRunnerImpl implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new TestRecognizer(Manager.getInstance(), new TestSession(locator)));
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
+                new TestSession(locator), 
+                TestUnitHandlerFactory.getHandlers());
+        desc.addOutputRecognizer(recognizer);
         new RubyExecution(desc, charsetName).run();
     }
 

@@ -40,8 +40,6 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 
 /**
@@ -50,97 +48,74 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
  *
  * @author Erno Mononen
  */
-public class RspecRecognizer extends OutputRecognizer {
+public class TestUnitHandlerFactory extends OutputRecognizer {
 
-    private final Manager manager;
-    private final TestSession session;
-    private final List<TestHandler> handlers;
-
-    public RspecRecognizer(Manager manager, TestSession session) {
-        this.manager = manager;
-        this.session = session;
-        this.handlers = initHandlers();
-    }
-
-    private List<TestHandler> initHandlers() {
-        List<TestHandler> result = new ArrayList<TestHandler>();
+    public static List<TestRecognizerHandler> getHandlers() {
+        List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new SuiteStartingHandler());
         result.add(new SuiteStartedHandler());
         result.add(new SuiteFinishedHandler());
         result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
+        result.add(new TestErrorHandler());
         result.add(new TestFinishedHandler());
+        result.add(new TestMiscHandler());
+        result.add(new SuiteMiscHandler());
         return result;
     }
 
-    @Override
-    public void start() {
-        manager.testStarted(session);
-    }
-
-    @Override
-    public RecognizedOutput processLine(String line) {
-
-        for (TestHandler handler : handlers) {
-            if (handler.match(line).matches()) {
-                handler.updateUI(manager, session);
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public void finish() {
-        manager.sessionFinished(session);
-    }
-
-    private static int toMillis(String timeInSeconds) {
-        Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
-        return elapsedTimeMillis.intValue();
-    }
-
-    static abstract class TestHandler {
-
-        protected final Pattern pattern;
-        protected Matcher matcher;
-
-        public TestHandler(String regex) {
-            this.pattern = Pattern.compile(regex);
-        }
-
-        final Matcher match(String line) {
-            this.matcher = pattern.matcher(line);
-            return matcher;
-        }
-
-        abstract void updateUI(Manager manager, TestSession session);
-    }
-
-    static class TestFailedHandler extends TestHandler {
+    static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)");
+            super("%TEST_FAILED%\\stime=(\\d+\\.\\d+)\\sFailure:[.[^\\w]]*(\\w+)\\((\\w+)\\)(.*)");
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
             Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(2));
-            testcase.className = matcher.group(1);
-            testcase.name = matcher.group(1);
+            testcase.timeMillis = toMillis(matcher.group(1));
+            testcase.className = matcher.group(3);
+            testcase.name = matcher.group(2);
             testcase.trouble = new Report.Trouble(false);
-//            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
+            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
             session.addTestCase(testcase);
-//            manager.displayOutput(session, matcher.group(4), false);
+            manager.displayOutput(session, matcher.group(4), false);
+        }
+
+        @Override
+        RecognizedOutput getRecognizedOutput() {
+            return new FilteredOutput(matcher.group(4));
         }
     }
 
-    static class TestStartedHandler extends TestHandler {
+    static class TestErrorHandler extends TestRecognizerHandler {
+
+        public TestErrorHandler() {
+            super("%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\sError:[.[^\\w]]*(\\w+)\\((\\w+)\\)(.*)");
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            Report.Testcase testcase = new Report.Testcase();
+            testcase.timeMillis = toMillis(matcher.group(1));
+            testcase.className = matcher.group(3);
+            testcase.name = matcher.group(2);
+            testcase.trouble = new Report.Trouble(true);
+            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
+            session.addTestCase(testcase);
+            manager.displayOutput(session, matcher.group(4), true);
+        }
+
+        @Override
+        RecognizedOutput getRecognizedOutput() {
+            return new FilteredOutput(matcher.group(4));
+        }
+    }
+
+    static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super(".*%TEST_STARTED%\\s(.*)");
+            super("%TEST_STARTED%\\s([\\w]+)\\(([\\w]+)\\)");
         }
 
         @Override
@@ -148,41 +123,57 @@ public class RspecRecognizer extends OutputRecognizer {
         }
     }
 
-    static class TestFinishedHandler extends TestHandler {
+    static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super(".*%TEST_FINISHED%\\s(.*)\\stime=(\\d+\\.\\d+)");
+            super("%TEST_FINISHED%\\stime=(\\d+\\.\\d+)\\s([\\w]+)\\(([\\w]+)\\)");
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
             Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(2));
-            testcase.className = session.getSuiteName();
-            testcase.name = matcher.group(1);
+            testcase.timeMillis = toMillis(matcher.group(1));
+            testcase.className = matcher.group(3);
+            testcase.name = matcher.group(2);
             session.addTestCase(testcase);
         }
     }
 
-    static class SuiteFinishedHandler extends TestHandler {
+    /**
+     * Captures the rest of %TEST_* patterns that are not handled
+     * otherwise (yet). 
+     */
+    static class TestMiscHandler extends TestRecognizerHandler {
+
+        public TestMiscHandler() {
+            super("%TEST_.*");
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+        }
+    }
+
+    static class SuiteFinishedHandler extends TestRecognizerHandler {
 
         public SuiteFinishedHandler() {
-            super(".*%SUITE_FINISHED%\\s(\\w+)\\stime=(\\d+\\.\\d+)");
+            super("%SUITE_FINISHED%\\s(\\d+\\.\\d+)");
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
             String timeInSeconds = matcher.group(1);
+            Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
             Report result = session.getReport();
-            result.elapsedTimeMillis = toMillis(matcher.group(2));
+            result.elapsedTimeMillis = elapsedTimeMillis.intValue();
             manager.displayReport(session, result);
         }
     }
 
-    static class SuiteStartedHandler extends TestHandler {
+    static class SuiteStartedHandler extends TestRecognizerHandler {
 
         public SuiteStartedHandler() {
-            super(".*%SUITE_STARTED%\\s.*");
+            super("%SUITE_STARTED%\\s.*");
         }
 
         @Override
@@ -190,10 +181,10 @@ public class RspecRecognizer extends OutputRecognizer {
         }
     }
 
-    static class SuiteStartingHandler extends TestHandler {
+    static class SuiteStartingHandler extends TestRecognizerHandler {
 
         public SuiteStartingHandler() {
-            super(".*%SUITE_STARTING%\\s(\\w+)");
+            super("%SUITE_STARTING%\\s(\\w+)");
         }
 
         @Override
@@ -201,6 +192,21 @@ public class RspecRecognizer extends OutputRecognizer {
             String suiteName = matcher.group(1);
             session.setSuiteName(suiteName);
             manager.displaySuiteRunning(session, suiteName);
+        }
+    }
+
+    /**
+     * Captures the rest of %SUITE_* patterns that are not handled
+     * otherwise (yet). 
+     */
+    static class SuiteMiscHandler extends TestRecognizerHandler {
+
+        public SuiteMiscHandler() {
+            super("%SUITE_.*");
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
         }
     }
 }
