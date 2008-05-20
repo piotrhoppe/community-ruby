@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
@@ -48,10 +48,10 @@ import junit.framework.TestCase;
  *
  * @author Erno Mononen
  */
-public class TestRecognizerTest extends TestCase {
+public class TestUnitRecognizerTest extends TestCase {
     
     public void testTestStarted() {
-        TestRecognizer.TestHandler handler = new TestRecognizer.TestStartedHandler();
+        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.TestStartedHandler();
         String output = "%TEST_STARTED% test_foo(TestFooBar)";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
@@ -61,7 +61,7 @@ public class TestRecognizerTest extends TestCase {
     }
 
     public void testTestFinished() {
-        TestRecognizer.TestHandler handler = new TestRecognizer.TestFinishedHandler();
+        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.TestFinishedHandler();
         String output = "%TEST_FINISHED% time=0.008765 test_foo(TestFooBar)";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
@@ -72,7 +72,7 @@ public class TestRecognizerTest extends TestCase {
     }
 
     public void testTestFailed() {
-        TestRecognizer.TestHandler handler = new TestRecognizer.TestFailedHandler();
+        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.TestFailedHandler();
         String output = "%TEST_FAILED% time=0.9981 Failure:test_foo(TestFooBar) [/a/path/to/somewhere/file.rb:17:]:  \"failed\"";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
@@ -84,7 +84,7 @@ public class TestRecognizerTest extends TestCase {
     }
     
     public void testTestError() {
-        TestRecognizer.TestHandler handler = new TestRecognizer.TestErrorHandler();
+        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.TestErrorHandler();
         String output = "%TEST_ERROR% time=0.01220 Error:test_foo(TestFooBar): RuntimeError: error ";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
@@ -96,7 +96,7 @@ public class TestRecognizerTest extends TestCase {
     }
     
     public void testSuiteFinished() {
-        TestRecognizer.TestHandler handler = new TestRecognizer.SuiteFinishedHandler();
+        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.SuiteFinishedHandler();
         String output = "%SUITE_FINISHED% 0.124";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
@@ -106,14 +106,14 @@ public class TestRecognizerTest extends TestCase {
     }
     
     public void testSuiteStarted() {
-        TestRecognizer.TestHandler handler = new TestRecognizer.SuiteStartedHandler();
+        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.SuiteStartedHandler();
         String output = "%SUITE_STARTED% 0 tests, 0 assertions, 0 failures, 0 errors";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
     }
     
     public void testSuiteStarting() throws InterruptedException {
-        TestRecognizer.TestHandler handler = new TestRecognizer.SuiteStartingHandler();
+        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.SuiteStartingHandler();
         String output = "%SUITE_STARTING% TestMe";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
