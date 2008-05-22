@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,69 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.hints.options;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+package org.netbeans.modules.ruby.hints.infrastructure;
 
-final class HintsOptionsPanelController extends OptionsPanelController {
-    
-    private HintsPanel panel;
-    
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
-                    
-    public void update() {
-        panel.update();
-    }
-    
-    public void applyChanges() {
-        if ( isChanged() ) {
-            panel.applyChanges();
-        }
-    }
-    
-    public void cancel() {
-        panel.cancel();
-    }
-    
-    public boolean isValid() {
-        return true; 
-    }
-    
-    public boolean isChanged() {
-        return panel == null ? false : panel.isChanged();
-    }
-    
-    public HelpCtx getHelpCtx() {
-	return null; // new HelpCtx("...ID") if you have a help set
-    }
-    
-    public synchronized JComponent getComponent(Lookup masterLookup) {
-        if ( panel == null ) {
-            panel = new HintsPanel();
-        }
-        return panel;
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-	pcs.addPropertyChangeListener(l);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-	pcs.removePropertyChangeListener(l);
-    }
-        
-    void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-    }
-    
+import java.util.List;
+import java.util.Set;
+import org.jruby.common.IRubyWarnings.ID;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.Rule.ErrorRule;
+import org.netbeans.modules.ruby.RubyParser.RubyError;
+
+/** 
+ * Represents a rule to be run on the java source in case the compiler 
+ * issued an error or a warning.
+ *
+ * (Copied from java/hints)
+ * 
+ *
+ * @author Petr Hrebejk, Jan Lahoda
+ */
+public abstract class RubyErrorRule implements ErrorRule {
+
+    /** Get the diagnostic codes this rule should run on
+     */
+    public abstract Set<ID> getCodes();
+
+    /** Return possible fixes for a given diagnostic report.
+     */
+    public abstract void run(RubyRuleContext context, RubyError error,
+             List<Hint> result);
 }
