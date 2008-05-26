@@ -37,26 +37,17 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.hints.spi;
+package org.netbeans.modules.ruby.hints.infrastructure;
 
-import org.jruby.ast.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.ruby.AstPath;
+import java.util.List;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.Rule.SelectionRule;
 
 /**
- * Information about the current context a rule is being asked to evaluate.
- * 
+ * Represents a rule to be run on text selection
+ *
  * @author Tor Norbye
  */
-public class RuleContext {
-    public AstPath path;
-    public Node node;
-    public int caretOffset;
-    public int lexOffset;
-    public int astOffset;
-    public int selectionStart;
-    public int selectionEnd;
-    public CompilationInfo compilationInfo;
-    public BaseDocument doc;
+public abstract class RubySelectionRule implements SelectionRule {
+    public abstract void run(RubyRuleContext context, List<Hint> result);
 }
