@@ -22,8 +22,11 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.hints.options;
+package org.netbeans.modules.ruby.hints.infrastructure;
 
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.HintsProvider.HintsManager;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
@@ -45,9 +48,10 @@ public class HintsAdvancedOption extends AdvancedOption {
     }
 
     public synchronized OptionsPanelController create() {
-        
         if ( panelController == null ) {
-            panelController = new HintsOptionsPanelController();
+            HintsManager manager = HintsProvider.Factory.getManager(RubyMimeResolver.RUBY_MIME_TYPE);
+            assert manager != null;
+            panelController = manager.getOptionsController();
         }
         
         return panelController;
