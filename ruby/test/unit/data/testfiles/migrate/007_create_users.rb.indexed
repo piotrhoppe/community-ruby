@@ -1,0 +1,29 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/007_create_users.rb
+
+
+
+Document 1
+Indexed:
+  class : CreateUsers
+  class-ig : createusers
+  extends : ActiveRecord::Migration
+  fqn : CreateUsers
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Indexed:
+  dbtable : users
+
+Not Indexed:
+  dbcolumn : hashed_password;string
+  dbcolumn : name;string
+  dbcolumn : salt;string
+  dbversion : 007

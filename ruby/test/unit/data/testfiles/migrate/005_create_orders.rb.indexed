@@ -1,0 +1,30 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/005_create_orders.rb
+
+
+
+Document 1
+Indexed:
+  class : CreateOrders
+  class-ig : createorders
+  extends : ActiveRecord::Migration
+  fqn : CreateOrders
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Indexed:
+  dbtable : orders
+
+Not Indexed:
+  dbcolumn : address;text
+  dbcolumn : email;string
+  dbcolumn : name;string
+  dbcolumn : pay_type;string
+  dbversion : 005

@@ -1,0 +1,31 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/001_create_products_renamed.rb
+
+
+
+Document 1
+Indexed:
+  class : CreateProductsRenamed
+  class-ig : createproductsrenamed
+  extends : ActiveRecord::Migration
+  fqn : CreateProductsRenamed
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Indexed:
+  dbtable : products
+
+Not Indexed:
+  dbcolumn : desc
+  dbcolumn : description;-
+  dbcolumn : description;text
+  dbcolumn : image_url;string
+  dbcolumn : title;string
+  dbversion : 001

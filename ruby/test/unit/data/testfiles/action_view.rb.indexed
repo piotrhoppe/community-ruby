@@ -1,0 +1,18 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/action_view.rb
+
+
+
+Document 1
+Indexed:
+  class : Base
+  class-ig : base
+  fqn : ActionView::Base
+
+Not Indexed:
+  attrs : |CLASS|
+  in : ActionView
+  includes : ActionView::Partials
+  requires : action_view/base,action_view/partials

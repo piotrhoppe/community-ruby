@@ -1,0 +1,72 @@
+rootnames:
+  Controllers
+  Helpers
+  Models
+  Views
+  app/apis
+  Components
+  Configuration
+  Database Migrations
+  Libs
+  Logs
+  Public
+  RSpec
+  Unit Tests
+  Functional Tests
+  Test Fixtures
+  Test Mocks
+  Integration Tests
+  Scripts
+  Documentation
+  test/othertests
+  Vendor
+  selenium
+rootProperties:
+  app/controllers
+  app/helpers
+  app/models
+  app/views
+  app/apis
+  components
+  config
+  db
+  lib
+  log
+  public
+  spec
+  test/unit
+  test/functional
+  test/fixtures
+  test/mocks
+  test/integration
+  script
+  doc
+  test/othertests
+  vendor
+  selenium
+rootFiles:
+  apis
+  components
+  config
+  controllers
+  db
+  doc
+  fixtures
+  functional
+  helpers
+  integration
+  lib
+  log
+  mocks
+  models
+  othertests
+  public
+  script
+  selenium
+  spec
+  unit
+  vendor
+  views
+extraFiles:
+  README
+  Rakefile

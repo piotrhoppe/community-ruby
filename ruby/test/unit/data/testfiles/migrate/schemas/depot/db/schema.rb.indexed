@@ -1,0 +1,63 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/schema.rb
+
+
+
+Document 1
+Indexed:
+  dbtable : line_items
+
+Not Indexed:
+  dbcolumn : order_id;integer
+  dbcolumn : product_id;integer
+  dbcolumn : quantity;integer
+  dbcolumn : total_price;decimal
+  dbversion : schema
+
+
+Document 2
+Indexed:
+  dbtable : orders
+
+Not Indexed:
+  dbcolumn : address;text
+  dbcolumn : email;string
+  dbcolumn : name;string
+  dbcolumn : pay_type;string
+  dbversion : schema
+
+
+Document 3
+Indexed:
+  dbtable : products
+
+Not Indexed:
+  dbcolumn : description;text
+  dbcolumn : image_url;string
+  dbcolumn : price;decimal
+  dbcolumn : title;string
+  dbversion : schema
+
+
+Document 4
+Indexed:
+  dbtable : sessions
+
+Not Indexed:
+  dbcolumn : data;text
+  dbcolumn : session_id;string
+  dbcolumn : updated_at;datetime
+  dbversion : schema
+
+
+Document 5
+Indexed:
+  dbtable : users
+
+Not Indexed:
+  dbcolumn : hashed_password;string
+  dbcolumn : name;string
+  dbcolumn : salt;string
+  dbversion : schema

@@ -1,0 +1,32 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/101_rails20_migrations.rb
+
+
+
+Document 1
+Indexed:
+  class : Rails20Migrations
+  class-ig : rails20migrations
+  extends : ActiveRecord::Migration
+  fqn : Rails20Migrations
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |CLASS|
+
+
+Document 2
+Indexed:
+  dbtable : products
+
+Not Indexed:
+  dbcolumn : created_at;datetime
+  dbcolumn : creator_id;integer
+  dbcolumn : name;string
+  dbcolumn : shop_id;integer
+  dbcolumn : updated_at;datetime
+  dbcolumn : value;string
+  dbversion : 101

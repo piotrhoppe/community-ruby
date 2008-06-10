@@ -1,0 +1,30 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/006_create_line_items.rb
+
+
+
+Document 1
+Indexed:
+  class : CreateLineItems
+  class-ig : createlineitems
+  extends : ActiveRecord::Migration
+  fqn : CreateLineItems
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Indexed:
+  dbtable : line_items
+
+Not Indexed:
+  dbcolumn : order_id;integer
+  dbcolumn : product_id;integer
+  dbcolumn : quantity;integer
+  dbcolumn : total_price;decimal
+  dbversion : 006
