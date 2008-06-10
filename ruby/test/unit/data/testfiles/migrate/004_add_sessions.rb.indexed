@@ -1,0 +1,29 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/004_add_sessions.rb
+
+
+
+Document 1
+Indexed:
+  class : AddSessions
+  class-ig : addsessions
+  extends : ActiveRecord::Migration
+  fqn : AddSessions
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Indexed:
+  dbtable : sessions
+
+Not Indexed:
+  dbcolumn : data;text
+  dbcolumn : session_id;string
+  dbcolumn : updated_at;datetime
+  dbversion : 004

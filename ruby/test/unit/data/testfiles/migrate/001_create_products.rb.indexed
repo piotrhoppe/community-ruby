@@ -1,0 +1,29 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/001_create_products.rb
+
+
+
+Document 1
+Indexed:
+  class : CreateProducts
+  class-ig : createproducts
+  extends : ActiveRecord::Migration
+  fqn : CreateProducts
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Indexed:
+  dbtable : products
+
+Not Indexed:
+  dbcolumn : description;text
+  dbcolumn : image_url;string
+  dbcolumn : title;string
+  dbversion : 001

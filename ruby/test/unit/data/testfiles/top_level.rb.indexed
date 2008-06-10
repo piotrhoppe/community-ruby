@@ -1,0 +1,17 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/top_level.rb
+
+
+
+Document 1
+Indexed:
+  class : Object
+  class-ig : object
+  fqn : Object
+  method : bar(baz)|TOPLEVEL|
+  method : foo|TOPLEVEL|
+
+Not Indexed:
+  attrs : |CLASS|

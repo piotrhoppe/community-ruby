@@ -1,0 +1,158 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/date.rb
+
+
+
+Document 1
+Indexed:
+  class : Date
+  class-ig : date
+  constant : ABBR_DAYNAMES
+  constant : ABBR_MONTHNAMES
+  constant : DAYNAMES
+  constant : ENGLAND
+  constant : GREGORIAN
+  constant : ITALY
+  constant : JULIAN
+  constant : MONTHNAMES
+  field : ajd
+  field : of
+  field : sg
+  fqn : Date
+  method : +(n)|DOCUMENTED|
+  method : -(x)|DOCUMENTED|
+  method : <<(n)|DOCUMENTED|
+  method : <=>(other)|DOCUMENTED|
+  method : ===(other)|DOCUMENTED|
+  method : >>(n)|DOCUMENTED|
+  method : _dump(limit)|DOCUMENTED|
+  method : _load(str)|DOCUMENTED|STATIC|
+  method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|
+  method : ajd_to_jd(ajd,of)|DOCUMENTED|STATIC|
+  method : ajd|DOCUMENTED|
+  method : amjd_to_ajd(amjd)|DOCUMENTED|STATIC|
+  method : amjd|DOCUMENTED|
+  method : civil(y,m,d,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : civil_to_jd(y,m,d,sg)|DOCUMENTED|STATIC|
+  method : civil|DOCUMENTED|PRIVATE|
+  method : commercial(y,w,d,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : commercial_to_jd(y,w,d,ns)|DOCUMENTED|STATIC|
+  method : commercial|DOCUMENTED|PRIVATE|
+  method : cwday|DOCUMENTED|
+  method : cweek|DOCUMENTED|
+  method : cwyear|DOCUMENTED|
+  method : day_fraction_to_time(fr)|DOCUMENTED|STATIC|
+  method : day_fraction|DOCUMENTED|
+  method : downto(min,&block)|DOCUMENTED|
+  method : england|DOCUMENTED|
+  method : eql?(other)|DOCUMENTED|
+  method : gregorian_leap?(y)|DOCUMENTED|STATIC|
+  method : gregorian|DOCUMENTED|
+  method : hash|DOCUMENTED|
+  method : hour|DOCUMENTED|PRIVATE|
+  method : initialize(ajd,of,sg)|DOCUMENTED|PRIVATE|
+  method : inspect|DOCUMENTED|
+  method : italy|DOCUMENTED|
+  method : jd(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_ajd(jd,fr,of)|DOCUMENTED|STATIC|
+  method : jd_to_civil(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_commercial(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_ld(jd)|DOCUMENTED|STATIC|
+  method : jd_to_mjd(jd)|DOCUMENTED|STATIC|
+  method : jd_to_ordinal(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_wday(jd)|DOCUMENTED|STATIC|
+  method : jd|DOCUMENTED|
+  method : julian_leap?(y)|DOCUMENTED|STATIC|
+  method : julian|DOCUMENTED|
+  method : ld_to_jd(ld)|DOCUMENTED|STATIC|
+  method : ld|DOCUMENTED|
+  method : leap?|DOCUMENTED|
+  method : mday|DOCUMENTED|
+  method : min|DOCUMENTED|PRIVATE|
+  method : mjd_to_jd(mjd)|DOCUMENTED|STATIC|
+  method : mjd|DOCUMENTED|
+  method : mon|DOCUMENTED|
+  method : new(ajd,of,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : new_offset(of)|PRIVATE|
+  method : new_start(sg)|DOCUMENTED|
+  method : new_with_hash(elem,sg)|STATIC|
+  method : ns?(jd,sg)|DOCUMENTED|STATIC|
+  method : ns?|DOCUMENTED|
+  method : offset|PRIVATE|
+  method : once(*ids)|PRIVATE|STATIC|
+  method : ordinal(y,d,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : ordinal_to_jd(y,d,sg)|DOCUMENTED|STATIC|
+  method : ordinal|DOCUMENTED|PRIVATE|
+  method : os?(jd,sg)|DOCUMENTED|STATIC|
+  method : os?|DOCUMENTED|
+  method : parse(str,comp,sg)|DOCUMENTED|STATIC|
+  method : sec_fraction|DOCUMENTED|PRIVATE|
+  method : sec|DOCUMENTED|PRIVATE|
+  method : start|DOCUMENTED|
+  method : step(limit,step)|DOCUMENTED|
+  method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
+  method : succ|DOCUMENTED|
+  method : time_to_day_fraction(h,min,s)|DOCUMENTED|STATIC|
+  method : time|DOCUMENTED|PRIVATE|
+  method : to_s|DOCUMENTED|
+  method : today(sg)|DOCUMENTED|STATIC|
+  method : upto(max,&block)|DOCUMENTED|
+  method : valid_civil?(y,m,d,sg)|DOCUMENTED|STATIC|
+  method : valid_commercial?(y,w,d,sg)|DOCUMENTED|STATIC|
+  method : valid_jd?(jd,sg)|DOCUMENTED|STATIC|
+  method : valid_ordinal?(y,d,sg)|DOCUMENTED|STATIC|
+  method : wday|DOCUMENTED|
+  method : yday|DOCUMENTED|
+  method : year|DOCUMENTED|
+  method : zone|PRIVATE|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1362
+  includes : Comparable
+  requires : date/format,rational
+
+
+Document 2
+Indexed:
+  class : Date
+  class-ig : date
+  fqn : Date
+
+Not Indexed:
+  attrs : |CLASS|
+  requires : date/format,rational
+
+
+Document 3
+Indexed:
+  class : DateTime
+  class-ig : datetime
+  extends : Date
+  fqn : DateTime
+
+Not Indexed:
+  attrs : |CLASS|
+  requires : date/format,rational
+
+
+Document 4
+Indexed:
+  class : DateTime
+  class-ig : datetime
+  extends : Date
+  fqn : DateTime
+  method : civil(y,m,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
+  method : commercial(y,w,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
+  method : jd(jd,h,min,s,of,sg)|DOCUMENTED|STATIC|
+  method : new_with_hash(elem,sg)|STATIC|
+  method : now(sg)|DOCUMENTED|STATIC|
+  method : ordinal(y,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
+  method : parse(str,comp,sg)|DOCUMENTED|STATIC|
+  method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
+  method : valid_time?(h,min,s)|DOCUMENTED|STATIC|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1138
+  requires : date/format,rational

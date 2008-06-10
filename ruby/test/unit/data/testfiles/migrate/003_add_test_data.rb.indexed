@@ -1,0 +1,18 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/003_add_test_data.rb
+
+
+
+Document 1
+Indexed:
+  class : AddTestData
+  class-ig : addtestdata
+  extends : ActiveRecord::Migration
+  fqn : AddTestData
+  method : down|DOCUMENTED|STATIC|
+  method : up|STATIC|
+
+Not Indexed:
+  attrs : |DOCUMENTED|;10

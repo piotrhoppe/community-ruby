@@ -1,0 +1,18 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/action_mailer.rb
+
+
+
+Document 1
+Indexed:
+  class : Base
+  class-ig : base
+  fqn : ActionMailer::Base
+
+Not Indexed:
+  attrs : |CLASS|
+  in : ActionMailer
+  includes : ActionMailer::Helpers,ActionMailer::Quoting
+  requires : action_controller,action_mailer/base,action_mailer/helpers,action_mailer/mail_helper,action_mailer/quoting,net/smtp,rubygems,tmail
