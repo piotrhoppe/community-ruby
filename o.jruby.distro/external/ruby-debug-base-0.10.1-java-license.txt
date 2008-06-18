@@ -1,6 +1,6 @@
 Name: Fast JRuby Debugger Backend
-Version: 0.10.0
-Description: Provides IDE interface to ruby-debug-base
+Version: 0.10.1
+Description: Provides fast debugging capabilities for JRuby
 License: MIT
 OSR: 8206
 Origin: http://debug-commons.rubyforge.org/
