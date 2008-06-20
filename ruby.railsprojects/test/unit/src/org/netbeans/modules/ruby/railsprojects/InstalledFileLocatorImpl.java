@@ -21,8 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -38,50 +36,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.rubyproject;
+package org.netbeans.modules.ruby.railsprojects;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.io.File;
+import org.openide.modules.InstalledFileLocator;
 
-public class RubyProjectTest extends RubyProjectTestBase {
+public final class InstalledFileLocatorImpl extends InstalledFileLocator {
 
-    public RubyProjectTest(String testName) {
-        super(testName);
+    public InstalledFileLocatorImpl() {
     }
 
-    public void testRakeFileListener() throws Exception {
-        registerLayer();
-        RubyProject project = createTestProject(true);
-        FileObject rakeFile = project.getRakeFile();
-        assertNotNull("has rake file", rakeFile);
-        int origSize;
-
-        // wait for asynchronously updated tasks from within ProjectOpenedHook.
-        // See RubyBaseProject#open.
-        while ((origSize = RakeSupport.getRakeTaskTree(project).size()) == 0) {
-            Thread.sleep(250);
+    public @Override File locate( String relativePath, String codeNameBase, boolean localized) {
+        if (relativePath.equals("rake_tasks_info.rb")) {
+            String script = System.getProperty("xtest.rake_tasks_info.rb");
+            if (script == null) {
+                throw new RuntimeException("xtest.rake_tasks_info.rb property has to be set when running within binary distribution");
+            }
+            return new File(script);
         }
-
-        appendToFile(rakeFile, "", "desc 'Says hey'", "task :hey");
-
-        // wait until Rakefile listener notifies the event and consecutive
-        // asynchronous Rake tasks refresh
-        while(RakeSupport.getRakeTaskTree(project).size() != (origSize + 1)) {
-            Thread.sleep(250);
-        }
+        return null;
     }
-
-    private void appendToFile(final FileObject file, final String... lines) throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(FileUtil.toFile(file), "rw");
-        raf.seek(raf.length());
-        for (String line : lines) {
-            raf.writeBytes(line);
-            raf.writeByte('\n');
-        }
-        raf.close();
-        file.refresh();
-    }
+    
 }
