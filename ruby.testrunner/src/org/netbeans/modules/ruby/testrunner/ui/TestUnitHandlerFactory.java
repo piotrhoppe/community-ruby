@@ -40,7 +40,8 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 
 /**
@@ -49,7 +50,7 @@ import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
  *
  * @author Erno Mononen
  */
-public class TestUnitHandlerFactory extends OutputRecognizer {
+public class TestUnitHandlerFactory {
 
     public static List<TestRecognizerHandler> getHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
@@ -149,7 +150,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(\\d+\\.\\d+)\\s([\\w]+)\\(([\\w]+)\\)"); //NOI18N
+            super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\(([\\w]+)\\)"); //NOI18N
         }
 
         @Override
@@ -206,12 +207,18 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
 
     static class SuiteStartingHandler extends TestRecognizerHandler {
 
+        private boolean firstSuite = true;
+        
         public SuiteStartingHandler() {
             super("%SUITE_STARTING%\\s(\\w+)"); //NOI18N
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
+            if (firstSuite) {
+                firstSuite = false;
+                manager.testStarted(session);
+            }
             String suiteName = matcher.group(1);
             session.setSuiteName(suiteName);
             manager.displaySuiteRunning(session, suiteName);

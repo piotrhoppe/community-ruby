@@ -132,7 +132,7 @@ public class RspecHandlerFactory {
     static class TestPendingHandler extends TestRecognizerHandler {
 
         public TestPendingHandler() {
-            super(".*%TEST_PENDING%\\s(.*)\\stime=(.+)\\s(.*)"); //NOI18N
+            super(".*%TEST_PENDING%\\s(.*)\\stime=(.+)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
@@ -176,12 +176,18 @@ public class RspecHandlerFactory {
 
     static class SuiteStartingHandler extends TestRecognizerHandler {
 
+        private boolean firstSuite = true;
+
         public SuiteStartingHandler() {
             super(".*%SUITE_STARTING%\\s(.+)"); //NOI18N
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
+            if (firstSuite) {
+                firstSuite = false;
+                manager.testStarted(session);
+            }
             String suiteName = matcher.group(1);
             session.setSuiteName(suiteName);
             manager.displaySuiteRunning(session, suiteName);
