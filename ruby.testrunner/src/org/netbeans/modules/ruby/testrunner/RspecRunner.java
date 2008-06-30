@@ -47,16 +47,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -145,13 +142,11 @@ public class RspecRunner implements TestRunner {
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
         
-        final ExecutionService execution = new RubyExecution(desc, charsetName);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 locator,
                 RspecHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
-        desc.addOutputRecognizer(recognizer);
-        TestExecutionManager.getInstance().start(execution);
+        TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
     private File getSpec(Project project) {
