@@ -1,0 +1,25 @@
+
+
+Document 0
+Searchable Keys:
+  class : CreateOrders
+  class-ig : createorders
+  extends : ActiveRecord::Migration
+  fqn : CreateOrders
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Searchable Keys:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 1
+Searchable Keys:
+  dbtable : orders
+
+Not Searchable Keys:
+  dbcolumn : address;text
+  dbcolumn : email;string
+  dbcolumn : name;string
+  dbcolumn : pay_type;string
+  dbversion : 005
