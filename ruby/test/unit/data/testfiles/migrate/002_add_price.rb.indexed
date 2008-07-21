@@ -1,0 +1,22 @@
+
+
+Document 0
+Searchable Keys:
+  class : AddPrice
+  class-ig : addprice
+  extends : ActiveRecord::Migration
+  fqn : AddPrice
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Searchable Keys:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 1
+Searchable Keys:
+  dbtable : products
+
+Not Searchable Keys:
+  dbcolumn : price;decimal
+  dbversion : 002

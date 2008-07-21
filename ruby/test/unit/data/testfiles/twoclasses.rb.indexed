@@ -1,0 +1,24 @@
+
+
+Document 0
+Searchable Keys:
+  class : FooController
+  class-ig : foocontroller
+  extends : ApplicationController
+  fqn : FooController
+  method : myfunc
+
+Not Searchable Keys:
+  attrs : |CLASS|
+
+
+Document 1
+Searchable Keys:
+  class : MyTest
+  class-ig : mytest
+  fqn : MyTest
+  method : mymethod
+  method : myother
+
+Not Searchable Keys:
+  attrs : |CLASS|
