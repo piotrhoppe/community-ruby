@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.rhtml.editor;
+package org.netbeans.modules.ruby.testrunner.ui;
 
-import org.netbeans.modules.html.editor.options.HTMLOptions;
-import java.util.MissingResourceException;
-import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
 
 /**
-* Options for the RHTML editor kit
-*
-* @author Miloslav Metelka
-* @author Tor Norbye
-* @version 1.00
-*/
-public final class RhtmlOptions extends HTMLOptions {
+ * Factory for getting the recognizers needed for an autotest run.
+ *
+ * @author Erno Mononen
+ */
+public final class AutotestHandlerFactory {
 
-    public static final String RHTML = "rhtml"; // NOI18N
-
-    static final long serialVersionUID = 75289734362748537L;
-   
-    public RhtmlOptions() {
-        super(RhtmlKit.class, RHTML);
+    public static List<TestRecognizerHandler> getHandlers() {
+        List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
+        result.add(new AutotestResetHandler());
+        result.addAll(RspecHandlerFactory.getHandlers());
+        result.addAll(TestUnitHandlerFactory.getHandlers());
+        return result;
     }
 
-    /**
-     * Get localized string
-     */
-    protected @Override String getString(String key) {
-        try {
-            return NbBundle.getMessage(RhtmlOptions.class, key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
+    static class AutotestResetHandler extends TestRecognizerHandler {
+
+        public AutotestResetHandler() {
+            super("%AUTOTEST% reset"); //NOI18N
         }
-    }
 
-    protected @Override String getContentType() {
-        return RhtmlTokenId.MIME_TYPE;
-    }
+        @Override
+        void updateUI(Manager manager, TestSession session) {
+            manager.sessionFinished(session);
+            TestExecutionManager.getInstance().refresh();
+        }
 
+
+    }
+    
 }
