@@ -33,24 +33,24 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the CPL, the GPL or the LGPL.
  ***** END LICENSE BLOCK *****/
-package org.jruby.lexer.yacc;
+package org.jruby.nb.lexer.yacc;
 
 import java.io.IOException;
 
 import java.math.BigInteger;
 import java.util.HashMap;
 
-import org.jruby.ast.BackRefNode;
-import org.jruby.ast.BignumNode;
-import org.jruby.ast.CommentNode;
-import org.jruby.ast.FixnumNode;
-import org.jruby.ast.FloatNode;
-import org.jruby.ast.NthRefNode;
-import org.jruby.common.IRubyWarnings;
-import org.jruby.common.IRubyWarnings.ID;
-import org.jruby.lexer.yacc.SyntaxException.PID;
-import org.jruby.parser.ParserSupport;
-import org.jruby.parser.Tokens;
+import org.jruby.nb.ast.BackRefNode;
+import org.jruby.nb.ast.BignumNode;
+import org.jruby.nb.ast.CommentNode;
+import org.jruby.nb.ast.FixnumNode;
+import org.jruby.nb.ast.FloatNode;
+import org.jruby.nb.ast.NthRefNode;
+import org.jruby.nb.common.IRubyWarnings;
+import org.jruby.nb.common.IRubyWarnings.ID;
+import org.jruby.nb.lexer.yacc.SyntaxException.PID;
+import org.jruby.nb.parser.ParserSupport;
+import org.jruby.nb.parser.Tokens;
 import org.jruby.util.ByteList;
 
 

@@ -25,13 +25,13 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the CPL, the GPL or the LGPL.
  ***** END LICENSE BLOCK *****/
-package org.jruby.lexer.yacc;
+package org.jruby.nb.lexer.yacc;
 
-import org.jruby.ast.RegexpNode;
-import org.jruby.ast.StrNode;
-import org.jruby.lexer.yacc.SyntaxException.PID;
-import org.jruby.parser.ReOptions;
-import org.jruby.parser.Tokens;
+import org.jruby.nb.ast.RegexpNode;
+import org.jruby.nb.ast.StrNode;
+import org.jruby.nb.lexer.yacc.SyntaxException.PID;
+import org.jruby.nb.parser.ReOptions;
+import org.jruby.nb.parser.Tokens;
 import org.jruby.util.ByteList;
 
 public class StringTerm extends StrTerm {
