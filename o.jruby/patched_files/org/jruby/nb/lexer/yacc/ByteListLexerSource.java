@@ -1,9 +1,9 @@
-package org.jruby.lexer.yacc;
+package org.jruby.nb.lexer.yacc;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.jruby.parser.ParserConfiguration;
+import org.jruby.nb.parser.ParserConfiguration;
 import org.jruby.util.ByteList;
 
 public class ByteListLexerSource extends LexerSource {

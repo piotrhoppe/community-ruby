@@ -27,7 +27,7 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the CPL, the GPL or the LGPL.
  ***** END LICENSE BLOCK *****/
-package org.jruby.parser;
+package org.jruby.nb.parser;
 
 public interface Tokens {
     int yyErrorCode = DefaultRubyParser.yyErrorCode;
