@@ -237,9 +237,9 @@ module NB
       s << codename
       s << " "
       s << @name
-      extendCode = extend()
-      if (extendCode != nil)
-        s << extendCode
+      extend_code = extend()
+      if (extend_code != nil)
+        s << extend_code
       end
       s << "\n"
       
@@ -397,6 +397,11 @@ module NB
             md = re.match(line)
             if md != nil
               methodname = md[1]             
+
+# Special case for stub_enumerable
+if methodname.eql?('with_index {|')
+  methodname = "with_index";
+end
               args = argify(md[2])
               signature = methodname + args
               if !signature.eql?('set_trace_func(nil)') # Skip this method, it's just doc on nil behavior
@@ -427,7 +432,7 @@ module NB
       end
 
       s = ""
-      methods.each { |signature| 
+      methods.each { |sig|
         if @call_seq != nil
           @call_seq.each_line { |line| 
             if !(/^#/ =~  line)
@@ -446,7 +451,7 @@ module NB
           s << "self."
         end
         
-        s << signature
+        s << sig
         s << "\n"
         s << <<FOO
     # This is just a stub for a builtin Ruby method.
@@ -458,8 +463,8 @@ FOO
       return s
     end    
 
-    #:arg:argList=>String
-    def argify(argList)
+    #:arg:arg_list=>String
+    def argify(arg_list)
       #        Clean up meta-syntax for arguments
       #        e.g.  initialize(string [, options [, lang]])
       #        should be initialize(string, options, lang)
@@ -481,66 +486,82 @@ FOO
       #        such conventions
       #
       #        Known special case in string.c:      
-      if argList.eql?("(pattern=$;, [limit])")
+      if arg_list.eql?("(pattern=$;, [limit])")
         #            Can't just do the normal substitution here
         #            because I end up with
         #             (pattern="$;", limit)
         #            and that is illegal - you cannot have a default
         #            (for pattern) followed by a nondefault argument
-        argList = "(pattern)";
+        arg_list = "(pattern)";
       end
-      if argList.eql?('(string=""[, mode])')
+      # Known special case in openssl
+      if arg_list.eql?('("secp112r1")') || arg_list.eql?('("SSLv23_client")')
+        return "(key)"
+      end
+      if arg_list.eql?('(string=""[, mode])')
         return '(string="", mode=3)' # FMODE_READWRITE=3, the default
       end
-      if argList.eql?('(obj, aProc=proc()')
+      if arg_list.eql?('(obj, aProc=proc()')
         # The regexp doesn't include the last )
-        return argList+")"
+        return arg_list+")"
       end
       # Missing quotes
-      argList = argList.gsub("=$/", "=\"$/\"");
-      argList = argList.gsub("=$;", "=\"$;\"");
-      argList = argList.gsub("=$,", "=\"$,\"");
-      argList = argList.gsub("=$>", "=\"$>\"");
+      arg_list = arg_list.gsub("=$/", "=\"$/\"");
+      arg_list = arg_list.gsub("=$;", "=\"$;\"");
+      arg_list = arg_list.gsub("=$,", "=\"$,\"");
+      arg_list = arg_list.gsub("=$>", "=\"$>\"");
 
       # Prevent keywords in argument list
-      #if (argList.eql?("(module, ...)")) {
-      #   argList = "(modules)";
+      #if (arg_list.eql?("(module, ...)")) {
+      #   arg_list = "(modules)";
       #} else 
-      if (/\(module, / =~ argList)
-        argList = argList.gsub("(module, ", "(module_, ");
+      if (/\(module, / =~ arg_list)
+        arg_list = arg_list.gsub("(module, ", "(module_, ");
       end
-      argList = argList.gsub(", end,", ", endd,"); # yuck
-      argList = argList.gsub("]+>", "");
-      argList = argList.gsub("]*", "");
-      argList = argList.gsub("]+", "");
-      argList = argList.gsub("]", "");
-      argList = argList.gsub(" [", "");
-      argList = argList.gsub("[", "");
+      arg_list = arg_list.gsub(", end,", ", endd,"); # yuck
+      arg_list = arg_list.gsub("]+>", "");
+      arg_list = arg_list.gsub("]*", "");
+      arg_list = arg_list.gsub("]+", "");
+      arg_list = arg_list.gsub("]", "");
+      arg_list = arg_list.gsub(" [", "");
+      arg_list = arg_list.gsub("[", "");
+      arg_list = arg_list.gsub(",,", ",");
+      arg_list = arg_list.gsub("(:G", "(g");
+      arg_list = arg_list.gsub("(:", "(");
       
       # TODO: ... probably means further args - put in an *args here?
-      argList = argList.gsub("...", "");
-      argList = argList.gsub("..", ""); #probably typo in original source
+      arg_list = arg_list.gsub("...", "");
+      arg_list = arg_list.gsub("..", ""); #probably typo in original source
+      arg_list = arg_list.gsub(" | ",  "_or_");
 
       # Compress spaces
-      argList = argList.gsub("  ", " ");
+      arg_list = arg_list.gsub("  ", " ");
       
       # Avoid keyword conflicts
-      if (argList.eql?("(module)"))
-        argList = "(module_name)";
-      elsif (argList.eql?("(class)"))
-        argList = "(class_name)";
+      if (arg_list.eql?("(module)"))
+        arg_list = "(module_name)";
+      elsif (arg_list.eql?("(class)"))
+        arg_list = "(class_name)";
       end
       
-      argList = argList.gsub(", )", ")");
-      argList = argList.gsub(",)", ")");
-      argList = argList.gsub(">)", ")");
-      argList = argList.gsub("//)", ")");
-      argList = argList.gsub("()", "");
+      arg_list = arg_list.gsub(", )", ")");
+      arg_list = arg_list.gsub(",)", ")");
+      arg_list = arg_list.gsub(">)", ")");
+      arg_list = arg_list.gsub("//)", ")");
+      arg_list = arg_list.gsub("()", "");
+
+      # OpenSSL - handle case
+      if arg_list.eql?('(TLSv1)')
+        return "(key)";
+      end
+      if arg_list.eql?('(SSLSocket_or_string)')
+        return "(sslSocket_or_String)";
+      end
         
       # Some other known problems: Duplicate parameter names
-      argList = argList.gsub("fixnum, fixnum", "fixnum1, fixnum2");
+      arg_list = arg_list.gsub("fixnum, fixnum", "fixnum1, fixnum2");
       
-      return argList;
+      return arg_list;
     end
     
     

@@ -293,8 +293,8 @@ public class Main {
             "# Ruby source code for them. It is convenient for the IDE however to\n" +
             "# have these files for indexing and documentation purposes, so the following\n" +
             "# class definition is generated from the native implementation as a skeleton\n" +
-            "# or stub to index.\n" + "#\n" + "# Ruby Version: \"1.8.6\"\n" +
-            //"# Ruby Patch Level: 12\n" +
+            "# or stub to index.\n" + "#\n" + "# Ruby Version: \"1.8.7-p72\"\n" +
+            //"# Ruby Patch Level: 72\n" +
         //"# Ruby Release: 20061225\n" +
         "# Generator version: 1.0\n" + "#\n" + // Create an empty line and empty comment such that the file header
         // isn't interpreter as a class comment for files missing documentation
