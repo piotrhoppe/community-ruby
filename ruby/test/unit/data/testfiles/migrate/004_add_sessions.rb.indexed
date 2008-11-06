@@ -1,0 +1,24 @@
+
+
+Document 0
+Searchable Keys:
+  class : AddSessions
+  class-ig : addsessions
+  extends : ActiveRecord::Migration
+  fqn : AddSessions
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Searchable Keys:
+  attrs : |DOCUMENTED|;1429
+
+
+Document 1
+Searchable Keys:
+  dbtable : sessions
+
+Not Searchable Keys:
+  dbcolumn : data;text
+  dbcolumn : session_id;string
+  dbcolumn : updated_at;datetime
+  dbversion : 004

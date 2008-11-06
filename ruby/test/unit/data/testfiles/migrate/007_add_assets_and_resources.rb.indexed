@@ -1,0 +1,63 @@
+
+
+Document 0
+Searchable Keys:
+  class : AddAssetsAndResources
+  class-ig : addassetsandresources
+  extends : ActiveRecord::Migration
+  fqn : AddAssetsAndResources
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Searchable Keys:
+  attrs : |CLASS|
+
+
+Document 1
+Searchable Keys:
+  class : OldTemplate
+  class-ig : oldtemplate
+  extends : ActiveRecord::Base
+  fqn : AddAssetsAndResources::OldTemplate
+
+Not Searchable Keys:
+  attrs : |CLASS|
+  in : AddAssetsAndResources
+
+
+Document 2
+Searchable Keys:
+  class : Template
+  class-ig : template
+  extends : ActiveRecord::Base
+  fqn : AddAssetsAndResources::Template
+
+Not Searchable Keys:
+  attrs : |CLASS|
+  in : AddAssetsAndResources
+
+
+Document 3
+Searchable Keys:
+  dbtable : assets
+
+Not Searchable Keys:
+  dbcolumn : content_type;string
+  dbcolumn : db_file_id;integer
+  dbcolumn : filename;string
+  dbcolumn : height;integer
+  dbcolumn : parent_id;integer
+  dbcolumn : path;string
+  dbcolumn : size;integer
+  dbcolumn : type;string
+  dbcolumn : width;integer
+  dbversion : 007
+
+
+Document 4
+Searchable Keys:
+  dbtable : db_files
+
+Not Searchable Keys:
+  dbcolumn : data;binary
+  dbversion : 007

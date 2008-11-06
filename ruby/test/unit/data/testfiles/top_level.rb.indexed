@@ -1,0 +1,12 @@
+
+
+Document 0
+Searchable Keys:
+  class : Object
+  class-ig : object
+  fqn : Object
+  method : bar(baz)|TOPLEVEL|
+  method : foo|TOPLEVEL|
+
+Not Searchable Keys:
+  attrs : |CLASS|
