@@ -1,0 +1,13 @@
+
+
+Document 0
+Searchable Keys:
+  class : Migration
+  class-ig : migration
+  field : myfield
+  field : verbose|STATIC
+  fqn : Migration
+  global : $global
+
+Not Searchable Keys:
+  attrs : |CLASS|
