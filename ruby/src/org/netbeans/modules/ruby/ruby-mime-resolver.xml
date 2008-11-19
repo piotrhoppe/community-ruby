@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -27,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -41,19 +40,40 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<filesystem>
-    <folder name="gsf-hints">
-        <folder name="text">
-            <folder name="x-ruby">
-                <folder name="hints">
-                    <folder name="experimental">
-                        <attr name="position" intvalue="300"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
-                        <file name="org-netbeans-modules-ruby-extrahints-DuplicateHashKeys.instance"/>
-                        <!-- Add your rules here! -->
-                    </folder>    
-                </folder>    
-            </folder>
-        </folder>
-    </folder>
-</filesystem>
+
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+<MIME-resolver>
+    <file>
+        <ext name="rb"/>
+        <ext name="rake"/>
+        <ext name="rxml"/>
+        <ext name="rjs"/>
+        <ext name="rbw"/>
+        <ext name="rbx"/>
+        <ext name="mab"/>
+        <ext name="builder"/>
+        <ext name="gemspec"/>
+        <resolver mime="text/x-ruby"/>
+    </file>
+    <file>
+        <!-- Empty extension. -->
+        <ext name=""/>
+        <!-- Filename matches exactly rakefile or Rakefile. -->
+        <name name="rakefile" ignorecase="false"/>
+        <name name="Rakefile" ignorecase="false"/>
+        <resolver mime="text/x-ruby"/>
+    </file>
+    <file>
+        <!-- Empty or cgi extension. -->
+        <ext name=""/>
+        <ext name="cgi"/>
+        <!-- Pattern #! in first 2 bytes and pattern ruby in first 80 bytes.
+             Should match for example #!/usr/bin/ruby but it can mistakenly
+             match if ruby is in the middle of path.
+        -->
+        <pattern value="#!" range="2">
+            <pattern value="ruby" range="80"/>
+        </pattern>
+        <resolver mime="text/x-ruby"/>
+    </file>
+</MIME-resolver>

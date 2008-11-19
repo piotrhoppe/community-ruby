@@ -91,6 +91,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
@@ -1445,7 +1446,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     if (node.nodeId == NodeType.CALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
-                            for (int i = 0; i < 3; i++) {
+                            for (int i = 0; i < 3 && it.hasNext(); i++) {
                                 // It's not really a peek in the sense
                                 // that there's no reason to retry these
                                 // nodes later
@@ -1454,7 +1455,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                                         Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
-                                    it.previous();
+                                    if (it.hasPrevious()) {
+                                        it.previous();
+                                    }
                                     continue nodesearch;
                                 }
                             }
@@ -1486,7 +1489,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     } else if (node.nodeId == NodeType.FCALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
-                            for (int i = 0; i < 3; i++) {
+                            for (int i = 0; i < 3 && it.hasNext(); i++) {
                                 // It's not really a peek in the sense
                                 // that there's no reason to retry these
                                 // nodes later
@@ -1495,7 +1498,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                                         Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
-                                    it.previous();
+                                    if (it.hasPrevious()) {
+                                        it.previous();
+                                    }
                                     continue nodesearch;
                                 }
                             }
@@ -1527,7 +1532,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                         
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
-                            for (int i = 0; i < 3; i++) {
+                            for (int i = 0; i < 3 && it.hasNext(); i++) {
                                 // It's not really a peek in the sense
                                 // that there's no reason to retry these
                                 // nodes later
@@ -1536,7 +1541,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                                         Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
-                                    it.previous();
+                                    if (it.hasPrevious()) {
+                                        it.previous();
+                                    }
                                     continue nodesearch;
                                 }
                             }
@@ -2067,7 +2074,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+        final RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
 
         final Document document = info.getDocument();
         if (document == null) {
@@ -3140,7 +3147,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
-        if (link.indexOf('#') != -1 && elementHandle.getMimeType().equals(RubyMimeResolver.RUBY_MIME_TYPE)) {
+        if (link.indexOf('#') != -1 && elementHandle.getMimeType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary
                 Element surrounding = RubyParser.resolveHandle(null, elementHandle);
@@ -3387,7 +3394,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             ClassNode node = AstUtilities.findClass(path);
 
             if (node != null) {
-                Index idx = info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE);
+                Index idx = info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
                 if (idx != null) {
                     RubyIndex index = RubyIndex.get(idx, info.getFileObject());
                     IndexedClass cls = index.getSuperclass(AstUtilities.getFqnName(path));
