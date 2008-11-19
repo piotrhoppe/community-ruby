@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +37,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.rubyproject.rake;
+package org.netbeans.modules.ruby.extrahints;
 
-import java.io.IOException;
-import org.netbeans.modules.ruby.rubyproject.RubyProject;
-import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.ruby.hints.HintTestBase;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 
-public class RakeSupportTest extends RubyProjectTestBase {
-    
-    public RakeSupportTest(String testName) {
+/**
+ *
+ * @author Tor Norbye
+ */
+public class DuplicateHashKeysTest extends HintTestBase {
+
+    public DuplicateHashKeysTest(String testName) {
         super(testName);
     }
 
-    public void testGetRakeTask() throws Exception {
-        RubyProject project = createTestProject();
-        RakeTask task = RakeSupport.getRakeTask(project, "clean");
-        assertNotNull("clean task found", task);
-        assertEquals("clean task found", "clean", task.getTask());
-        assertNull("dummy task does not exist", RakeSupport.getRakeTask(project, "dummy"));
+    private RubyAstRule createRule() {
+        return new DuplicateHashKeys();
     }
 
-    public void testIsRakeFile() throws IOException {
-        String[] rakefiles = {"Rakefile", "Rakefile.rb", "rakefile", "rakefile.rb"};
-        for (String rakefile : rakefiles) {
-            assertTrue(rakefile + " is rakefile", RakeSupport.isRakeFile(touch(getWorkDir(), rakefile)));
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
+    public void testHint1() throws Exception {
+        checkHints(this, createRule(), "testfiles/duplicatekeys.rb", null);
+    }
+
+    public void testHint2() throws Exception {
+        checkHints(this, createRule(), "testfiles/duplicatekeys2.rb", null);
+    }
+
+    public void testNoHints1() throws Exception {
+        checkHints(this, createRule(), "testfiles/superfib.rb", null);
+    }
+
+    public void testNoHints2() throws Exception {
+        checkHints(this, createRule(), "testfiles/element.rb", null);
+    }
+
+    public void testNoPositives() throws Exception {
+        try {
+            parseErrorsOk = true;
+            Set<String> exceptions = new HashSet<String>();
+
+            // Known exceptions
+            exceptions.add("asset_tag_helper_test.rb");
+
+            assertNoJRubyMatches(createRule(), exceptions);
+
+        } finally {
+            parseErrorsOk = false;
         }
-        assertTrue("a.rake is rakefile", RakeSupport.isRakeFile(touch(getWorkDir(), "a.rake")));
     }
-
-    public void testIsMainRakeFile() throws IOException {
-        String[] rakefiles = {"Rakefile", "Rakefile.rb", "rakefile", "rakefile.rb"};
-        for (String rakefile : rakefiles) {
-            assertTrue(rakefile + " is main rakefile", RakeSupport.isMainRakeFile(touch(getWorkDir(), rakefile)));
-        }
-        assertFalse("a.rake is not main rakefile", RakeSupport.isMainRakeFile(touch(getWorkDir(), "a.rake")));
-    }
-
 }
