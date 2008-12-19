@@ -37,29 +37,36 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.testrunner.ui;
+package org.netbeans.modules.ruby.testrunner;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.ruby.testrunner.ui.RubyCallstackFrameNode;
+import org.netbeans.modules.ruby.testrunner.ui.RubyTestMethodNode;
+import org.netbeans.modules.ruby.testrunner.ui.RubyTestsuiteNode;
+import org.openide.nodes.Node;
 
 /**
- * Represents an output line in the test results window.
  *
  * @author Erno Mononen
  */
-final class OutputLine {
+public class RubyTestRunnerNodeFactory extends TestRunnerNodeFactory {
 
-    private final String line;
-    private final boolean error;
-
-    OutputLine(String line, boolean error) {
-        this.line = line;
-        this.error = error;
+    @Override
+    public Node createTestMethodNode(Testcase testcase, Project project) {
+        return new RubyTestMethodNode(testcase, project);
     }
 
-    boolean isError() {
-        return error;
+    @Override
+    public Node createCallstackFrameNode(String frameInfo, String dispayName) {
+        return new RubyCallstackFrameNode(frameInfo, dispayName);
     }
 
-    String getLine() {
-        return line;
+    @Override
+    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
+        return new RubyTestsuiteNode(suiteName, filtered);
     }
 
 }
