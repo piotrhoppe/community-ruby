@@ -36,45 +36,71 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.rhtml;
 
-package org.netbeans.modules.ruby.rhtml.editor.completion;
-
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+
 
 /**
+ * just fake class, we need the parser and the StructureScanner to enable 
+ * navigator of embedded languages
  *
- * @author Tor Norbye
+ * @author Marek Fukala
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
-public class RubyEmbeddingModel implements IncrementalEmbeddingModel {
-    final Set<String> sourceMimeTypes = Collections.singleton(RhtmlTokenId.MIME_TYPE);
-    private static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
+public class RhtmlParser extends Parser {
 
-    public RubyEmbeddingModel() {
-    }
-    
-    public String getTargetMimeType() {
-        return RUBY_MIME_TYPE;
+    private Result fakeResult;
+
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        fakeResult = new FakeParserResult(snapshot);
     }
 
-    public Set<String> getSourceMimeTypes() {
-        return sourceMimeTypes;
+    @Override
+    public Result getResult(Task task) throws ParseException {
+        return fakeResult;
     }
 
-    public Collection<? extends TranslatedSource> translate(Document doc) {
-        // This will cache
-        RhtmlModel model = RhtmlModel.get(doc);
-        return Collections.singletonList(new RubyTranslatedSource(this, model));
+    @Override
+    public void cancel() {
+        //do nothing
     }
 
-    public IncrementalEmbeddingModel.UpdateState update(EditHistory history, Collection<? extends TranslatedSource> previousTranslation) {
-        return ((RubyTranslatedSource)previousTranslation.iterator().next()).incrementalUpdate(history);
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        //do nothing
     }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        //do nothing
+    }
+
+    private static class FakeParserResult extends ParserResult {
+
+        public FakeParserResult(Snapshot s) {
+            super(s);
+        }
+
+        @Override
+        public List<? extends Error> getDiagnostics() {
+            return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        protected void invalidate() {
+            //do nothing
+        }
+
+    }
+
 }
