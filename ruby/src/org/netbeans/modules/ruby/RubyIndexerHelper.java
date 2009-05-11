@@ -35,6 +35,7 @@ import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.ruby.elements.AstElement;
@@ -410,7 +411,7 @@ public final class RubyIndexerHelper {
     private static List<String> getCallSeq(FileObject fo, AstElement child, Snapshot snapshot) {
         List<String> callseq = null;
         if (fo.getParent() != null && fo.getParent().getParent() != null && 
-                "rubystubs".equals(fo.getParent().getParent().getName())) { // NOI18N
+                RubyPlatform.RUBYSTUBS.equals(fo.getParent().getParent().getName())) { // NOI18N
             List<String> comments = AstUtilities.gatherDocumentation(snapshot, child.getNode());
             for (int i = 0; i < comments.size(); i++) {
                 String line = comments.get(i);
@@ -431,21 +432,17 @@ public final class RubyIndexerHelper {
     }
 
     private static RubyType getReturnTypes(String line, List<String> callseq, String name) {
-        // Compute return types
-        if (name.equals("to_s")) { // NOI18N
-            return RubyType.STRING;
+        
+        RubyType result = RubyMethodTypeInferencer.fastCheckType(name);
+        if (result != null) {
+            return result;
         }
+
         if (callseq != null) {
             RubyType types = RDocAnalyzer.collectTypesFromComment(callseq);
             if (types.isKnown()) {
                 return types;
             }
-        }
-
-        // Methods ending with "?" are probably question methods returning a
-        // boolean
-        if (name.endsWith("?")) {
-            return RubyType.BOOLEAN;
         }
 
         return RubyType.createUnknown();
