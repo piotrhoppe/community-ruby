@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,63 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.elements;
+package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.util.Collections;
-import java.util.List;
-import org.jrubyparser.ast.AliasNode;
-import org.jrubyparser.ast.Node;
-import org.jrubyparser.ast.NodeType;
-import org.jrubyparser.ast.SymbolNode;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.ruby.AstUtilities;
+import java.util.regex.Matcher;
+import junit.framework.TestCase;
 
 /**
- * An element for dynamic methods, such as named_scope.
  *
  * @author Erno Mononen
  */
-public final class AstDynamicMethodElement extends AstMethodElement {
-
-    private final Node methodNode;
-    private List<String> parameters;
-
-    public AstDynamicMethodElement(ParserResult info, Node node) {
-        super(info, node);
-        this.methodNode = node;
-    }
-
-    @Override
-    public String getName() {
-        if (methodNode.getNodeType() == NodeType.ALIASNODE) {
-            return ((AliasNode) methodNode).getNewName();   
-        }
-        String result = AstUtilities.getNameOrValue(methodNode);
-        return result == null ? "" : result;
-    }
-
-    @Override
-    public List<String> getParameters() {
-        if (parameters == null) {
-            return Collections.emptyList();
-        }
-        return parameters;
-    }
-
-    public void setParameters(List<String> parameters) {
-        this.parameters = parameters;
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.METHOD;
+public class RspectRecognizerTest extends TestCase {
+    
+    public void testTestFailed() {
+        // test that we have a location for failed tests even when rspec doesn't output
+        // location -- see #176295
+        TestRecognizerHandler handler = new RspecHandlerFactory.TestFailedHandler();
+        String output = "%RSPEC_TEST_FAILED% file= description=should do something time=0.123 message=expected false, got true location=/foo/bar/spec/baz_spec.rb:11";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(5, matcher.groupCount());
+        assertEquals("", matcher.group(1));
+        assertEquals("expected false, got true", matcher.group(4));
+        assertEquals("/foo/bar/spec/baz_spec.rb:11", matcher.group(5));
     }
 
 }

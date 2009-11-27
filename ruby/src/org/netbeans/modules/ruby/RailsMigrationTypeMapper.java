@@ -37,57 +37,43 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.elements;
+package org.netbeans.modules.ruby;
 
-import java.util.Collections;
-import java.util.List;
-import org.jrubyparser.ast.AliasNode;
-import org.jrubyparser.ast.Node;
-import org.jrubyparser.ast.NodeType;
-import org.jrubyparser.ast.SymbolNode;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.ruby.AstUtilities;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 /**
- * An element for dynamic methods, such as named_scope.
+ * Maps types allowed in migrations to Ruby types.
  *
  * @author Erno Mononen
  */
-public final class AstDynamicMethodElement extends AstMethodElement {
+final class RailsMigrationTypeMapper {
 
-    private final Node methodNode;
-    private List<String> parameters;
+    private final Map<String, RubyType> types = new HashMap<String, RubyType>();
+    private static final RailsMigrationTypeMapper INSTANCE = new RailsMigrationTypeMapper();
 
-    public AstDynamicMethodElement(ParserResult info, Node node) {
-        super(info, node);
-        this.methodNode = node;
+    private RailsMigrationTypeMapper() {
+        init();
     }
 
-    @Override
-    public String getName() {
-        if (methodNode.getNodeType() == NodeType.ALIASNODE) {
-            return ((AliasNode) methodNode).getNewName();   
-        }
-        String result = AstUtilities.getNameOrValue(methodNode);
-        return result == null ? "" : result;
+    private void init() {
+        types.put("binary", RubyType.STRING);
+        types.put("boolean", RubyType.BOOLEAN);
+        types.put("date", RubyType.DATE);
+        types.put("datetime", RubyType.TIME);
+        types.put("decimal", RubyType.FIXNUM);
+        types.put("float", RubyType.FLOAT);
+        types.put("integer", RubyType.BIGNUM);
+        types.put("string", RubyType.STRING);
+        types.put("text", RubyType.STRING);
+        types.put("time", RubyType.TIME);
+        types.put("timestamp", RubyType.TIME);
     }
 
-    @Override
-    public List<String> getParameters() {
-        if (parameters == null) {
-            return Collections.emptyList();
-        }
-        return parameters;
-    }
-
-    public void setParameters(List<String> parameters) {
-        this.parameters = parameters;
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.METHOD;
+    static RubyType getMappedType(String migrationType) {
+        RubyType result = INSTANCE.types.get(migrationType);
+        return result != null ? result : RubyType.create(migrationType);
     }
 
 }
