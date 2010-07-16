@@ -1,10 +1,11 @@
-Name: Ruby on Rails
-Version: 2.3.2
-Description: Ruby on Rails web development framework
+Name: activerecord-jdbcpostgresql-adapter
+Version: 0.9.6
+Description: The PostgreSQL JDBC bridge for ActiveRecord
 License: MIT
 OSR: 6063
-Origin: http://rubyonrails.com/
-Comment: Ruby on Rails web development framework
+Files: activerecord-jdbcpostgresql-adapter-0.9.6-java.gem
+Origin: http://rubyforge.org/projects/jruby-extras
+Comment: PostgreSQL ActiveRecord-JDBC bridge
 
 The MIT License
 
