@@ -1,2 +1,4 @@
 ^o.jruby.distro/unpatched_source$
 ^o.jruby/patched_source$
+(^|/)build$
+(^|/)nbproject/private$
