@@ -4,5 +4,5 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="ruby.help" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project ruby.help</description>
-    <import file="../nbbuild/templates/projectized.xml"/>
+    <import file="nbproject/build-impl.xml"/>
 </project>

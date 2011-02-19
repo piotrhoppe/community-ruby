@@ -2,7 +2,7 @@
 <project basedir="." default="netbeans" name="ruby.samples.depot">
 
     <description>Builds, tests, and runs the project ruby.samples.depot</description>
-    <import file="../nbbuild/templates/projectized.xml"/>
+    <import file="nbproject/build-impl.xml"/>
     
     <target name="compile" depends="projectized-common.compile">
         <!-- Copy DepotProject.zip into resource package -->
