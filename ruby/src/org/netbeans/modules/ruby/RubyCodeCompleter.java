@@ -2254,8 +2254,12 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         
         return null;
     }
-    
-    @Override
+
+    // before csl.api 2.11:
+    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
+        return getApplicableTemplates(RubyUtils.getDocument(info), selectionBegin, selectionEnd);
+    }
+    // after csl.api 2.11:
     public Set<String> getApplicableTemplates(Document d, int selectionBegin,
         int selectionEnd) {
 
