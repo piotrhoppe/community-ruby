@@ -13,4 +13,5 @@
             </manifest>
         </downloadbinaries>
     </target>
+    <target name="-init" depends="suite.-init,downloadbinaries"/>
 </project>
