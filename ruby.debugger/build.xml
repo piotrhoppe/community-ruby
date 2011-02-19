@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="ruby.debugger" default="netbeans" basedir=".">
 
-    <import file="../nbbuild/templates/projectized.xml"/>
+    <import file="nbproject/build-impl.xml"/>
 
     <target name="release" depends="init">
         <mkdir dir="${cluster}/ruby"/>
