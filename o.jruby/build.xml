@@ -13,7 +13,7 @@
         </uptodate>
     </target>
 
-    <target name="init" depends="projectized.init,jruby.init" unless="jruby.build.uptodate">
+    <target name="init" depends="harness.init,jruby.init" unless="jruby.build.uptodate">
         <!-- Avoid confusing NetBeans when it has the project open. Having
              source files come and go underneath it makes the package view
              and friends very unhappy. Just rely on file overwrites instead;
