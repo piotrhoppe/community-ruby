@@ -185,6 +185,10 @@ public final class TestExecutionManager implements RerunHandler {
      * @return true if the current execution has finished, 
      * false otherwise.
      */
+    public synchronized boolean enabled() {
+        return finished || (result != null && result.isDone());
+    }
+    // gsf.testrunner 1.16:
     public synchronized boolean enabled(RerunType type) {
         return RerunType.ALL.equals(type) && (finished || (result != null && result.isDone()));
     }
@@ -207,7 +211,7 @@ public final class TestExecutionManager implements RerunHandler {
         runExecution();
     }
 
-    @Override
+    // gsf.testrunner 1.16:
     public void rerun(Set<Testcase> tests) {
         //not implemented yet
     }
