@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ruby" basedir=".">
+    <import file="nbproject/build-impl.xml"/>
+    <target name="downloadbinaries" description="Download external binaries not stored in Mercurial sources.">
+        <!-- XXX as of NB 7.0 (a5514d070c77) this will be standard; until then need our own copy: -->
+        <taskdef classpath="tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
+        <property file="${user.home}/.nbbuild.properties"/> <!-- permit binaries.cache to be overridden -->
+        <property name="binaries.cache" location="${user.home}/.hgexternalcache"/>
+        <property name="binaries.server" value="http://hg.netbeans.org/binaries/"/>
+        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+            <manifest dir=".">
+                <include name="*/external/binaries-list"/>
+            </manifest>
+        </downloadbinaries>
+    </target>
+    <target name="-init" depends="suite.-init,downloadbinaries"/>
+</project>
