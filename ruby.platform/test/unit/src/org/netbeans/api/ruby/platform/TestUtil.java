@@ -59,7 +59,7 @@ public final class TestUtil {
         if (destDir == null) {
             throw new RuntimeException("xtest.jruby.home property has to be set when running within binary distribution");
         }
-        return new File(destDir);
+        return FileUtil.normalizeFile(new File(destDir));
     }
 
     public static String getXTestJRubyHomePath() {
