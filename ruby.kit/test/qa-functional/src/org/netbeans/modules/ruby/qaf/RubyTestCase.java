@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package o.n.m.ruby.qaf;
+package org.netbeans.modules.ruby.qaf;
 
 import java.awt.Component;
 import java.io.File;

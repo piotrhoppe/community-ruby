@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package o.n.m.ruby.qaf.platform;
+package org.netbeans.modules.ruby.qaf.platform;
 
 import java.io.File;
 import junit.framework.Test;
