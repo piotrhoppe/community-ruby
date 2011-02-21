@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package o.n.m.ruby.qaf.debugger;
+package org.netbeans.modules.ruby.qaf.debugger;
 
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
