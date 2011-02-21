@@ -408,17 +408,18 @@ public abstract class CslTestBase extends NbTestCase {
                     }
 
                     InputStream is = fo.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
-                    while (true) {
-                        String line = reader.readLine();
-
-                        if (line == null) {
-                            break;
+                    try {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                        while (true) {
+                            String line = reader.readLine();
+                            if (line == null) {
+                                break;
+                            }
+                            sb.append(line);
+                            sb.append('\n');
                         }
-
-                        sb.append(line);
-                        sb.append('\n');
+                    } finally {
+                        is.close();
                     }
                 }
             });
