@@ -4,3 +4,4 @@
 (^|/)nbproject/private$
 ^[^/]+/external/[^/]+\.(zip|jar|gz|bz2|gem|dll|xpi)$
 \.orig$
+~$
