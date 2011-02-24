@@ -1,0 +1,12 @@
+^o.jruby.distro/unpatched_source$
+^o.jruby/patched_source$
+(^|/)build$
+(^|/)nbproject/private$
+^[^/]+/external/[^/]+\.(zip|jar|gz|bz2|gem|dll|xpi)$
+\.orig$
+~$
+^misc/release$
+^misc/manifest-subst\.mf$
+^misc/Info$
+^misc/rubyide/dist$
+^misc/stubs/generator/dist$
