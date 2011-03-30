@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ruby" basedir=".">
     <mkdir dir=".hg"/> <!-- just in case -->
-    <get src="http://dlc.sun.com.edgesuite.net/netbeans/6.9/final/zip/netbeans-6.9-201006101454-ml-javase.zip" dest=".hg" skipexisting="true" verbose="true"/>
-    <unzip src=".hg/netbeans-6.9-201006101454-ml-javase.zip" dest=".hg"/>
+<!--    <get src="http://dlc.sun.com.edgesuite.net/netbeans/6.9/final/zip/netbeans-6.9-201006101454-ml-javase.zip" dest=".hg" skipexisting="true" verbose="true"/>
+    <unzip src=".hg/netbeans-6.9-201006101454-ml-javase.zip" dest=".hg"/> -->
+    <get src="http://dlc.sun.com.edgesuite.net/netbeans/7.0/rc1/zip/netbeans-7.0rc1-201103280000-ml-javase.zip" dest=".hg" skipexisting="true" verbose="true"/>
+    <unzip src=".hg/netbeans-7.0rc1-201103280000-ml-javase.zip" dest=".hg"/>
     <import file="nbproject/build-impl.xml"/>
     <target name="downloadbinaries" description="Download external binaries not stored in Mercurial sources.">
         <!-- XXX as of NB 7.0 (a5514d070c77) this will be standard; until then need our own copy: -->
