@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ruby" basedir=".">
-    <mkdir dir=".hg"/> <!-- just in case -->
-    <get src="http://dlc.sun.com.edgesuite.net/netbeans/6.9/final/zip/netbeans-6.9-201006101454-ml-javase.zip" dest=".hg" skipexisting="true" verbose="true"/>
-    <unzip src=".hg/netbeans-6.9-201006101454-ml-javase.zip" dest=".hg"/>
     <import file="nbproject/build-impl.xml"/>
     <target name="downloadbinaries" description="Download external binaries not stored in Mercurial sources.">
-        <!-- XXX as of NB 7.0 (a5514d070c77) this will be standard; until then need our own copy: -->
-        <taskdef classpath="tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
+        <!-- XXX if platform set to 7.0+, could instead use ${harness.dir}/tasks.jar, or just depend on -taskdefs target -->
+        <taskdef classpath="${java.io.tmpdir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
         <property file="${user.home}/.nbbuild.properties"/> <!-- permit binaries.cache to be overridden -->
         <property name="binaries.cache" location="${user.home}/.hgexternalcache"/>
         <property name="binaries.server" value="http://hg.netbeans.org/binaries/"/>
