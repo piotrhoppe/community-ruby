@@ -276,7 +276,7 @@ public final class Util {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, type));
     }
 
-    public static void notifyLocalized(Class aClass, String resName, Object... params) {
+    public static void notifyLocalizedInfo(Class aClass, String resName, Object... params) {
         notifyLocalized(aClass, resName, NotifyDescriptor.INFORMATION_MESSAGE, params);
     }
 

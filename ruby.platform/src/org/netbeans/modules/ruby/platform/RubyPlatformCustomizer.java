@@ -637,7 +637,7 @@ public class RubyPlatformCustomizer extends JPanel {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             if (platform == null) {
-                                Util.notifyLocalized(RubyPlatformCustomizer.class,
+                                Util.notifyLocalizedInfo(RubyPlatformCustomizer.class,
                                         "RubyPlatformCustomizer.invalid.platform.added", intepreter.getAbsolutePath()); // NOI18N
                             } else {
                                 refreshPlatform();
@@ -673,7 +673,7 @@ public class RubyPlatformCustomizer extends JPanel {
     private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {                                                    
         if (getSelectedPlatform().isJRuby()) {
             // automatic installation is not available yet
-            Util.notifyLocalized(RubyPlatformCustomizer.class,
+            Util.notifyLocalizedInfo(RubyPlatformCustomizer.class,
                     "RubyPlatformCustomizer.instructionsToInstallJRubyDebugger",
                     getSelectedPlatform().getFastDebuggerProblemsInHTML());
         } else if (getSelectedPlatform().installFastDebugger()) {

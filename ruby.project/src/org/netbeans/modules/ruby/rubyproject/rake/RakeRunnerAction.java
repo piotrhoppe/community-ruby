@@ -68,7 +68,7 @@ public final class RakeRunnerAction extends CallableSystemAction {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
         if (platform == null) {
-            org.netbeans.modules.ruby.platform.Util.notifyLocalized(
+            org.netbeans.modules.ruby.platform.Util.notifyLocalizedInfo(
                     RakeRunnerAction.class, "RakeRunnerAction.no.platform.for.project", // NOI18N
                     ProjectUtils.getInformation(project).getDisplayName(),
                     NotifyDescriptor.WARNING_MESSAGE);
