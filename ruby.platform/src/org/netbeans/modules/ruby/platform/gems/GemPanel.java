@@ -1273,7 +1273,7 @@ public final class GemPanel extends JPanel {
                     }
                 }
             } else {
-                Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath()); // NOI18N
+                Util.notifyLocalizedInfo(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath()); // NOI18N
             }
         }
         return null;

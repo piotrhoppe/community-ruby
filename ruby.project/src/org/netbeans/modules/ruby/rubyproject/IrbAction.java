@@ -124,7 +124,7 @@ public final class IrbAction extends CallableSystemAction {
         if (project != null) {
             runIrbConsole(project);
         } else {
-            org.netbeans.modules.ruby.platform.Util.notifyLocalized(IrbAction.class, "IrbAction.not.project.in.context"); // NOI18N
+            org.netbeans.modules.ruby.platform.Util.notifyLocalizedInfo(IrbAction.class, "IrbAction.not.project.in.context"); // NOI18N
         }
         
     }

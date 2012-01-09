@@ -93,12 +93,12 @@ public final class BreakpointCustomizer extends JPanel implements Customizer, Co
             int line = Integer.valueOf(lineValue.getText()) - 1; // need 0-based
             String file = fileValue.getText();
             if (!new File(file).isFile()) {
-                Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.file.not.found", file);
+                Util.notifyLocalizedInfo(BreakpointCustomizer.class, "BreakpointCustomizer.file.not.found", file);
                 return false;
             } else {
                 Line eLine = EditorUtil.getLine(file, line);
                 if (eLine == null) {
-                    Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.invalid.line.number", "" + (line + 1), file);
+                    Util.notifyLocalizedInfo(BreakpointCustomizer.class, "BreakpointCustomizer.invalid.line.number", "" + (line + 1), file);
                     return false;
                 }
                 bp.setLine(eLine);
@@ -108,7 +108,7 @@ public final class BreakpointCustomizer extends JPanel implements Customizer, Co
             }
             return true;
         } catch (NumberFormatException nfe) {
-            Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.invalid.number", lineValue.getText());
+            Util.notifyLocalizedInfo(BreakpointCustomizer.class, "BreakpointCustomizer.invalid.number", lineValue.getText());
             return false;
         }
     }

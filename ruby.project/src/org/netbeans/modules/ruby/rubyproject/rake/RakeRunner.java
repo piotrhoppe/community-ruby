@@ -178,7 +178,7 @@ public final class RakeRunner {
             RakeTask rakeTask = RakeSupport.getRakeTask(project, taskNames[i]);
             if (rakeTask == null) {
                 if (showWarnings) {
-                    Util.notifyLocalized(RakeRunner.class, "RakeRunner.task.does.not.exist", taskNames[i]); // NOI18N
+                    Util.notifyLocalizedInfo(RakeRunner.class, "RakeRunner.task.does.not.exist", taskNames[i]); // NOI18N
                 }
                 return null; // run only when all tasks are available
             }
