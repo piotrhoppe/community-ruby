@@ -1254,7 +1254,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
         /**
          * Get version specific for the platform. E.g. in the case of JRuby it
-         * returns e.g. 1.1.4 instead of 1.8.6.
+         * returns e.g. 1.6.5.1 instead of 1.8.6.
          *
          * @return platform specific version
          */
