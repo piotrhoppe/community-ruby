@@ -14,14 +14,6 @@
     </target>
 
     <target name="init" depends="harness.init,jruby.init" unless="jruby.build.uptodate">
-        <!-- Avoid confusing NetBeans when it has the project open. Having
-             source files come and go underneath it makes the package view
-             and friends very unhappy. Just rely on file overwrites instead;
-             it handles that better (presumably because the directories stay
-             intact.)
-        <delete dir="${patched_source}"/>
-        <mkdir dir="${patched_source}"/>
-        -->
         <unzip dest="${patched_source}">
             <fileset dir="external/">
                 <include name="jruby-src-${jruby_src_version}.zip"/>
@@ -66,29 +58,9 @@
         </copy>
         
         <echo>Patching ${src.dir}</echo>
-        <!--
-        <patch dir="${src.dir}" patchfile="jruby.diff" strip="2" ignorewhitespace="true" reverse="false"/>
-        -->
         <copy todir="${src.dir}" overwrite="true">
             <fileset dir="patched_files" />
         </copy>
-<!-- The jruby.properties are now just patched in from patched_files (hardcoded buildstamp)
-        <tstamp><format property="build.date" pattern="yyyy-MM-dd"/></tstamp>
-        <copy todir="${src.dir}/org/jruby" overwrite="true">
-            <fileset file="${patched_source}/jruby-${jruby_src_version}/src/jruby.properties" />
-            <filterset>
-                <filter token="os.arch" value="${os.arch}"/>
-                <filter token="java.specification.version" value="${java.specification.version}"/>
-                <!- -
-                Defined in jruby-1.0.3/default.build.properties
-                <filter token="javac.version" value="${javac.version}"/>
-                - ->
-                <filter token="javac.version" value="1.4"/>
-                <filter token="build.date" value="${build.date}"/>
-            </filterset>
-        </copy>
-        <delete file="${patched_source}/jruby-${jruby_src_version}/src/jruby.properties" />
--->
     </target>
 
     <target name="release" depends="init">
