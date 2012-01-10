@@ -80,11 +80,20 @@
         <copy todir="${cluster}/modules/ext">
             <fileset dir="${libs.dir}">
                 <include name="asm*.jar"/>
+                <include name="bytelist*.jar"/>
+                <include name="constantine*.jar"/>
+                <include name="jaffl*.jar"/>
+                <include name="jcodings*.jar"/>
+                <include name="jffi*.jar"/>
                 <include name="joni*.jar"/>
                 <include name="jna-posix*.jar"/>
                 <include name="joda*.jar"/>
                 <include name="jline*.jar"/>
+                <include name="jnr*.jar"/>
+                <include name="jsr292-mock*.jar"/>
                 <include name="dynalang*.jar"/>
+                <include name="snakeyaml*.jar"/>
+                <include name="yydebug*.jar"/>
             </fileset>
         </copy>
     </target>
