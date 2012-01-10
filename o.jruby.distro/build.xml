@@ -50,19 +50,21 @@
         <delete dir="${unpatched_source}/jruby-${jruby_src_version}/share/ri"/>
         <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rake-0.8.7/rdoc"/>
         <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rake-0.8.7/ri"/>
+        <!-- don't depend on rspec installed to build -->
+        <delete file="${unpatched_source}/jruby-${jruby_src_version}/rakelib/spec.rake"/>
+
         <!-- Patch build.xml to modify gem behavior: install locally -->
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" overwrite="true">
             <fileset dir="unpatched_files" />
         </copy>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rake-0.8.7.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.3.1-java.gem"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-0.10.4.gem"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.4-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-ide-0.4.6.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcpostgresql-adapter-0.9.6-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-postgres-8.3.604.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcmysql-adapter-0.9.6-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-mysql-5.0.4.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbc-adapter-0.9.6-java.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rspec-1.2.9.gem"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-2.3.8.zip"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rcov-0.8.1.5.0-java.zip"/>
         <!-- Run dist-bin target in JRuby's own build.xml file -->
