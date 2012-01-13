@@ -1149,22 +1149,22 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.7"); // NOI18N
-            info.jversion = "1.5.1"; // NOI18N
-            info.patchlevel = "249"; // NOI18N
+            info.jversion = "1.6.5.1"; // NOI18N
+            info.patchlevel = "357"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
             // computing as for other platforms
-            info.releaseDate = "2010-05-12"; // NOI18N
+            info.releaseDate = "2012-01-10"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.5.1", "org.jruby.distro", false);  // NOI18N
+                    "jruby-1.6.5.1", "org.jruby.distro", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.3.6"; // NOI18N
+            info.gemVersion = "1.8.9"; // NOI18N
             return info;
         }
 

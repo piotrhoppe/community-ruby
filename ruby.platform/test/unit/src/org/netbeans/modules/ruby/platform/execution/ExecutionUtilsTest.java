@@ -43,12 +43,12 @@
  */
 package org.netbeans.modules.ruby.platform.execution;
 
-import java.util.concurrent.Future;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
@@ -63,8 +63,7 @@ public class ExecutionUtilsTest extends RubyTestBase {
 
     public void testComputeJRubyClassPath() {
         String[] expectedJars = {
-            "jruby.jar",
-            "profile.jar",};
+            "jruby.jar",};
         Arrays.sort(expectedJars);
         File jrubyLib = new File(TestUtil.getXTestJRubyHome(), "lib");
         String cp = ExecutionUtils.computeJRubyClassPath(null, jrubyLib);
