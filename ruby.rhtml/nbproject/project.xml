@@ -308,6 +308,10 @@
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.parser</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
                         <recursive/>
                         <compile-dependency/>
