@@ -1,7 +1,7 @@
 Code completion result for source line:
 puts "Result is #{@|myfield} and #@another."
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-FIELD      another                                    MyTest
-FIELD      myfield                                    MyTest
-FIELD      myotherfield                               MyTest
+FIELD      another                         [PRIVATE]  MyTest
+FIELD      myfield                         [PRIVATE]  MyTest
+FIELD      myotherfield                    [PRIVATE]  MyTest
 CALL       puts(obj)                                  Kernel
