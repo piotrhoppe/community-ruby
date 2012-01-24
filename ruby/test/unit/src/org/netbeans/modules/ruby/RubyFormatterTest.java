@@ -214,9 +214,10 @@ public class RubyFormatterTest extends RubyTestBase {
     }
 
     private static int getExpectedIndentation(FileObject fo) {
-        // the last statement in this file uses a ternary operator
         if (fo.getPath().endsWith("actionpack-2.3.2/test/abstract_unit.rb")) {
-            return 2;
+            return 2; // the last statement in this file uses a ternary operator
+        } else if (fo.getPath().endsWith("rbconfig/datadir.rb")) {
+            return 2; // the last statement is a continued literal string via '\' on previous line
         }
         return 0;
     }
