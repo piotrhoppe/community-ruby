@@ -65,6 +65,8 @@ import org.openide.util.Exceptions;
  * @author lukas
  */
 public class GemsTest extends JellyTestCase {
+    public static final int INITIAL_INSTALLED_GEMS = 23;
+
 
     private NbDialogOperator rgm;
 
@@ -94,7 +96,7 @@ public class GemsTest extends JellyTestCase {
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(rgm);
         //Installed
         String installedTitle = Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.gems.Bundle", "GemPanel.installedPanel.TabConstraints.tabTitle");
-        installedTitle += "(17)"; //NOI18N
+        installedTitle += "("+INITIAL_INSTALLED_GEMS+")"; //NOI18N
         int idx = jtpo.getSelectedIndex();
         assertEquals(installedTitle, jtpo.getTitleAt(idx));
         JListOperator gemsList = new JListOperator(jtpo);
@@ -147,7 +149,7 @@ public class GemsTest extends JellyTestCase {
 
     public void testInstall() {
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(rgm);
-        assertTrue(jtpo.getTitleAt(1).contains("17"));
+        assertTrue(jtpo.getTitleAt(1).contains("" + INITIAL_INSTALLED_GEMS));
         jtpo.selectPage(2);
         if (JProgressBarOperator.findJProgressBar(rgm.getContentPane()) != null) {
             JProgressBarOperator barOp = new JProgressBarOperator(rgm);
@@ -181,12 +183,12 @@ public class GemsTest extends JellyTestCase {
             Thread.sleep(1500);
         } catch (InterruptedException ex) {
         }
-        assertTrue(jtpo.getTitleAt(1).contains("18"));
+        assertTrue(jtpo.getTitleAt(1).contains("" + (INITIAL_INSTALLED_GEMS + 1)));
     }
 
     public void testUninstall() {
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(rgm);
-        assertTrue(jtpo.getTitleAt(1).contains("18"));
+        assertTrue(jtpo.getTitleAt(1).contains("" + (INITIAL_INSTALLED_GEMS + 1)));
         JListOperator gemsList = new JListOperator(jtpo);
         //select Abundance Gem
         gemsList.selectItem(0);
@@ -207,7 +209,7 @@ public class GemsTest extends JellyTestCase {
         }
         sleep(1500);
         jtpo.selectPage(1);
-        assertTrue(jtpo.getTitleAt(1).contains("17"));
+        assertTrue(jtpo.getTitleAt(1).contains("" + INITIAL_INSTALLED_GEMS));
     }
 
     private NbDialogOperator getPlatformManager() {
