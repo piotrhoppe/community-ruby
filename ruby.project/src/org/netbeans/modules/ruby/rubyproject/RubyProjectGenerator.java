@@ -113,7 +113,7 @@ public final class RubyProjectGenerator {
         final Map<String, String> rakeProps = new HashMap<String, String>();
         rakeProps.put("PROJECT_NAME", dir.getName()); // NOI18N
         if (RSpecSupport.hasRSpecInstalled(platform)) {
-            rakeProps.put("REQUIRE_SPEC_TASK", "require 'spec/rake/spectask'\n"); // NOI18N
+            rakeProps.put("REQUIRE_SPEC_TASK", "require 'rspec/core/rake_task'\n"); // NOI18N
             // add source root as libs for rspec
             StringBuilder dirLibs = new StringBuilder();
             RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
@@ -126,7 +126,7 @@ public final class RubyProjectGenerator {
                     dirLibs.append(",");
                 }
             }
-            String specTaskDef = "\nSpec::Rake::SpecTask.new do |t|\n" + // NOI18N
+            String specTaskDef = "\nRSpec::Core::RakeTask.new do |t|\n" + // NOI18N
                     "  t.spec_files = FileList['spec/**/*.rb']\n" + // NOI18N
                     "  t.libs << Dir[" + dirLibs.toString() + "]\n" + // NOI18N
                     "end"; // NOI18N
