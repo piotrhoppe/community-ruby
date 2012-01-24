@@ -70,6 +70,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -110,12 +111,10 @@ import org.netbeans.modules.csl.api.Rule.SelectionRule;
 import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.parsing.lucene.support.Index.Status;
-import org.netbeans.modules.parsing.lucene.support.IndexDocument;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.lucene.support.Index.Status;
+import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -175,6 +174,7 @@ import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -186,8 +186,9 @@ import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
-import org.netbeans.modules.parsing.lucene.IndexDocumentImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -218,6 +219,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
+        // XXX are the following four lines actually necessary?
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
         assert wd != null;
         FileObject cache = FileUtil.createFolder(wd, "var/cache");
@@ -411,18 +413,17 @@ public abstract class CslTestBase extends NbTestCase {
                     }
 
                     InputStream is = fo.getInputStream();
-                    try {
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                        while (true) {
-                            String line = reader.readLine();
-                            if (line == null) {
-                                break;
-                            }
-                            sb.append(line);
-                            sb.append('\n');
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+                    while (true) {
+                        String line = reader.readLine();
+
+                        if (line == null) {
+                            break;
                         }
-                    } finally {
-                        is.close();
+
+                        sb.append(line);
+                        sb.append('\n');
                     }
                 }
             });
@@ -628,8 +629,69 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
 
-        assertEquals("content does not match between '" + relFilePath + "' and '" + relFilePath + ext + "'",
-                expected.trim(), description.trim());
+        String expectedTrimmed = expected.trim();
+        String actualTrimmed = description.trim();
+        
+        if (expectedTrimmed.equals(actualTrimmed)) {
+            return; // Actual and expected content are equals --> Test passed
+        } else {
+            // We want to ignore different line separators (like \r\n against \n) because they 
+            // might be causing failing tests on a different operation systems like Windows :]
+            String expectedUnified = expectedTrimmed.replaceAll("\r", "");
+            String actualUnified = actualTrimmed.replaceAll("\r", "");
+            
+            if (expectedUnified.equals(actualUnified)) {
+                return; // Only difference is in line separation --> Test passed
+            }
+            
+            // There are some diffrerences between expected and actual content --> Test failed
+            fail(getContentDifferences(relFilePath, ext, includeTestName, expectedUnified, actualUnified));
+        }
+    }
+    
+    private String getContentDifferences(String relFilePath, String ext, boolean includeTestName, String expected, String actual) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Content does not match between '").append(relFilePath).append("' and '").append(relFilePath);
+        if (includeTestName) {
+            sb.append(getName());
+        }
+        sb.append(ext).append("'\n");
+        sb.append("Expected content is: \n\n").append(expected).append("\n\nbut actual is: \n\n").append(actual).append("\n\n");
+        sb.append("It differs in the following things: \n\n");
+
+        List<String> expectedLines = Arrays.asList(expected.split("\n"));
+        List<String> actualLines = Arrays.asList(actual.split("\n"));
+
+        if (expectedLines.size() != actualLines.size()) {
+            sb.append("Number of lines: \n\tExpected: ").append(expectedLines.size()).append("\n\tActual: ").append(actualLines.size()).append("\n\n");
+        }
+
+        // Appending lines which are missing in expected content and are present in actual content
+        boolean firstOccurence = true;
+        for (String actualLine : actualLines) {
+            if (expectedLines.contains(actualLine) == false) {
+                if (firstOccurence) {
+                    sb.append("Actual content contains following lines which are missing in expected content: \n");
+                    firstOccurence = false;
+                }
+                sb.append("\t").append(actualLine).append("\n");
+            }
+        }
+
+        // Appending lines which are missing in actual content and are present in expected content
+        firstOccurence = true;
+        for (String expectedLine : expectedLines) {
+            if (actualLines.contains(expectedLine) == false) {
+                // If at least one line missing in actual content we want to append header line
+                if (firstOccurence) {
+                    sb.append("Expected content contains following lines which are missing in actual content: \n");
+                    firstOccurence = false;
+                }
+                sb.append("\t").append(expectedLine).append("\n");
+            }
+        }
+        
+        return sb.toString();
     }
 
     protected void assertDescriptionMatches(FileObject fileObject,
@@ -1514,6 +1576,7 @@ public abstract class CslTestBase extends NbTestCase {
         } finally {
             DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(context).getIndex(context.getIndexFolder());
             if (index != null) {
+                index.removeDirtyKeys(Collections.singleton(indexable.getRelativePath()));
                 index.store(true);
             }
         }
@@ -2113,7 +2176,27 @@ public abstract class CslTestBase extends NbTestCase {
 
         JEditorPane pane = new JEditorPane();
         pane.setContentType(getPreferredMimeType());
-        pane.setEditorKit(getEditorKit(getPreferredMimeType()));
+        final NbEditorKit kit = ((NbEditorKit)getEditorKit(getPreferredMimeType()));
+
+
+        Thread preload = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                // Preload actions and other stuff
+                if (kit instanceof Callable) {
+                    try {
+                        ((Callable) kit).call();
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                kit.getActions();
+            }
+        });
+        preload.start();
+        preload.join();
+        pane.setEditorKit(kit);
         pane.setText(text);
 
         BaseDocument bdoc = (BaseDocument)pane.getDocument();
@@ -2810,11 +2893,21 @@ public abstract class CslTestBase extends NbTestCase {
         isSmart = proposal.isSmart();
         sb.append("</pre>");
         sb.append("<h2>Documentation:</h2>");
-        sb.append(documentation);
+        sb.append(alterDocumentationForTest(documentation));
 
         sb.append("</body>");
         sb.append("</html>");
         return sb.toString();
+    }
+    
+    /**
+     * Sometimes the documentation can contain absolute path. When you overwrite
+     * this method, you can exclude such thinks from it.
+     * @param documentation
+     * @return changed documentation
+     */
+    protected String alterDocumentationForTest(String documentation) {
+        return documentation;
     }
     
     protected void assertAutoQuery(QueryType queryType, String source, String typedText) {
@@ -4228,17 +4321,17 @@ public abstract class CslTestBase extends NbTestCase {
         public TestIndexImpl(DocumentIndex original) {
             this.original = original;
         }
-        
-        
+
         @Override
         public Status getStatus() throws IOException {
             return Status.VALID;
         }
 
-
+        // --------------------------------------------------------------------
         // IndexImpl implementation
         // --------------------------------------------------------------------
 
+        @Override
         public void addDocument(IndexDocument document) {
             assert document instanceof TestIndexDocumentImpl;
 
@@ -4253,6 +4346,7 @@ public abstract class CslTestBase extends NbTestCase {
             list.add(tidi);
         }
 
+        @Override
         public void removeDocument(String relativePath) {
             original.removeDocument(relativePath);
 
@@ -4265,16 +4359,18 @@ public abstract class CslTestBase extends NbTestCase {
             documents.keySet().removeAll(toRemove);
         }
 
+        @Override
         public void store(boolean optimize) throws IOException {
             original.store(optimize);
         }
 
+        @Override
         public Collection<? extends IndexDocument> query(String fieldName, String value, Queries.QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
             return original.query(fieldName, value, kind, fieldsToLoad);
         }
 
         @Override
-        public Collection<? extends IndexDocument> findByPrimaryKey(String primaryKeyValue, Queries.QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
+        public Collection<? extends IndexDocument> findByPrimaryKey(String primaryKeyValue, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
             return original.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad);
         }                
         
@@ -4296,21 +4392,13 @@ public abstract class CslTestBase extends NbTestCase {
             return Collections.<String>emptySet();
         }
         
-        public void fileModified(String relativePath) {
-            // no-op
-        }
-
-        public Collection<? extends String> getStaleFiles() {
-            return Collections.<String>emptySet();
-        }
-
         // --------------------------------------------------------------------
         // private implementation
         // --------------------------------------------------------------------
 
         private final DocumentIndex original;
         private Map<String, List<TestIndexDocumentImpl>> documents = new HashMap<String, List<TestIndexDocumentImpl>>();
-
+        
     } // End of TestIndexImpl class
 
     private static final class TestIndexDocumentImpl implements IndexDocument {
@@ -4356,10 +4444,10 @@ public abstract class CslTestBase extends NbTestCase {
             return original.getValues(key);
         }
 
-        @Override
         public String getPrimaryKey() {
             return original.getPrimaryKey();
         }
+
     } // End of TestIndexFactoryImpl class
 
     protected Map<String, ClassPath> createClassPathsForTest() {
