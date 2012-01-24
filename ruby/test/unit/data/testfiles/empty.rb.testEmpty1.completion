@@ -183,6 +183,7 @@ KEYWORD    ARGF                                       null
 KEYWORD    ARGV                                       null
 KEYWORD    BEGIN                                      null
 KEYWORD    DATA                                       null
+KEYWORD    DATA                                       null
 KEYWORD    END                                        null
 KEYWORD    ENV                                        null
 KEYWORD    FALSE                                      null
