@@ -127,7 +127,7 @@ public final class RubyProjectGenerator {
                 }
             }
             String specTaskDef = "\nRSpec::Core::RakeTask.new do |t|\n" + // NOI18N
-                    "  t.spec_files = FileList['spec/**/*.rb']\n" + // NOI18N
+                    "  t.pattern = 'spec/erector/*_spec.rb'\n" + // NOI18N
                     "  t.libs << Dir[" + dirLibs.toString() + "]\n" + // NOI18N
                     "end"; // NOI18N
             rakeProps.put("SPEC_TASK_DEF", specTaskDef); // NOI18N
