@@ -120,7 +120,6 @@ public class RailsDeprecations extends RubyAstRule {
         deprecatedMethods.put("xml_post?", "respond_to or request.format");
         deprecatedMethods.put("yaml_post?", "respond_to or request.format");
         deprecatedMethods.put("render_text", "render :text => ..."); // NOI18N
-        deprecatedMethods.put("render_template", "render :template => ..."); // NOI18N
         // TODO - the above list for render_X was not exhaustive - look up the API and complete it!
         // TODO url_for(:symbol, *args), redirect_to(:symbol, *args)
         // TODO components
@@ -196,15 +195,6 @@ public class RailsDeprecations extends RubyAstRule {
             String name = ((INameNode)node).getName();
             
             if (deprecatedMethods.containsKey(name)) {
-                // #121418: render_template is not just a deprecated Rails method,
-                // it's also an RSpec method
-                if ("render_template".equals(name)) { // NOI18N
-                    // Filter from RSpec modules
-                    if (RubyUtils.getFileObject(info).getName().endsWith("_spec")) { // NOI18N
-                        return;
-                    }
-                }
-
                 // find_all is not only a deprecated Rails active record method,
                 // it's also a common method on Enumerable! Only warn about
                 // this when you're calling it as a static method!
