@@ -126,9 +126,9 @@ public final class RubyProjectGenerator {
                     dirLibs.append(",");
                 }
             }
-            String specTaskDef = "\nRSpec::Core::RakeTask.new do |t|\n" + // NOI18N
-                    "  t.pattern = 'spec/erector/*_spec.rb'\n" + // NOI18N
-                    "  t.libs << Dir[" + dirLibs.toString() + "]\n" + // NOI18N
+            String specTaskDef = "\nRSpec::Core::RakeTask.new do |spec|\n" + // NOI18N
+                    "  spec.pattern = 'spec/erector/*_spec.rb'\n" + // NOI18N
+                    "  spec.rspec_opts = [Dir[" + dirLibs.toString() + "].to_a.join(':')]\n" + // NOI18N
                     "end"; // NOI18N
             rakeProps.put("SPEC_TASK_DEF", specTaskDef); // NOI18N
         } else {
