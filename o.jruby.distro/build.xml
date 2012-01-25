@@ -58,7 +58,7 @@
             <fileset dir="unpatched_files" />
         </copy>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-0.10.4.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.4-java.gem"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.3.1-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-ide-0.4.6.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcpostgresql-adapter-0.9.6-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-postgres-8.3.604.gem"/>
