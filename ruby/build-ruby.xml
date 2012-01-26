@@ -58,8 +58,6 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf.testrunner"/>
             <buildpath location="gsf.codecoverage"/>
 
-            <buildpath location="libs.bytelist"/>
-            <buildpath location="libs.jvyamlb"/>
             <buildpath location="ruby.rakeproject"/>
             <buildpath location="ruby.platform"/>
             <buildpath location="o.jruby"/>
@@ -132,8 +130,6 @@ made subject to such option by the copyright holder.
             <buildpath location="gsf.testrunner"/>
             <buildpath location="gsf.codecoverage"/>
 
-            <buildpath location="libs.bytelist"/>
-            <buildpath location="libs.jvyamlb"/>
             <buildpath location="ruby.rakeproject"/>
             <buildpath location="ruby.platform"/>
             <buildpath location="o.jruby"/>
