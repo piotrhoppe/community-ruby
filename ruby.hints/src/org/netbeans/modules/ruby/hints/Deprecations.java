@@ -45,7 +45,6 @@ import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.INameNode;
-import org.jruby.util.ByteList;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
