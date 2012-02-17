@@ -8,23 +8,22 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PipedInputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import org.jruby.nb.Ruby;
-import org.jruby.nb.RubyInstanceConfig;
-import java.io.Serializable;
 import javax.swing.UIManager;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import org.jruby.nb.internal.runtime.ValueAccessor;
-import org.jruby.nb.demo.TextAreaReadline;
+import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig;
+import org.jruby.demo.TextAreaReadline;
+import org.jruby.internal.runtime.ValueAccessor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -241,16 +240,19 @@ final class IrbTopComponent extends TopComponent {
         final Ruby runtime = getRuntime(text);
         RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
         //RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 startIRB(runtime);
             }
         });
         task.addTaskListener(new TaskListener() {
+            @Override
             public void taskFinished(Task task) {
                 finished = true;
                 //tar.writeMessage(" " + NbBundle.getMessage(IrbTopComponent.class, "IrbGoodbye") + " "); // NOI18N
                 text.setEditable(false);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         IrbTopComponent.this.close();
                         IrbTopComponent.this.removeAll();
@@ -269,6 +271,7 @@ final class IrbTopComponent extends TopComponent {
                final int mouseY = ev.getY();
                // Ensure that this is done after the textpane's own mouse listener
                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                    public void run() {
                        // Attempt to force the mouse click to appear on the last line of the text input
                        int pos = text.getDocument().getEndPosition().getOffset()-1;
