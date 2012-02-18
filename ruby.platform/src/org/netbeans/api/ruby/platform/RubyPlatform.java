@@ -1149,15 +1149,14 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.7"); // NOI18N
-            info.jversion = "1.6.5.1"; // NOI18N
+            info.jversion = "1.6.6"; // NOI18N  // FIXME: Kill this embedding
             info.patchlevel = "357"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
             // computing as for other platforms
             info.releaseDate = "2012-01-10"; // NOI18N
             info.platform = "java"; // NOI18N
-            File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.6.5.1", "org.jruby.distro", false);  // NOI18N
+            File jrubyHome = InstalledFileLocator.getDefault().locate("jruby", "org.jruby.distro", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N
