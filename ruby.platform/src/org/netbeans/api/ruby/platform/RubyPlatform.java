@@ -1163,7 +1163,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.8.9"; // NOI18N
+            info.gemVersion = "1.8.15"; // NOI18N
             return info;
         }
 
@@ -1253,7 +1253,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
         /**
          * Get version specific for the platform. E.g. in the case of JRuby it
-         * returns e.g. 1.6.5.1 instead of 1.8.6.
+         * returns e.g. 1.6.6 instead of 1.8.6.
          *
          * @return platform specific version
          */
