@@ -64,6 +64,9 @@
         <!-- Uncompress and move jruby bin dist into plain 'jruby' dir -->
         <untar compression="gzip" dest="${cluster}" src="external/jruby-bin-${jruby_src_version}.tar.gz"/>
         <move file="${cluster}/jruby-${jruby_src_version}" tofile="${cluster}/jruby"/>
+        <!-- Does the untar or move lose the execute bits from the file? -->
+        <chmod dir="${cluster}/jruby/bin" includes="*" perm="ugo+rx"/>
+
         <!-- Remove pre-expanded ri and rdocs -->
         <delete dir="${cluster}/jruby/share/ri"/>
 
