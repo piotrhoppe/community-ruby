@@ -5,18 +5,11 @@
 <project name="o.jruby.distro" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project o.jruby.distro</description>
     <import file="nbproject/build-impl.xml"/>
-    <!--
-    <propertyfile file="../jruby/nbproject/project.properties"/>
-    -->
 
     <target name="jruby.distro.init">
         <uptodate property="jruby.distro.build.uptodate" targetfile="${cluster}/jruby-${jruby_src_version}">
             <srcfiles dir="${src.dir}" includes="**/*"/>
             <srcfiles dir="external" includes="**/*"/>
-            <srcfiles dir="../o.jruby/external">
-                <include name="jruby-src-${jruby_src_version}.zip"/>
-            </srcfiles>
-            <srcfiles dir="unpatched_files" includes="**/*"/>
         </uptodate>
     </target>
 
@@ -30,66 +23,57 @@
             <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- JRuby+Rails stuff -->
-            <include name="jruby-${jruby_src_version}/**"/>
+            <include name="jruby/**"/>
             <!-- preindexing not supported in Parsing API, so just delete the files
             <exclude name="jruby-${jruby_src_version}/**/netbeans-index-*.zip"/>
             -->
         </patternset>
     </target>    
 
+    <path id="jruby.class.path">
+      <pathelement location="${cluster}/jruby/lib/jruby.jar" />
+    </path>
+
+    <macrodef name="gem-install">
+      <attribute name="compile.mode" default="OFF"/>
+      <attribute name="inproc" default="true"/>
+      <attribute name="jruby.args" default=""/>
+      <attribute name="gems"/>
+      <attribute name="dir" default="${basedir}"/>
+      <attribute name="jruby.launch.memory" default="512M"/>
+      <attribute name="jruby.home" default="${cluster}/jruby"/>
+
+      <sequential>
+        <echo message="Installing gems @{gems}"/>
+        <java classname="org.jruby.Main" fork="true" maxmemory="@{jruby.launch.memory}" failonerror="true" dir="@{dir}">
+          <classpath refid="jruby.class.path"/>
+
+          <sysproperty key="jruby.home" value="@{jruby.home}"/>
+          <sysproperty key="jruby.compile.mode" value="@{compile.mode}"/>
+          <sysproperty key="jruby.launch.inproc" value="@{inproc}"/>
+
+          <arg line="@{jruby.args} -S gem install @{gems} --no-ri --no-rdoc"/>
+          <env key="JRUBY_OPTS" value=""/>
+        </java>
+      </sequential>
+    </macrodef>
+
     <target name="build-jruby-bin">
         <echo>Build JRuby binary distribution from source</echo>
-        <delete dir="${unpatched_source}"/>
-        <mkdir dir="${unpatched_source}"/>
-        <unzip dest="${unpatched_source}">
-			<fileset dir="../o.jruby/external/">
-				<include name="jruby-src-${jruby_src_version}.zip"/>
-			</fileset>
-		</unzip>
-        <!-- JRuby now seems to ship with ri and rdocs pre-expanded in the lib directory! Nuke these -->
-        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/share/ri"/>
-        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rake-0.8.7/rdoc"/>
-        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rake-0.8.7/ri"/>
-        <!-- don't depend on rspec installed to build -->
-        <delete file="${unpatched_source}/jruby-${jruby_src_version}/rakelib/spec.rake"/>
 
-        <!-- Patch build.xml to modify gem behavior: install locally -->
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" overwrite="true">
-            <fileset dir="unpatched_files" />
-        </copy>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-0.10.4.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.3.1-java.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-ide-0.4.6.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcpostgresql-adapter-0.9.6-java.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-postgres-8.3.604.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcmysql-adapter-0.9.6-java.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-mysql-5.0.4.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbc-adapter-0.9.6-java.gem"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-2.3.8.zip"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rcov-0.8.1.5.0-java.zip"/>
-        <!-- Run dist-bin target in JRuby's own build.xml file -->
-        <ant dir="${unpatched_source}/jruby-${jruby_src_version}" target="dist-bin" inheritall="false" inheritrefs="false"/>
-        <!-- Bug in BND means this will not get deleted by default: -->
-        <delete>
-            <fileset dir="${java.io.tmpdir}">
-                <include name="tmpbnd*.jar"/>
-            </fileset>
-        </delete>
-        <!-- Extract the resulting .tar.gz file into our cluster -->
-        <untar compression="gzip" dest="${cluster}" src="${unpatched_source}/jruby-${jruby_src_version}/dist/jruby-bin-${jruby_src_version}.tar.gz" />
+        <!-- Uncompress and move jruby bin dist into plain 'jruby' dir -->
+        <untar compression="gzip" dest="${cluster}" src="external/jruby-bin-${jruby_src_version}.tar.gz"/>
+        <move file="${cluster}/jruby-${jruby_src_version}" tofile="${cluster}/jruby"/>
+        <!-- Remove pre-expanded ri and rdocs -->
+        <delete dir="${cluster}/jruby/share/ri"/>
+
+        <!-- Install extra gems we want in our default distro -->
+        <unzip dest="external" src="external/rails-gems-2.3.8.zip"/>
+        <unzip dest="external" src="external/rcov-0.8.1.5.0-java.zip"/>
+        <gem-install gems="${gem.list}"/>
     </target>
 
-    <target name="release" depends="init,jruby.distro.init" unless="jruby.distro.build.uptodate">
-        <property name="jruby_dir" location="${cluster}/jruby-${jruby_src_version}"/>
-    
-        <!-- Build JRuby from source (using its own build files -->
+    <target name="release" depends="init,jruby.distro.init" unless="jruby.distro.build.uptodate">   
         <antcall target="build-jruby-bin"/>
-
     </target>
-
-    <target name="clean" depends="projectized-common.clean">
-        <!-- HACK: For some reason the clean target doesn't get expansions for the logical dirs... -->
-        <delete dir="unpatched_source"/>
-    </target>
-
 </project>

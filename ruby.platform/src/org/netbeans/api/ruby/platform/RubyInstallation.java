@@ -46,6 +46,7 @@ package org.netbeans.api.ruby.platform;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,11 +65,8 @@ public class RubyInstallation {
     
     private static final Logger LOGGER = Logger.getLogger(RubyInstallation.class.getName());
     
-    /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
-    private static final String JRUBY_RELEASE = "1.6.5.1"; // NOI18N
-
-    /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
-    private static final String JRUBY_RELEASEDIR = "jruby-" + JRUBY_RELEASE; // NOI18N
+    /** Location of where bundled jruby will run from */
+    private static final String JRUBY_RELEASEDIR = "jruby";
     
     /**
      * MIME type for Ruby. Don't change this without also consulting the various XML files
@@ -91,16 +89,13 @@ public class RubyInstallation {
     // Ensure that JRuby can find its libraries etc.
     public void setJRubyLoadPaths() {
         String jh = getJRubyHome();
-        if (jh != null) {
-            System.setProperty("jruby.home", jh); // NOI18N
-        }
+        
+        if (jh != null) System.setProperty("jruby.home", jh); // NOI18N
     }
 
     public String getJRuby() {
         String binDir = getJRubyBin();
-        if (binDir == null) {
-            return null;
-        }
+        if (binDir == null) return null;
 
         String binary = Utilities.isWindows() ? "jruby.bat" : "jruby"; // NOI18N
         String jruby = binDir + File.separator + binary;
@@ -112,11 +107,7 @@ public class RubyInstallation {
             Exceptions.printStackTrace(ioe);
         }
 
-        if (!new File(jruby).isFile()) {
-            return null;
-        }
-        
-        return jruby;
+        return new File(jruby).isFile() ? jruby : null;
     }
     
     static void displayRubyOptions() {
@@ -124,36 +115,27 @@ public class RubyInstallation {
     }
     
     /**
-     * Returns directory where bundle JRuby is installed. Return <tt>null</tt> if
-     * not installed.
+     * Returns directory where bundle JRuby is installed or <tt>null</tt> if it cannot be found.
      * 
-     * @return might be <tt>null</tt>
+     * @return location or <tt>null</tt>
      */
     public String getJRubyHome() {
-        if (jrubyHome == null) {
-            File jrubyDir =
-                InstalledFileLocator.getDefault()
-                                    .locate(JRUBY_RELEASEDIR, "org.jruby.distro", // NOI18N
-                    false); // NOI18N
+        if (jrubyHome == null) { // Generally ~/.netbeans/{version}/jruby
+            File home = InstalledFileLocator.getDefault().locate(JRUBY_RELEASEDIR, "org.jruby.distro", false); // NOI18N
 
-            if ((jrubyDir == null) || !jrubyDir.isDirectory()) {
-                // The JRuby distribution may not be installed
-                return null;
-            }
+            // The JRuby distribution may not be installed
+            if (home == null || !home.isDirectory()) return null;
 
-            jrubyHome = jrubyDir.getPath();
+            jrubyHome = home.getPath();
         }
 
         return jrubyHome;
     }
 
     private String getJRubyBin() {
-        String jh = getJRubyHome();
-        if (jh != null) {
-            return jh + File.separator + "bin"; // NOI18N
-        } else {
-            return null;
-        }
+        String home = getJRubyHome();
+        
+        return home != null ? home + File.separator + "bin" : null; // NOI18N
     }
 
     /**
@@ -162,50 +144,33 @@ public class RubyInstallation {
      * @todo Do this lazily before trying to actually execute any of these bits?
      */
     public void ensureExecutable() {
-        // No excute permissions on Windows. On Unix and Mac, try.
-        if (Utilities.isWindows()) {
-            return;
-        }
+        if (Utilities.isWindows()) return; // No chmod on Windows.  Nothing to do...
 
         String binDirPath = getJRubyBin();
-        if (binDirPath == null) {
-            return;
-        }
+        if (binDirPath == null) return;
 
         File binDir = new File(binDirPath);
-        if (!binDir.exists()) {
-            // No JRuby bundled installation?
-            return;
-        }
+        if (!binDir.exists()) return; // No JRuby bundled installation?
 
         // Ensure that the binaries are installed as expected
         // The following logic is from CLIHandler in core/bootstrap:
         File chmod = new File("/bin/chmod"); // NOI18N
 
-        if (!chmod.isFile()) {
-            // Linux uses /bin, Solaris /usr/bin, others hopefully one of those
-            chmod = new File("/usr/bin/chmod"); // NOI18N
-        }
+        // Linux uses /bin, Solaris /usr/bin, others hopefully one of those
+        if (!chmod.isFile()) chmod = new File("/usr/bin/chmod"); // NOI18N
 
         if (chmod.isFile()) {
             try {
                 List<String> argv = new ArrayList<String>();
                 argv.add(chmod.getAbsolutePath());
                 argv.add("u+rx"); // NOI18N
-
-                String[] files = binDir.list();
-
-                for (String file : files) {
-                    argv.add(file);
-                }
+                argv.addAll(Arrays.asList(binDir.list()));
 
                 ProcessBuilder pb = new ProcessBuilder(argv);
                 pb.directory(binDir);
                 Util.adjustProxy(pb);
 
-                Process process = pb.start();
-
-                int chmoded = process.waitFor();
+                int chmoded = pb.start().waitFor();
 
                 if (chmoded != 0) {
                     throw new IOException("could not run " + argv + " : Exit value=" + chmoded); // NOI18N
@@ -216,31 +181,4 @@ public class RubyInstallation {
             }
         }
     }
-
-//    public String getShortName() {
-//        String r = Util.getPreferences().get(KEY_RUBY, null);
-//        final String BUILTIN_JRUBY = NbBundle.getMessage(RubyInstallation.class, "BuiltinRuby");
-//        if (r == null) {
-//            return BUILTIN_JRUBY;
-//        } else {
-//            r = getRuby();
-//            if (r == null) {
-//                return "";
-//            }
-//
-//            final String jh = getJRubyHome();
-//            if (jh != null & r.startsWith(jh)) {
-//                return BUILTIN_JRUBY;
-//            }
-//            if (isJRubySet()) {
-//                return NbBundle.getMessage(RubyInstallation.class, "JRuby"); // TODO version
-//            }
-//        }
-//
-//        // How do I summary other interpreters?? For now, just use path
-//        final File rubyFile = new File(r);
-//        String basename = rubyFile.getName();
-//        return NbBundle.getMessage(RubyInstallation.class, "RubyInPath", basename, rubyFile.getParent());
-//    }
-
 }
