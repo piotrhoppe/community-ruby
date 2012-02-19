@@ -80,7 +80,7 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
             RubyBaseProject p = (RubyBaseProject) ProjectManager.getDefault().findProject(prjDirFO);
             assertNotNull("has project", p);
             Set<RakeTask> tasks = RakeSupport.getRakeTaskTree(p);
-            assertSame("correct Rakefile", 11, tasks.size());
+            assertSame("correct Rakefile", 10, tasks.size());
 
             // test main class without extension in the next run
             name = "another_script";
