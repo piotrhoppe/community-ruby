@@ -92,7 +92,7 @@ public class PlatformManagerTest extends JellyTestCase {
         sleep(2000);
         int listSize = platforms.getModel().getSize();
         assertTrue("at least one platform",  listSize > 0);
-        //Built-in JRuby 1.6.5.1
+        //Built-in JRuby
         String bundledJRuby = Bundle.getStringTrimmed("org.netbeans.api.ruby.platform.Bundle", "RubyPlatformManager.CTL_BundledJRubyLabel");
         // XXX this call close the dialog on Mac OS X with default dispatchig model
         // to reproduce just comment out the testInit()
@@ -111,13 +111,13 @@ public class PlatformManagerTest extends JellyTestCase {
         JButtonOperator jbo = new JButtonOperator(rpm, autodetect);
         jbo.push();
         assertEquals("not detected", listSize + 1, platforms.getModel().getSize());
-        //Built-in JRuby 1.6.5.1
+        //Built-in JRuby
         String bundledJRuby = Bundle.getStringTrimmed("org.netbeans.api.ruby.platform.Bundle", "RubyPlatformManager.CTL_BundledJRubyLabel");
         platforms.selectItem(bundledJRuby);
     }
 
     public void testAddPlatform() {
-        //Built-in JRuby 1.6.5.1
+        //Built-in JRuby
         String bundledJRuby = Bundle.getStringTrimmed("org.netbeans.api.ruby.platform.Bundle", "RubyPlatformManager.CTL_BundledJRubyLabel");
         platforms.selectItem(bundledJRuby);
         String binPath = new JTextFieldOperator(rpm, "bin" + File.separator + "jruby").getDisplayedText(); //NOI18N
