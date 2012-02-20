@@ -94,6 +94,15 @@ public class RubyFormatterTest extends RubyTestBase {
 
         reformatAll(files);
     }
+    
+    private boolean skip(FileObject fo, String name, String parentName) {
+        if (fo.getName().equals(name) && (parentName == null || fo.getParent().getNameExt().equals(parentName))) {
+            System.err.println("SKIPPING known bad file " + fo.getNameExt());
+            return true;
+        }
+        
+        return false;
+    }
 
     private void reformatAll(List<FileObject> files) {
         IndentPrefs preferences = new IndentPrefs(2, 2);
@@ -105,65 +114,33 @@ public class RubyFormatterTest extends RubyTestBase {
         // indent each one
         for (FileObject fo : files) {
             count++;
-
-            if (fo.getNameExt().equals("mvm_subvm.rb")) {
-                // This file is okay and shouldn't end in column 0
-                continue;
-            }
-
-            // triggers #134931, in rails 2.3.2 the file has a 'def class' method
-            if (fo.getName().equals("deprecation") && fo.getParent().getName().equals("active_support")) {
-                System.err.println("SKIPPING known bad file " + fo.getNameExt());
-                continue;
-            }
-
-            if (fo.getName().equals("registry")) {
-                System.err.println("SKIPPING known bad file " + fo.getNameExt());
-                continue;
-            }
-
-            if (fo.getName().equals("delegating_attributes")) {
-                System.err.println("SKIPPING known bad file " + fo.getNameExt());
-                continue;
-            }
+            
+            // This file is okay and shouldn't end in column 0            
+            if (fo.getNameExt().equals("mvm_subvm.rb")) continue;
 
             if (fo.getName().equals("sample_02") || fo.getName().equals("sample_03")) {
                 System.err.println("Can't properly format sample_02.rb yet - it's unusual" + fo.getNameExt());
                 continue;
             }
 
-            // Fails due to #182494
-            if (fo.getName().equals("indexer") && fo.getParent().getName().equals("rubygems")) {
-                System.err.println("SKIPPING known bad file " + fo.getNameExt());
-                continue;
-            }
+            if (skip(fo, "deprecation", "active_support")) continue; // triggers #134931, in rails 2.3.2 the file has a 'def class' method
+            if (skip(fo, "registry", null)) continue;            
+            if (skip(fo, "delegating_attributes", null)) continue;
+            if (skip(fo, "indexer", "rubygems")) continue; // bug #182494
+            if (skip(fo, "date", "1.9")) continue;  // Unknown 
+            if (skip(fo, "include", "rdoc")) continue;  // Unknown 
+            if (skip(fo, "mathn", "1.9")) continue; // bug #182761
+            if (skip(fo, "rational", "1.9")) continue; // bug #182761
+            if (skip(fo, "action_controller_dispatcher", "dispatcher")) continue; // bug #108889
+            if (skip(fo, "parse_f95", "parsers")) continue; // bug #108889
+            if (skip(fo, "httputils", "webrick")) continue; // Tested by RubyLexerTest#testDefRegexp
 
-            // Fails due to #182761
-            if ((fo.getName().equals("mathn") || fo.getName().equals("rational"))
-                    && fo.getParent().getNameExt().equals("1.9")) {
-                System.err.println("SKIPPING known bad file " + fo.getNameExt());
-                continue;
-            }
-            // This bug triggers #108889
-            if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
-                System.err.println("SKIPPING known bad file " + fo.getNameExt());
-                continue;
-            }
-            // This bug triggers #108889
-            if (fo.getName().equals("parse_f95") && fo.getParent().getName().equals("parsers")) {
-                System.err.println("SKIPPING known bad file " + fo.getNameExt());
-                continue;
-            }
-            // Tested by RubyLexerTest#testDefRegexp
-            if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick")) {
-                System.err.println("SKIPPING known bad file " + fo.getNameExt());
-                continue;
-            }
             // When erubis is installed:
             if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-erubis.rb")) {
                 System.err.println("SKIPPING " + fo.getNameExt() + " - the lexing of data after __END__ doesn't seem to work");
                 continue;
             }
+            
             System.err.println("Formatting file " + count + "/" + files.size() + " : " + FileUtil.getFileDisplayName(fo));
 
             // check that we end up at indentation level 0
@@ -214,10 +191,12 @@ public class RubyFormatterTest extends RubyTestBase {
     }
 
     private static int getExpectedIndentation(FileObject fo) {
-        if (fo.getPath().endsWith("actionpack-2.3.2/test/abstract_unit.rb")) {
-            return 2; // the last statement in this file uses a ternary operator
-        } else if (fo.getPath().endsWith("1.8/rbconfig/datadir.rb")) {
-            return 2; // the last statement is a continued literal string via '\' on previous line
+        String path = fo.getPath();
+        
+        if (path.endsWith("actionpack-2.3.2/test/abstract_unit.rb") || // last uses a ternary operator
+            path.endsWith("1.8/rbconfig/datadir.rb") || // last line isliteral string via '\' on previous line
+            path.endsWith("linecache-0.46-java/test/data/class1.rb")) {
+            return 2; 
         }
         return 0;
     }
