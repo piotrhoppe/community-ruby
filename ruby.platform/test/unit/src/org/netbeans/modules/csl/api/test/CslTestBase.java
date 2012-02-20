@@ -2464,7 +2464,6 @@ public abstract class CslTestBase extends NbTestCase {
             if (proposal.getModifiers().isEmpty()) {
                 n = "";
             } else {
-                System.out.println("AAAAAAAAAAAAAAAA: " + n);
                 n = proposal.getModifiers().toString();
             }
             int MAX_MOD = 9;
