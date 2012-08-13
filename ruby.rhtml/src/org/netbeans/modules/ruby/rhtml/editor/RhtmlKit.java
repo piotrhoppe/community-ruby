@@ -60,7 +60,7 @@ import org.netbeans.editor.Syntax;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
-import org.netbeans.editor.ext.html.dtd.Registry;
+//import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
@@ -129,7 +129,8 @@ public class RhtmlKit extends HtmlKit {
         if (resolver != null) {
             String fallbackDtd = resolver.getIdentifier(doc);
             if (fallbackDtd != null) {
-                doc.putProperty(HtmlParserResult.FALLBACK_DTD_PROPERTY_NAME, Registry.getDTD(fallbackDtd, null));
+                // FIXME: Gone in modules for 7.2 (Registry)
+//                doc.putProperty(HtmlParserResult.FALLBACK_DTD_PROPERTY_NAME, Registry.getDTD(fallbackDtd, null));
             }
         }
         return result;
