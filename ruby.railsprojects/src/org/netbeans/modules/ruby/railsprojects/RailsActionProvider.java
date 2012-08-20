@@ -81,8 +81,6 @@ import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -629,10 +627,10 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         if (!debug) {
             runServer(path, false, false);
         } else {
-            boolean serverDebug;
-            boolean clientDebug;
+            boolean serverDebug = false;
+            boolean clientDebug = false;
             
-            if (!WebClientToolsSessionStarterService.isAvailable()) {
+/*            if (!WebClientToolsSessionStarterService.isAvailable()) {
                 // Ignore the debugging options if no Javascript debugger is present
                 clientDebug = false;
                 serverDebug = true;
@@ -646,7 +644,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
                 clientDebug = WebClientToolsProjectUtils.getClientDebugProperty(project);
             }
-            assert serverDebug || clientDebug;
+            assert serverDebug || clientDebug;*/
             
             runServer(path, serverDebug, clientDebug);
         }
