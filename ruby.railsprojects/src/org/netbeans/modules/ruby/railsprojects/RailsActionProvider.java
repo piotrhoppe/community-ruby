@@ -46,7 +46,6 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
@@ -63,12 +62,12 @@ import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
-import org.netbeans.modules.ruby.rubyproject.Migrations;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
+import org.netbeans.modules.ruby.rubyproject.Migrations;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseActionProvider;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
@@ -151,6 +150,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         return MIME_TYPES;
     }
     
+    @Override
     public String[] getSupportedActions() {
         return supportedActions;
     }
@@ -171,6 +171,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         return Migrations.getMigrationVersion(file.getName()) != null;
     }
     
+    @Override
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         // TODO Check for valid installation of Ruby and Rake
         RubyPlatform platform = RubyPlatform.platformFor(project);
@@ -473,14 +474,13 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         
         if (COMMAND_RENAME.equals(command)) {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            return ;
         }
     }    
     
     private void openRailsConsole(Lookup context) {
         String displayName = NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
         File pwd = FileUtil.toFile(project.getProjectDirectory());
-        String script = null;
+        String script;
         List<String> additionalArgs = new ArrayList<String>();
         boolean rails3 = RailsProjectUtil.getRailsVersion(project).isRails3OrHigher();
         if (rails3) {
@@ -527,6 +527,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         return outputWindow;
     }
     
+    @Override
     public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
             String displayName, final Lookup context, final boolean debug,
             LineConvertor... extraConvertors) {
@@ -606,15 +607,13 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     }
     
     
+    @Override
     public boolean isActionEnabled( String command, Lookup context ) {
-        if (getPlatform() == null) {
-            return false;
-        }
         // We don't require files to be in the source roots to be executable/debuggable;
         // for example, in Rails you may want to switch to the Files view and execute
         // some of the files in scripts/, even though these are not considered sources
         // (and don't have a source root)
-        return true;
+        return getPlatform() != null;
     }
     
    
