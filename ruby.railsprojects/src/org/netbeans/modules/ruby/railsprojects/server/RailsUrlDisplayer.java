@@ -42,24 +42,13 @@
 package org.netbeans.modules.ruby.railsprojects.server;
 
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
-import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
-import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
-import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+
 
 /**
  * A Url displayer for Rails apps (refactored out from {@link RailsServerManager}).
@@ -82,59 +71,14 @@ final class RailsUrlDisplayer {
             return;
         }
 
-        LOGGER.fine("Opening URL: " + "http://localhost:" + port + "/" + relativeUrl);
+        LOGGER.log(Level.FINE,"Opening URL: " + "http://localhost:{0}/{1}", new Object[]{port, relativeUrl});
         try {
             URL url = new URL("http://localhost:" + port + contextRoot + "/" + relativeUrl); // NOI18N
 
             if (!runClientDebugger) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-            } else {
-                // launch browser with clientside debugger
-                FileObject projectDocBase = project.getRakeProjectHelper().resolveFileObject("public"); // NOI18N
-                String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
-
-                HtmlBrowser.Factory browser = null;
-                if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
-                    browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
-                } else {
-                    browser = WebClientToolsProjectUtils.getFirefoxBrowser();
-                }
-
-                if (browser == null) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                    return;
-                }
-
-                LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
-
-                Lookup debuggerLookup = null;
-                if (mapperFactory != null) {
-                    URI appContext = new URI(hostPrefix);
-
-                    // If the public/index.html file exists assume that it is the welcome file.
-                    Map<String, Object> extendedInfo = null;
-                    FileObject welcomeFile = projectDocBase.getFileObject("index.html");  //NOI18N
-                    if (welcomeFile != null) {
-                        extendedInfo = new HashMap<String, Object>();
-                        extendedInfo.put("welcome-file", "index.html"); //NOI18N
-                    }
-
-                    JSToNbJSLocationMapper forwardMapper =
-                            mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, extendedInfo);
-                    NbJSToJSLocationMapper reverseMapper =
-                            mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, extendedInfo);
-                    debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
-                } else {
-                    debuggerLookup = Lookups.fixed(project);
-                }
-
-                WebClientToolsSessionStarterService.startSession(url.toURI(), browser, debuggerLookup);
             }
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (URISyntaxException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (WebClientToolsSessionException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
