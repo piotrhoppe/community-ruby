@@ -54,12 +54,12 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.ruby.rubyproject.RequiredGems;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
+import org.netbeans.modules.ruby.rubyproject.RequiredGems;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyConfigurationProvider;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -248,10 +248,12 @@ public class RailsProject extends RubyBaseProject {
             "Templates/Ruby/_view.rhtml", // NOI18N
         };
         
+        @Override
         public String[] getRecommendedTypes() {
             return APPLICATION_TYPES;
         }
         
+        @Override
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }

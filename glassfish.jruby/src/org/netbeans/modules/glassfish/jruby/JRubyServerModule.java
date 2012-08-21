@@ -154,7 +154,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
                     Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
                             "startServer V3/JRuby: " + newState + " - " + message);
                 }
-            }));
+            }, null));
         } else {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }
@@ -226,7 +226,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
             GlassfishModule.OperationState result = GlassfishModule.OperationState.COMPLETED;
             if(doStart) {
                 final Future<GlassfishModule.OperationState> startFuture = 
-                        commonModule.startServer(this);
+                        commonModule.startServer(this, null);
                 result = startFuture.get();
             }
             if(result == GlassfishModule.OperationState.COMPLETED) {
