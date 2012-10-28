@@ -33,6 +33,7 @@
 
         <autoupdate installdir="${nbplatform.active.dir}" updatecenter="${autoupdate_certified.catalog.url}">
             <modules includes="org[.]netbeans[.]libs[.]junit4" clusters="platform"/>
+            <modules includes="org[.]netbeans[.]libs[.]jcsh" clusters="platform"/>
         </autoupdate>
     </target>
 </project>

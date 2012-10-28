@@ -633,7 +633,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 // Ignore the debugging options if no Javascript debugger is present
                 clientDebug = false;
                 serverDebug = true;
-            } else {*/
+            } else {
                 // show Debug Project dialog
                 boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
                 if (!keepDebugging) {
@@ -643,6 +643,11 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
                 clientDebug = WebClientToolsProjectUtils.getClientDebugProperty(project);
             }*/
+                    
+            // Set serverDebug to true because the code normally enabling it is commented out
+            // Don't set clientDebug to true, because then NB doesn't run the browser.
+            serverDebug = true;
+                    
             assert serverDebug || clientDebug;
             
             runServer(path, serverDebug, clientDebug);

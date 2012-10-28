@@ -11,7 +11,7 @@
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>org-jruby-jruby.jar</runtime-relative-path>
-                <binary-origin>external/jruby-complete-1.6.5.1.jar</binary-origin>
+                <binary-origin>external/jruby-complete-1.7.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
