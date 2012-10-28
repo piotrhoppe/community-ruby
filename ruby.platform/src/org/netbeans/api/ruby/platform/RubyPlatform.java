@@ -1149,7 +1149,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.7"); // NOI18N
-            info.jversion = "1.6.6"; // NOI18N  // FIXME: Kill this embedding
+            info.jversion = "1.7.0"; // NOI18N  // FIXME: Kill this embedding
             info.patchlevel = "357"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
@@ -1253,7 +1253,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
         /**
          * Get version specific for the platform. E.g. in the case of JRuby it
-         * returns e.g. 1.6.6 instead of 1.8.6.
+         * returns e.g. 1.7.0 instead of 1.8.6.
          *
          * @return platform specific version
          */
