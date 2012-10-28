@@ -633,7 +633,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 // Ignore the debugging options if no Javascript debugger is present
                 clientDebug = false;
                 serverDebug = true;
-            } else {
+            } else {*/
                 // show Debug Project dialog
                 boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
                 if (!keepDebugging) {
@@ -642,8 +642,8 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
 
                 serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
                 clientDebug = WebClientToolsProjectUtils.getClientDebugProperty(project);
-            }
-            assert serverDebug || clientDebug;*/
+            }*/
+            assert serverDebug || clientDebug;
             
             runServer(path, serverDebug, clientDebug);
         }
