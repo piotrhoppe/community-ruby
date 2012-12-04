@@ -183,14 +183,22 @@ public final class RubyIndex {
         return Collections.<IndexResult>emptySet();
     }
 
-    private boolean search(String key, String name, QuerySupport.Kind kind, Collection<IndexResult> result, String... fieldsToLoad) {
+    // FIXME: Some change in the indexing library does not allow us to update the same file we are
+    // indexing over.  This is causing a deadlock.  There must be a better way than not allowing
+    // the indexer to update the index.
+    private boolean search(final String key, final String name, final QuerySupport.Kind kind, final Collection<IndexResult> result, final String... fieldsToLoad) {
         try {
-            result.addAll(querySupport.query(key, name, kind,  fieldsToLoad));
-            return true;
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+            if (RubyIndexer.preventIndexing) return false;
+
+            RubyIndexer.preventIndexing = true;
+            result.addAll(querySupport.query(key, name, kind, fieldsToLoad));
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
             return false;
+        } finally {
+            RubyIndexer.preventIndexing = false;
         }
+        return true;
     }
 
     FileObject getContext() {
