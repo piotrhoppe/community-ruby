@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -164,6 +165,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return rubyIndex;
     }
 
+    @Override
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(document);
         
@@ -272,307 +274,225 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return OffsetRange.NONE;
     }
 
-    public DeclarationLocation findDeclaration(ParserResult parserResult, int lexOffset) {
+    @Override
+    public DeclarationLocation findDeclaration(final ParserResult parserResult, final int lexOffset) {
         // Is this a require-statement? If so, jump to the required file
-        try {
-            Document document = RubyUtils.getDocument(parserResult, true);
-            if (document == null) {
-                return DeclarationLocation.NONE;
-            }
-            TokenHierarchy<Document> th = TokenHierarchy.get(document);
-            BaseDocument doc = (BaseDocument)document;
+            final Document document = RubyUtils.getDocument(parserResult, true);
+            if (document == null) return DeclarationLocation.NONE;
 
-            int astOffset = AstUtilities.getAstOffset(parserResult, lexOffset);
-            if (astOffset == -1) {
-                return DeclarationLocation.NONE;
-            }
+            final AtomicReference<DeclarationLocation> out = new AtomicReference<DeclarationLocation>(DeclarationLocation.NONE);
 
-            boolean view = RubyUtils.isRhtmlFile(RubyUtils.getFileObject(parserResult));
-            if (view || RubyUtils.isRailsProject(RubyUtils.getFileObject(parserResult))) {
-                DeclarationLocation loc = findRailsFile(parserResult, doc, th, lexOffset, astOffset, view);
+            // This will only change out if the result is different than NONE.
+            document.render(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        TokenHierarchy<Document> th = TokenHierarchy.get(document);
+                        BaseDocument doc = (BaseDocument)document;
 
-                if (loc != DeclarationLocation.NONE) {
-                    return loc;
-                }
-            }
+                        int astOffset = AstUtilities.getAstOffset(parserResult, lexOffset);
+                        if (astOffset == -1) return;
 
-            OffsetRange range = getReferenceSpan(doc, lexOffset);
+                        boolean view = RubyUtils.isRhtmlFile(RubyUtils.getFileObject(parserResult));
+                        if (view || RubyUtils.isRailsProject(RubyUtils.getFileObject(parserResult))) {
+                            DeclarationLocation loc = findRailsFile(parserResult, doc, th, lexOffset, astOffset, view);
 
-            if (range == OffsetRange.NONE) {
-                return DeclarationLocation.NONE;
-            }
-
-            // Determine the bias (if the caret is between two tokens, did we
-            // click on a link for the left or the right?
-            boolean leftSide = range.getEnd() <= lexOffset;
-
-            Node root = AstUtilities.getRoot(parserResult);
-
-            RubyIndex index = getIndex(parserResult);
-            if (root == null) {
-                // No parse tree - try to just use the syntax info to do a simple index lookup
-                // for methods and classes
-                String text = doc.getText(range.getStart(), range.getLength());
-
-                if ((index == null) || (text.length() == 0)) {
-                    return DeclarationLocation.NONE;
-                }
-
-                if (Character.isUpperCase(text.charAt(0))) {
-                    // A Class or Constant?
-                    Set<IndexedClass> classes =
-                        index.getClasses(text, QuerySupport.Kind.EXACT, true, false, false);
-
-                    if (classes.size() == 0) {
-                        return DeclarationLocation.NONE;
-                    }
-
-                    RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder(null, null, null, index, null);
-                    DeclarationLocation l = cdf.getElementDeclaration(classes, null);
-
-                    if (l != null) {
-                        return l;
-                    }
-                } else {
-                    // A method?
-                    Set<IndexedMethod> methods =
-                        index.getMethods(text, (String) null, QuerySupport.Kind.EXACT);
-
-                    if (methods.size() == 0) {
-                        methods = index.getMethods(text, QuerySupport.Kind.EXACT);
-                    }
-
-                    DeclarationLocation l = getMethodDeclaration(parserResult, text, methods,
-                         null, null, index, astOffset, lexOffset);
-
-                    if (l != null) {
-                        return l;
-                    }
-                } // TODO: @ - field?
-
-                return DeclarationLocation.NONE;
-            }
-
-            int tokenOffset = lexOffset;
-
-            if (leftSide && (tokenOffset > 0)) {
-                tokenOffset--;
-            }
-
-            // See if the hyperlink is for the string in a require statement
-            int requireStart = LexUtilities.getRequireStringOffset(tokenOffset, th);
-
-            if (requireStart != -1) {
-                String require = LexUtilities.getStringAt(tokenOffset, th);
-
-                if (require != null) {
-                    FileObject fo = index.getRequiredFile(require);
-
-                    if (fo != null) {
-                        return new DeclarationLocation(fo, 0);
-                    }
-                }
-
-                // It's in a require string so no possible other matches
-                return DeclarationLocation.NONE;
-            }
-
-            AstPath path = new AstPath(root, astOffset);
-            Node closest = path.leaf();
-            if (closest == null) {
-                return DeclarationLocation.NONE;
-            }
-
-            // See if the hyperlink is over a method reference in an rdoc comment
-            DeclarationLocation rdoc = findRDocMethod(parserResult, doc, astOffset, lexOffset, root, path, closest, index);
-
-            if (rdoc != DeclarationLocation.NONE) {
-                return fix(rdoc, parserResult);
-            }
-
-            // Look at the parse tree; find the closest node and jump based on the context
-            if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
-                // A local variable read or a parameter read, or an assignment to one of these
-                String name = ((INameNode)closest).getName();
-                Node method = AstUtilities.findLocalScope(closest, path);
-
-                return fix(findLocal(parserResult, method, name), parserResult);
-            } else if (closest instanceof DVarNode) {
-                // A dynamic variable read or assignment
-                String name = ((DVarNode)closest).getName(); // Does not implement INameNode
-                Node block = AstUtilities.findDynamicScope(closest, path);
-
-                return fix(findDynamic(parserResult, block, name), parserResult);
-            } else if (closest instanceof DAsgnNode) {
-                // A dynamic variable read or assignment
-                String name = ((INameNode)closest).getName();
-                Node block = AstUtilities.findDynamicScope(closest, path);
-
-                return fix(findDynamic(parserResult, block, name), parserResult);
-            } else if (closest instanceof InstVarNode) {
-                // A field variable read
-                String name = ((INameNode)closest).getName();
-                return findInstanceFromIndex(parserResult, name, path, index, false);
-            } else if (closest instanceof ClassVarNode) {
-                // A class variable read
-                String name = ((INameNode)closest).getName();
-                return findInstanceFromIndex(parserResult, name, path, index, false);
-            } else if (closest instanceof GlobalVarNode) {
-                // A global variable read
-                String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
-
-                return fix(findGlobal(parserResult, root, name), parserResult);
-            } else if (closest instanceof FCallNode || closest instanceof VCallNode ||
-                    closest instanceof CallNode) {
-                // A method call
-                String name = ((INameNode)closest).getName();
-
-                Call call = Call.getCallType(doc, th, lexOffset);
-
-                RubyType type = call.getType();
-                String lhs = call.getLhs();
-
-                if (!type.isKnown() && lhs != null && closest != null &&
-                        call.isSimpleIdentifier()) {
-                    Node method = AstUtilities.findLocalScope(closest, path);
-
-                    if (method != null) {
-                        // TODO - if the lhs is "foo.bar." I need to split this
-                        // up and do it a bit more cleverly
-                        ContextKnowledge knowledge = new ContextKnowledge(
-                                index, root, method, astOffset, lexOffset, parserResult);
-                        RubyTypeInferencer inferencer = RubyTypeInferencer.create(knowledge);
-                        type = inferencer.inferType(lhs);
-                    }
-                }
-
-                // Constructors: "new" ends up calling "initialize".
-                // Actually, it's more complicated than this: a method CAN override new
-                // in which case I should show it, but that is discouraged and people
-                // SHOULD override initialize, which is what the default new method will
-                // call for initialization.
-                if (!type.isKnown()) { // search locally
-
-                    if (name.equals("new")) { // NOI18N
-                        name = "initialize"; // NOI18N
-                    }
-
-                    Arity arity = Arity.getCallArity(closest);
-
-                    DeclarationLocation loc = fix(findMethod(parserResult, root, name, arity), parserResult);
-
-                    if (loc != DeclarationLocation.NONE) {
-                        return loc;
-                    }
-                }
-
-                String fqn = AstUtilities.getFqnName(path);
-                if (call == Call.LOCAL && fqn != null && fqn.length() == 0) {
-                    fqn = "Object";
-                }
-
-                return findMethod(name, fqn, type, call, parserResult, astOffset, lexOffset, path, closest, index);
-            } else if (closest instanceof ConstNode || closest instanceof Colon2Node) {
-                // try Class usage
-                RubyClassDeclarationFinder classDF = new RubyClassDeclarationFinder(parserResult, root, path, index, closest);
-                DeclarationLocation decl = classDF.findClassDeclaration();
-                if (decl != DeclarationLocation.NONE) {
-                    return decl;
-                }
-                // try Constant usage
-                RubyConstantDeclarationFinder constantDF = new RubyConstantDeclarationFinder(parserResult, root, path, index, closest);
-                return constantDF.findConstantDeclaration();
-            } else if (closest instanceof SymbolNode) {
-                String name = ((SymbolNode)closest).getName();
-
-                // Search for methods, fields, etc.
-                Arity arity = Arity.UNKNOWN;
-                DeclarationLocation location = findMethod(parserResult, root, name, arity);
-
-                // search for AR associations
-                if (location == DeclarationLocation.NONE) {
-                    location = new ActiveRecordAssociationFinder(index, (SymbolNode) closest, root, path).findAssociationLocation();
-                }
-
-                // search for helpers
-                if (location == DeclarationLocation.NONE) {
-                    location = new HelpersFinder(index, (SymbolNode) closest, root, path).findHelperLocation();
-                }
-
-                if (location == DeclarationLocation.NONE) {
-                    location = findInstance(parserResult, root, name, index);
-                }
-
-                if (location == DeclarationLocation.NONE) {
-                    location = findClassVar(parserResult, root, name);
-                }
-
-                if (location == DeclarationLocation.NONE) {
-                    location = findGlobal(parserResult, root, name);
-                }
-
-                if (location == DeclarationLocation.NONE) {
-                    RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder();
-                    Node clz = cdf.findClass(root, ((INameNode)closest).getName(), ignoreAlias);
-
-                    if (clz != null) {
-                        location = getLocation(parserResult, clz);
-                    }
-                }
-
-                // methods
-                if (location == DeclarationLocation.NONE) {
-                    location = findInstanceMethodsFromIndex(parserResult, name, path, index);
-                }
-                // fields
-                if (location == DeclarationLocation.NONE) {
-                    location = findInstanceFromIndex(parserResult, name, path, index, true);
-                }
-
-                return fix(location, parserResult);
-            } else if (closest instanceof AliasNode) {
-                AliasNode an = (AliasNode)closest;
-
-                // TODO - determine if the click is over the new name or the old name
-                String newName = AstUtilities.getNameOrValue(an.getNewName());
-                if (newName == null) {
-                    return DeclarationLocation.NONE;
-                }
-
-                // XXX I don't know where the old and new names are since the user COULD
-                // have used more than one whitespace character for separation. For now I'll
-                // just have to assume it's the normal case with one space:  alias new old. 
-                // I -could- use the getPosition.getEndOffset() to see if this looks like it's
-                // the case (e.g. node length != "alias ".length + old.length+new.length+1).
-                // In this case I could go peeking in the source buffer to see where the
-                // spaces are - between alias and the first word or between old and new. XXX.
-                int newLength = newName.length();
-                int aliasPos = an.getPosition().getStartOffset();
-
-                if (astOffset > aliasPos+6) { // 6: "alias ".length()
-
-                    if (astOffset > (aliasPos + 6 + newLength)) {
-                        // It's over the old word: this counts as a usage.
-                        // The problem is that we don't know if it's a local, a dynamic, an instance
-                        // variable, etc. (The $ and @ parts are not included in the alias statement).
-                        // First see if it's a local variable.
-                        String name = AstUtilities.getNameOrValue(an.getOldName());
-                        if (name == null) {
-                            return DeclarationLocation.NONE;
+                            if (loc != DeclarationLocation.NONE) {
+                                out.set(loc);
+                                return;
+                            }
                         }
-                        ignoreAlias = true;
 
-                        try {
-                            DeclarationLocation location =
-                                findLocal(parserResult, AstUtilities.findLocalScope(closest, path), name);
+                        OffsetRange range = getReferenceSpan(doc, lexOffset);
 
-                            if (location == DeclarationLocation.NONE) {
-                                location = findDynamic(parserResult, AstUtilities.findDynamicScope(closest, path),
-                                        name);
+                        if (range == OffsetRange.NONE) return;
+
+                        // Determine the bias (if the caret is between two tokens, did we
+                        // click on a link for the left or the right?
+                        boolean leftSide = range.getEnd() <= lexOffset;
+
+                        Node root = AstUtilities.getRoot(parserResult);
+
+                        RubyIndex index = getIndex(parserResult);
+                        if (root == null) {
+                            // No parse tree - try to just use the syntax info to do a simple index lookup
+                            // for methods and classes
+                            String text = doc.getText(range.getStart(), range.getLength());
+
+                            if ((index == null) || (text.length() == 0)) return;
+
+                            if (Character.isUpperCase(text.charAt(0))) {
+                                // A Class or Constant?
+                                Set<IndexedClass> classes = index.getClasses(text, QuerySupport.Kind.EXACT, true, false, false);
+
+                                if (classes.isEmpty()) return;
+
+                                RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder(null, null, null, index, null);
+                                DeclarationLocation l = cdf.getElementDeclaration(classes, null);
+
+                                if (l != null) {
+                                    out.set(l);
+                                    return;
+                                }
+                            } else {
+                                // A method?
+                                Set<IndexedMethod> methods = index.getMethods(text, (String) null, QuerySupport.Kind.EXACT);
+
+                                if (methods.isEmpty()) {
+                                    methods = index.getMethods(text, QuerySupport.Kind.EXACT);
+                                }
+
+                                DeclarationLocation l = getMethodDeclaration(parserResult, text, methods,
+                                        null, null, index, astOffset, lexOffset);
+
+                                if (l != null) {
+                                    out.set(l);
+                                    return;
+                                }
+                            } // TODO: @ - field?
+
+                            return;
+                        }
+
+                        int tokenOffset = lexOffset;
+
+                        if (leftSide && (tokenOffset > 0)) tokenOffset--;
+
+                        // See if the hyperlink is for the string in a require statement
+                        int requireStart = LexUtilities.getRequireStringOffset(tokenOffset, th);
+
+                        if (requireStart != -1) {
+                            String require = LexUtilities.getStringAt(tokenOffset, th);
+
+                            if (require != null) {
+                                FileObject fo = index.getRequiredFile(require);
+
+                                if (fo != null) {
+                                    out.set(new DeclarationLocation(fo, 0));
+                                    return;
+                                }
                             }
 
+                            // It's in a require string so no possible other matches
+                            return;
+                        }
+
+                        AstPath path = new AstPath(root, astOffset);
+                        Node closest = path.leaf();
+                        if (closest == null) return;
+
+                        // See if the hyperlink is over a method reference in an rdoc comment
+                        DeclarationLocation rdoc = findRDocMethod(parserResult, doc, astOffset, lexOffset, root, path, closest, index);
+
+                        if (rdoc != DeclarationLocation.NONE) {
+                            out.set(fix(rdoc, parserResult));
+                            return;
+                        }
+
+                        // Look at the parse tree; find the closest node and jump based on the context
+                        if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
+                            // A local variable read or a parameter read, or an assignment to one of these
+                            String name = ((INameNode)closest).getName();
+                            Node method = AstUtilities.findLocalScope(closest, path);
+
+                            out.set(fix(findLocal(parserResult, method, name), parserResult));
+                        } else if (closest instanceof DVarNode) {
+                            // A dynamic variable read or assignment
+                            String name = ((DVarNode)closest).getName(); // Does not implement INameNode
+                            Node block = AstUtilities.findDynamicScope(closest, path);
+
+                            out.set(fix(findDynamic(parserResult, block, name), parserResult));
+                        } else if (closest instanceof DAsgnNode) {
+                            // A dynamic variable read or assignment
+                            String name = ((INameNode)closest).getName();
+                            Node block = AstUtilities.findDynamicScope(closest, path);
+
+                            out.set(fix(findDynamic(parserResult, block, name), parserResult));
+                        } else if (closest instanceof InstVarNode) {
+                            // A field variable read
+                            String name = ((INameNode)closest).getName();
+                            out.set(findInstanceFromIndex(parserResult, name, path, index, false));
+                        } else if (closest instanceof ClassVarNode) {
+                            // A class variable read
+                            String name = ((INameNode)closest).getName();
+                            out.set(findInstanceFromIndex(parserResult, name, path, index, false));
+                        } else if (closest instanceof GlobalVarNode) {
+                            // A global variable read
+                            String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
+                            out.set(fix(findGlobal(parserResult, root, name), parserResult));
+                        } else if (closest instanceof FCallNode || closest instanceof VCallNode ||
+                                closest instanceof CallNode) {
+                            // A method call
+                            String name = ((INameNode)closest).getName();
+
+                            Call call = Call.getCallType(doc, th, lexOffset);
+
+                            RubyType type = call.getType();
+                            String lhs = call.getLhs();
+
+                            if (!type.isKnown() && lhs != null && closest != null &&
+                                    call.isSimpleIdentifier()) {
+                                Node method = AstUtilities.findLocalScope(closest, path);
+
+                                if (method != null) {
+                                    // TODO - if the lhs is "foo.bar." I need to split this
+                                    // up and do it a bit more cleverly
+                                    ContextKnowledge knowledge = new ContextKnowledge(
+                                            index, root, method, astOffset, lexOffset, parserResult);
+                                    RubyTypeInferencer inferencer = RubyTypeInferencer.create(knowledge);
+                                    type = inferencer.inferType(lhs);
+                                }
+                            }
+
+                            // Constructors: "new" ends up calling "initialize".
+                            // Actually, it's more complicated than this: a method CAN override new
+                            // in which case I should show it, but that is discouraged and people
+                            // SHOULD override initialize, which is what the default new method will
+                            // call for initialization.
+                            if (!type.isKnown()) { // search locally
+
+                                if (name.equals("new")) name = "initialize"; // NOI18N
+
+                                Arity arity = Arity.getCallArity(closest);
+
+                                DeclarationLocation loc = fix(findMethod(parserResult, root, name, arity), parserResult);
+
+                                if (loc != DeclarationLocation.NONE) {
+                                    out.set(loc);
+                                    return;
+                                }
+                            }
+
+                            String fqn = AstUtilities.getFqnName(path);
+                            if (call == Call.LOCAL && fqn != null && fqn.length() == 0) fqn = "Object"; // NOI18N
+
+                            out.set(findMethod(name, fqn, type, call, parserResult, astOffset, lexOffset, path, closest, index));
+                        } else if (closest instanceof ConstNode || closest instanceof Colon2Node) {
+                            // try Class usage
+                            RubyClassDeclarationFinder classDF = new RubyClassDeclarationFinder(parserResult, root, path, index, closest);
+                            DeclarationLocation decl = classDF.findClassDeclaration();
+                            if (decl != DeclarationLocation.NONE) {
+                                out.set(decl);
+                                return;
+                            }
+                            // try Constant usage
+                            RubyConstantDeclarationFinder constantDF = new RubyConstantDeclarationFinder(parserResult, root, path, index, closest);
+                            out.set(constantDF.findConstantDeclaration());
+                        } else if (closest instanceof SymbolNode) {
+                            String name = ((SymbolNode)closest).getName();
+
+                            // Search for methods, fields, etc.
+                            Arity arity = Arity.UNKNOWN;
+                            DeclarationLocation location = findMethod(parserResult, root, name, arity);
+
+                            // search for AR associations
                             if (location == DeclarationLocation.NONE) {
-                                location = findMethod(parserResult, root, name, Arity.UNKNOWN);
+                                location = new ActiveRecordAssociationFinder(index, (SymbolNode) closest, root, path).findAssociationLocation();
+                            }
+
+                            // search for helpers
+                            if (location == DeclarationLocation.NONE) {
+                                location = new HelpersFinder(index, (SymbolNode) closest, root, path).findHelperLocation();
                             }
 
                             if (location == DeclarationLocation.NONE) {
@@ -589,84 +509,150 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                             if (location == DeclarationLocation.NONE) {
                                 RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder();
-                                Node clz = cdf.findClass(root, name, ignoreAlias);
+                                Node clz = cdf.findClass(root, ((INameNode)closest).getName(), ignoreAlias);
 
-                                if (clz != null) {
-                                    location = getLocation(parserResult, clz);
+                                if (clz != null) location = getLocation(parserResult, clz);
+                            }
+
+                            // methods
+                            if (location == DeclarationLocation.NONE) {
+                                location = findInstanceMethodsFromIndex(parserResult, name, path, index);
+                            }
+                            // fields
+                            if (location == DeclarationLocation.NONE) {
+                                location = findInstanceFromIndex(parserResult, name, path, index, true);
+                            }
+
+                            out.set(fix(location, parserResult));
+                        } else if (closest instanceof AliasNode) {
+                            AliasNode an = (AliasNode)closest;
+
+                            // TODO - determine if the click is over the new name or the old name
+                            String newName = AstUtilities.getNameOrValue(an.getNewName());
+                            if (newName == null) return;
+
+                            // XXX I don't know where the old and new names are since the user COULD
+                            // have used more than one whitespace character for separation. For now I'll
+                            // just have to assume it's the normal case with one space:  alias new old. 
+                            // I -could- use the getPosition.getEndOffset() to see if this looks like it's
+                            // the case (e.g. node length != "alias ".length + old.length+new.length+1).
+                            // In this case I could go peeking in the source buffer to see where the
+                            // spaces are - between alias and the first word or between old and new. XXX.
+                            int newLength = newName.length();
+                            int aliasPos = an.getPosition().getStartOffset();
+
+                            if (astOffset > aliasPos + 6) { // 6: "alias ".length()
+                                if (astOffset > (aliasPos + 6 + newLength)) {
+                                    // It's over the old word: this counts as a usage.
+                                    // The problem is that we don't know if it's a local, a dynamic, an instance
+                                    // variable, etc. (The $ and @ parts are not included in the alias statement).
+                                    // First see if it's a local variable.
+                                    String name = AstUtilities.getNameOrValue(an.getOldName());
+                                    if (name == null) return;
+                                    ignoreAlias = true;
+
+                                    try {
+                                        DeclarationLocation location =
+                                                findLocal(parserResult, AstUtilities.findLocalScope(closest, path), name);
+
+                                        if (location == DeclarationLocation.NONE) {
+                                            location = findDynamic(parserResult, AstUtilities.findDynamicScope(closest, path),
+                                                    name);
+                                        }
+
+                                        if (location == DeclarationLocation.NONE) {
+                                            location = findMethod(parserResult, root, name, Arity.UNKNOWN);
+                                        }
+
+                                        if (location == DeclarationLocation.NONE) {
+                                            location = findInstance(parserResult, root, name, index);
+                                        }
+
+                                        if (location == DeclarationLocation.NONE) {
+                                            location = findClassVar(parserResult, root, name);
+                                        }
+
+                                        if (location == DeclarationLocation.NONE) {
+                                            location = findGlobal(parserResult, root, name);
+                                        }
+
+                                        if (location == DeclarationLocation.NONE) {
+                                            RubyClassDeclarationFinder cdf = new RubyClassDeclarationFinder();
+                                            Node clz = cdf.findClass(root, name, ignoreAlias);
+
+                                            if (clz != null) {
+                                                location = getLocation(parserResult, clz);
+                                            }
+                                        }
+
+                                        // TODO - what if we're aliasing another alias? I think that should show up in the various
+                                        // other nodes
+                                        if (location == DeclarationLocation.NONE) return;
+
+                                        out.set(fix(location, parserResult));
+                                    } finally {
+                                        ignoreAlias = false;
+                                    }
+                                } else {
+                                    // It's over the new word: this counts as a declaration. Nothing to do here except
+                                    // maybe jump right back to the beginning.
+                                    out.set(new DeclarationLocation(RubyUtils.getFileObject(parserResult), aliasPos + 4));
                                 }
                             }
+                        } else if (closest instanceof ArgumentNode) {
+                            // A method name (if under a DefnNode or DefsNode) or a parameter (if indirectly under an ArgsNode)
+                            String name = ((ArgumentNode)closest).getName(); // ArgumentNode doesn't implement INameNode
 
-                            // TODO - what if we're aliasing another alias? I think that should show up in the various
-                            // other nodes
-                            if (location == DeclarationLocation.NONE) {
-                                return location;
-                            } else {
-                                return fix(location, parserResult);
+                            Node parent = path.leafParent();
+                            
+                            if (parent != null) {
+                                if (parent instanceof MethodDefNode) return; // It's a method name
+
+                                // Parameter (check to see if its under ArgumentNode)
+                                Node method = AstUtilities.findLocalScope(closest, path);
+
+                                out.set(fix(findLocal(parserResult, method, name), parserResult));
+                            } 
+                        } else if (closest instanceof StrNode) {
+                            // See if the hyperlink is for the string that is the value for :class_name =>
+                            int classNameStart = LexUtilities.getClassNameStringOffset(astOffset, th);
+                            if (classNameStart != -1) {
+                                String className = LexUtilities.getStringAt(tokenOffset, th);
+                                if (className != null) {
+                                    out.set(getLocation(index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false)));
+                                }
                             }
-                        } finally {
-                            ignoreAlias = false;
+                        } else if (closest instanceof SuperNode || closest instanceof ZSuperNode) {
+                            Node scope = AstUtilities.findLocalScope(closest, path);
+                            String fqn = AstUtilities.getFqnName(path);
+                            switch (scope.getNodeType()) {
+                                case SCLASSNODE:
+                                case MODULENODE:
+                                case CLASSNODE: {
+                                    IndexedClass superClass = index.getSuperclass(fqn);
+                                    if (superClass != null) {
+                                        out.set(getLocation(Collections.singleton(superClass)));
+                                    }
+                                    break;
+                                }
+                                case DEFNNODE:
+                                case DEFSNODE: {
+                                    MethodDefNode methodDef = AstUtilities.findMethod(path);
+                                    IndexedMethod superMethod = index.getSuperMethod(fqn, methodDef.getName(), true);
+                                    if (superMethod != null) {
+                                        out.set(getLocation(Collections.singleton(superMethod)));
+                                    }
+                                    break;
+                                }
+                            }
                         }
-                    } else {
-                        // It's over the new word: this counts as a declaration. Nothing to do here except
-                        // maybe jump right back to the beginning.
-                        return new DeclarationLocation(RubyUtils.getFileObject(parserResult), aliasPos + 4);
+                    } catch (BadLocationException ble) {
+                        // do nothing - see #154991
                     }
                 }
-            } else if (closest instanceof ArgumentNode) {
-                // A method name (if under a DefnNode or DefsNode) or a parameter (if indirectly under an ArgsNode)
-                String name = ((ArgumentNode)closest).getName(); // ArgumentNode doesn't implement INameNode
+            });
 
-                Node parent = path.leafParent();
-
-                if (parent != null) {
-                    if (parent instanceof MethodDefNode) {
-                        // It's a method name
-                        return DeclarationLocation.NONE;
-                    } else {
-                        // Parameter (check to see if its under ArgumentNode)
-                        Node method = AstUtilities.findLocalScope(closest, path);
-
-                        return fix(findLocal(parserResult, method, name), parserResult);
-                    }
-                } 
-            } else if (closest instanceof StrNode) {
-                    // See if the hyperlink is for the string that is the value for :class_name =>
-                    int classNameStart = LexUtilities.getClassNameStringOffset(astOffset, th);
-                    if (classNameStart != -1) {
-                        String className = LexUtilities.getStringAt(tokenOffset, th);
-                        if (className != null) {
-                            return getLocation(index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false));
-                        }
-                    }
-            } else if (closest instanceof SuperNode || closest instanceof ZSuperNode) {
-                Node scope = AstUtilities.findLocalScope(closest, path);
-                String fqn = AstUtilities.getFqnName(path);
-                switch (scope.getNodeType()) {
-                    case SCLASSNODE:
-                    case MODULENODE:
-                    case CLASSNODE: {
-                        IndexedClass superClass = index.getSuperclass(fqn);
-                        if (superClass != null) {
-                            return getLocation(Collections.singleton(superClass));
-                        }
-                        break;
-                    }
-                    case DEFNNODE:
-                    case DEFSNODE: {
-                        MethodDefNode methodDef = AstUtilities.findMethod(path);
-                        IndexedMethod superMethod = index.getSuperMethod(fqn, methodDef.getName(), true);
-                        if (superMethod != null) {
-                            return getLocation(Collections.singleton(superMethod));
-                        }
-                        break;
-                    }
-                }
-            }
-        } catch (BadLocationException ble) {
-            // do nothing - see #154991
-        }
-
-        return DeclarationLocation.NONE;
+            return out.get();
     }
 
     /** 
@@ -684,18 +670,14 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             boolean classLocation, boolean requireDeclaredClass) {
         
         int methodIndex = testString.indexOf('/'); //NOI18N
-        if (methodIndex == -1) {
-            return DeclarationLocation.NONE;
-        }
+        if (methodIndex == -1) return DeclarationLocation.NONE;
 
         RubyIndex index = RubyIndex.get(QuerySupport.findRoots(fileInProject,
                 Collections.singleton(RubyLanguage.SOURCE),
                 Collections.singleton(RubyLanguage.BOOT),
                 Collections.<String>emptySet()));
 
-        if (index == null) {
-            return DeclarationLocation.NONE;
-        }
+        if (index == null) return DeclarationLocation.NONE;
 
         String className = testString.substring(0, methodIndex);
         String methodName = testString.substring(methodIndex+1);
@@ -831,7 +813,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     // without breaking existing functionality. this an attempt to fix
                     // IZ 172679 w/o affect navigation from views. the class is in
                     // need of serious refactoring.
-                    String controllerName = null;
+                    String controllerName;
                     if (controllerAction[0] != null) {
                         controllerName = controllerAction[0];
                     } else if (isController) {
@@ -1090,7 +1072,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     private Set<IndexedMethod> getApplicableMethods(String name, String possibleFqn, 
             RubyType type, Call call, RubyIndex index) {
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
-        String fqn = possibleFqn;
+        String fqn;
         if (!type.isKnown() && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {
             fqn = possibleFqn;
 
@@ -1098,7 +1080,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             // Try with the LHS + current FQN recursively. E.g. if we're in
             // Test::Unit when there's a call to Foo.x, we'll try
             // Test::Unit::Foo, and Test::Foo
-            while (methods.size() == 0 && (fqn.length() > 0)) {
+            while (methods.isEmpty() && (fqn.length() > 0)) {
                 methods = index.getInheritedMethods(fqn, name, QuerySupport.Kind.EXACT);
 
                 int f = fqn.lastIndexOf("::");
@@ -1111,14 +1093,14 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
         }
 
-        if (type.isKnown() && methods.size() == 0) {
+        if (type.isKnown() && methods.isEmpty()) {
             fqn = possibleFqn;
 
             // Possibly a class on the left hand side: try searching with the class as a qualifier.
             // Try with the LHS + current FQN recursively. E.g. if we're in
             // Test::Unit when there's a call to Foo.x, we'll try
             // Test::Unit::Foo, and Test::Foo
-            while (methods.size() == 0 && fqn != null && (fqn.length() > 0)) {
+            while (methods.isEmpty() && fqn != null && (fqn.length() > 0)) {
                 for (String realType : type.getRealTypes()) {
                     methods.addAll(index.getInheritedMethods(fqn + "::" + realType, name, QuerySupport.Kind.EXACT));
                 }
@@ -1132,13 +1114,13 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 }
             }
 
-            if (methods.size() == 0) {
+            if (methods.isEmpty()) {
                 // Add methods in the class (without an FQN)
                 for (String realType : type.getRealTypes()) {
                     methods.addAll(index.getInheritedMethods(realType, name, QuerySupport.Kind.EXACT));
                 }
                 
-                if (methods.size() == 0) {
+                if (methods.isEmpty()) {
                     for (String realType : type.getRealTypes()) {
                         assert realType != null : "Should not be null";
                         if (realType.indexOf("::") == -1) {
@@ -1164,18 +1146,18 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             
             // Fall back to ALL methods across classes
             // Try looking at the libraries too
-            if (methods.size() == 0) {
+            if (methods.isEmpty()) {
                 methods.addAll(index.getMethods(name, QuerySupport.Kind.EXACT));
             }
         }
 
-        if (methods.size() == 0) {
+        if (    methods.isEmpty()) {
             if (!type.isKnown()) {
                 methods.addAll(index.getMethods(name, QuerySupport.Kind.EXACT));
             } else {
                 methods.addAll(index.getMethods(name, type.getRealTypes(), QuerySupport.Kind.EXACT));
             }
-            if (methods.size() == 0 && type.isKnown()) {
+            if (methods.isEmpty() && type.isKnown()) {
                 methods = index.getMethods(name, QuerySupport.Kind.EXACT);
             }
         }
@@ -1638,7 +1620,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
-                    while (candidates.size() == 0) {
+                    while (candidates.isEmpty()) {
                         candidates = index.getInheritedMethods(fqn + "::" + type, name,
                                 QuerySupport.Kind.EXACT);
 
@@ -1652,7 +1634,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     }
 
                     // Add methods in the class (without an FQN)
-                    if (candidates.size() == 0) {
+                    if (candidates.isEmpty()) {
                         candidates = index.getInheritedMethods(type, name, QuerySupport.Kind.EXACT);
                     }
                 }
@@ -1682,22 +1664,17 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
             // First try to limit the candidates down to the ones that match the lhs type, if we
             // are calling new or initialize
-            if (type != null /* && ("new".equals(name) || "initialize".equals(name))*/) { // NOI18N
+            Set<IndexedMethod> cs = new HashSet<IndexedMethod>();
 
-                Set<IndexedMethod> cs = new HashSet<IndexedMethod>();
-
-                for (IndexedMethod m : candidates) {
-                    // AppendIO might be the lhs - e.g. AppendIO.new, yet its FQN is Shell::AppendIO
-                    // so do suffix comparison
-                    if ((m.getIn() != null) && type.isSingleton() && m.getIn().endsWith(type.first())) {
-                        cs.add(m);
-                    }
-                }
-
-                if (cs.size() < candidates.size()) {
-                    candidates = cs;
+            for (IndexedMethod m : candidates) {
+                // AppendIO might be the lhs - e.g. AppendIO.new, yet its FQN is Shell::AppendIO
+                // so do suffix comparison
+                if ((m.getIn() != null) && type.isSingleton() && m.getIn().endsWith(type.first())) {
+                    cs.add(m);
                 }
             }
+
+            if (cs.size() < candidates.size()) candidates = cs;
         }
 
         if (candidates.size() == 1) {
