@@ -300,10 +300,10 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 
         @Override
         protected Node copyNode(final Node originalNode) {
-            DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            return (dobj instanceof DataFolder)
-                    ? new FilterNode(originalNode, new PackageFilterChildren(originalNode))
-                    : super.copyNode(originalNode);
+            FileObject fobj = originalNode.getLookup().lookup(FileObject.class);
+            return fobj.isFolder() ? 
+                    new FilterNode(originalNode, new PackageFilterChildren(originalNode)) : 
+                    super.copyNode(originalNode);
         }
     }
     
