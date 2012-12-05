@@ -61,81 +61,37 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.CharBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.prefs.Preferences;
-import javax.swing.Action;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.LanguageManager;
-import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.ColoringAttributes;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.csl.api.CodeCompletionResult;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.GsfLanguage;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.Rule.ErrorRule;
-import org.netbeans.modules.csl.api.Rule.SelectionRule;
-import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.lucene.support.Index.Status;
-import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.ElementChange;
 import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -146,23 +102,53 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.LanguageManager;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.EditHistory;
 import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.GsfLanguage;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.Rule.ErrorRule;
+import org.netbeans.modules.csl.api.Rule.SelectionRule;
+import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.core.CslEditorKit;
 import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.csl.core.GsfReformatTaskFactory;
@@ -172,34 +158,40 @@ import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.hints.infrastructure.HintsSettings;
 import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
-import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.impl.indexing.*;
+import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexDocumentImpl;
+import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
-import org.netbeans.modules.parsing.lucene.support.IndexDocument;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -306,7 +298,7 @@ public abstract class CslTestBase extends NbTestCase {
         return FileUtil.createData(dir, path);
     }
 
-    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
+    public static FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
         OutputStream os = fo.getOutputStream();
         try {
             InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
@@ -406,6 +398,7 @@ public abstract class CslTestBase extends NbTestCase {
             final StringBuilder sb = new StringBuilder(5000);
             fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
 
+                @Override
                 public void run() throws IOException {
 
                     if (fo == null) {
@@ -618,6 +611,7 @@ public abstract class CslTestBase extends NbTestCase {
         String expected = readFile(goldenFile);
 
         // Because the unit test differ is so bad...
+        /*
         if (false) { // disabled
             if (!expected.equals(description)) {
                 BufferedWriter fw = new BufferedWriter(new FileWriter("/tmp/expected.txt"));
@@ -627,14 +621,12 @@ public abstract class CslTestBase extends NbTestCase {
                 fw.write(description);
                 fw.close();
             }
-        }
+        }*/
 
         String expectedTrimmed = expected.trim();
         String actualTrimmed = description.trim();
         
-        if (expectedTrimmed.equals(actualTrimmed)) {
-            return; // Actual and expected content are equals --> Test passed
-        } else {
+        if (!expectedTrimmed.equals(actualTrimmed)) {
             // We want to ignore different line separators (like \r\n against \n) because they 
             // might be causing failing tests on a different operation systems like Windows :]
             String expectedUnified = expectedTrimmed.replaceAll("\r", "");
@@ -648,16 +640,31 @@ public abstract class CslTestBase extends NbTestCase {
             fail(getContentDifferences(relFilePath, ext, includeTestName, expectedUnified, actualUnified));
         }
     }
-    
+
     private String getContentDifferences(String relFilePath, String ext, boolean includeTestName, String expected, String actual) {
         StringBuilder sb = new StringBuilder();
         sb.append("Content does not match between '").append(relFilePath).append("' and '").append(relFilePath);
         if (includeTestName) {
             sb.append(getName());
         }
-        sb.append(ext).append("'\n");
-        sb.append("Expected content is: \n\n").append(expected).append("\n\nbut actual is: \n\n").append(actual).append("\n\n");
-        sb.append("It differs in the following things: \n\n");
+        sb.append(ext).append("'").append(lineSeparator(1));
+        sb.append(getContentDifferences(expected, actual));
+
+        return sb.toString();
+    }
+
+    private String getContentDifferences(String expected, String actual) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Expected content is:").
+           append(lineSeparator(2)).
+           append(expected).
+           append(lineSeparator(2)).
+           append("but actual is:").
+           append(lineSeparator(2)).
+           append(actual).
+           append(lineSeparator(2)).
+           append("It differs in the following things:").
+           append(lineSeparator(2));
 
         List<String> expectedLines = Arrays.asList(expected.split("\n"));
         List<String> actualLines = Arrays.asList(actual.split("\n"));
@@ -671,10 +678,10 @@ public abstract class CslTestBase extends NbTestCase {
         for (String actualLine : actualLines) {
             if (expectedLines.contains(actualLine) == false) {
                 if (firstOccurence) {
-                    sb.append("Actual content contains following lines which are missing in expected content: \n");
+                    sb.append("Actual content contains following lines which are missing in expected content: ").append(lineSeparator(1));
                     firstOccurence = false;
                 }
-                sb.append("\t").append(actualLine).append("\n");
+                sb.append("\t").append(actualLine).append(lineSeparator(1));
             }
         }
 
@@ -684,13 +691,13 @@ public abstract class CslTestBase extends NbTestCase {
             if (actualLines.contains(expectedLine) == false) {
                 // If at least one line missing in actual content we want to append header line
                 if (firstOccurence) {
-                    sb.append("Expected content contains following lines which are missing in actual content: \n");
+                    sb.append("Expected content contains following lines which are missing in actual content: ").append(lineSeparator(1));
                     firstOccurence = false;
                 }
-                sb.append("\t").append(expectedLine).append("\n");
+                sb.append("\t").append(expectedLine).append(lineSeparator(1));
             }
         }
-        
+
         return sb.toString();
     }
 
@@ -724,6 +731,7 @@ public abstract class CslTestBase extends NbTestCase {
         String expected = readFile(goldenFile);
 
         // Because the unit test differ is so bad...
+        /*
         if (false) { // disabled
             if (!expected.equals(description)) {
                 BufferedWriter fw = new BufferedWriter(new FileWriter("/tmp/expected.txt"));
@@ -733,9 +741,44 @@ public abstract class CslTestBase extends NbTestCase {
                 fw.write(description);
                 fw.close();
             }
-        }
+        }*/
 
-        assertEquals("Not matching goldenfile: " + FileUtil.getFileDisplayName(fileObject), expected.trim(), description.trim());
+        final String expectedTrimmed = expected.trim();
+        final String actualTrimmed = description.trim();
+
+        if (!expectedTrimmed.equals(actualTrimmed)) {
+            // We want to ignore different line separators (like \r\n against \n) because they
+            // might be causing failing tests on a different operation systems like Windows :]
+            final String expectedUnified = expectedTrimmed.replaceAll("\r", "");
+            final String actualUnified = actualTrimmed.replaceAll("\r", "");
+
+            if (expectedUnified.equals(actualUnified)) {
+                return; // Only difference is in line separation --> Test passed
+            }
+
+            // There are some diffrerences between expected and actual content --> Test failed
+
+            fail("Not matching goldenfile: " + FileUtil.getFileDisplayName(fileObject) + lineSeparator(2) + getContentDifferences(expectedUnified, actualUnified));
+        }
+    }
+
+    /**
+     * Returns line separators with respect to the current platform.
+     *
+     * @param number use if you want to get more than one file separator
+     * @return one or more independent line separators in one <code>String</code>
+     */
+    private String lineSeparator(int number) {
+        final String lineSeparator = System.getProperty("line.separator");
+        if (number > 1) {
+            final StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < number; i++) {
+                sb.append(lineSeparator);
+            }
+            return sb.toString();
+        }
+        return lineSeparator;
     }
     
     protected void assertFileContentsMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
@@ -1491,7 +1534,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     private String annotateRenameRegions(Document doc, Set<OffsetRange> ranges) throws Exception {
-        if (ranges.size() == 0) {
+        if (ranges.isEmpty()) {
             return "Requires Interactive Refactoring\n";
         }
         StringBuilder sb = new StringBuilder();
@@ -1558,6 +1601,8 @@ public abstract class CslTestBase extends NbTestCase {
                 false,
                 false,                
                 false,
+                SuspendSupport.NOP,
+                null,
                 null
         );
 
@@ -1581,7 +1626,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
 
-        TestIndexImpl tii = ((TestIndexImpl) tifi.getIndex(context.getIndexFolder()));
+        TestIndexImpl tii = tifi.getTestIndex(context.getIndexFolder());
         if (tii != null) {
             List<TestIndexDocumentImpl> list = tii.documents.get(indexable.getRelativePath());
             if (list != null) {
@@ -1655,7 +1700,7 @@ public abstract class CslTestBase extends NbTestCase {
         List<String> nonEmptyDocuments = new ArrayList<String>();
         List<String> emptyDocuments = new ArrayList<String>();
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb;
 
         for (TestIndexDocumentImpl doc : documents) {
 
@@ -1702,7 +1747,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
 
             String s = sb.toString();
-            if (doc.indexedKeys.size() == 0 && doc.unindexedKeys.size() == 0) {
+            if (doc.indexedKeys.isEmpty() && doc.unindexedKeys.isEmpty()) {
                 emptyDocuments.add(s);
             } else {
                 nonEmptyDocuments.add(s);
@@ -3678,7 +3723,7 @@ public abstract class CslTestBase extends NbTestCase {
                 List<Hint> descsOnLine = null;
                 int underlineStart = -1;
                 int underlineEnd = -1;
-                for (int i = lineStart; i <= lineEnd; i++) {
+                for (int i = lineStart; i <= lineEnd && i < text.length(); i++) {
                     if (i == caretOffset) {
                         sb.append("^");
                     }
@@ -4285,170 +4330,6 @@ public abstract class CslTestBase extends NbTestCase {
             throw new IllegalStateException("Can't enforce caret offset on " + source, e);
         }
     }
-
-    private static final class TestIndexFactoryImpl extends LuceneIndexFactory {
-        // --------------------------------------------------------------------
-        // IndexFactoryImpl implementation
-        // --------------------------------------------------------------------
-
-        public @Override IndexDocument createDocument(Indexable indexable) {
-            return new TestIndexDocumentImpl(indexable, super.createDocument(indexable));
-        }
-
-        public @Override DocumentIndex createIndex(Context ctx) throws IOException {
-            DocumentIndex ii = super.createIndex(ctx);
-            Reference<TestIndexImpl> ttiRef = indexImpls.get(ii);
-            TestIndexImpl tii = ttiRef != null ? ttiRef.get() : null;
-            if (tii == null) {
-                tii = new TestIndexImpl(ii);
-                indexImpls.put(ii, new SoftReference<TestIndexImpl>(tii));
-            }
-            return tii;
-        }
-
-        public @Override DocumentIndex getIndex(FileObject indexFolder) throws IOException {
-            DocumentIndex ii = super.getIndex(indexFolder);
-            Reference<TestIndexImpl> ttiRef = indexImpls.get(ii);
-            return ttiRef != null ? ttiRef.get() : null;
-        }
-
-        private final Map<DocumentIndex, Reference<TestIndexImpl>> indexImpls = new WeakHashMap<DocumentIndex, Reference<TestIndexImpl>>();
-
-    } // End of TestIndexFactoryImpl class
-
-    private static final class TestIndexImpl implements DocumentIndex {
-
-        public TestIndexImpl(DocumentIndex original) {
-            this.original = original;
-        }
-
-        @Override
-        public Status getStatus() throws IOException {
-            return Status.VALID;
-        }
-
-        // --------------------------------------------------------------------
-        // IndexImpl implementation
-        // --------------------------------------------------------------------
-
-        @Override
-        public void addDocument(IndexDocument document) {
-            assert document instanceof TestIndexDocumentImpl;
-
-            original.addDocument(((TestIndexDocumentImpl) document).getOriginal());
-
-            TestIndexDocumentImpl tidi = (TestIndexDocumentImpl) document;
-            List<TestIndexDocumentImpl> list = documents.get(tidi.getIndexable().getRelativePath());
-            if (list == null) {
-                list = new ArrayList<TestIndexDocumentImpl>();
-                documents.put(tidi.getIndexable().getRelativePath(), list);
-            }
-            list.add(tidi);
-        }
-
-        @Override
-        public void removeDocument(String relativePath) {
-            original.removeDocument(relativePath);
-
-            Collection<String> toRemove = new HashSet<String>();
-            for(String rp : documents.keySet()) {
-                if (rp.equals(relativePath)) {
-                    toRemove.add(rp);
-                }
-            }
-            documents.keySet().removeAll(toRemove);
-        }
-
-        @Override
-        public void store(boolean optimize) throws IOException {
-            original.store(optimize);
-        }
-
-        @Override
-        public Collection<? extends IndexDocument> query(String fieldName, String value, Queries.QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
-            return original.query(fieldName, value, kind, fieldsToLoad);
-        }
-
-        @Override
-        public Collection<? extends IndexDocument> findByPrimaryKey(String primaryKeyValue, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
-            return original.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad);
-        }                
-        
-        @Override
-        public void close() throws IOException {
-            original.close();
-        }
-
-        @Override
-        public void markKeyDirty(String primaryKey) {            
-        }
-
-        @Override
-        public void removeDirtyKeys(Collection<? extends String> dirtyKeys) {
-        }
-
-        @Override
-        public Collection<? extends String> getDirtyKeys() {
-            return Collections.<String>emptySet();
-        }
-        
-        // --------------------------------------------------------------------
-        // private implementation
-        // --------------------------------------------------------------------
-
-        private final DocumentIndex original;
-        private Map<String, List<TestIndexDocumentImpl>> documents = new HashMap<String, List<TestIndexDocumentImpl>>();
-        
-    } // End of TestIndexImpl class
-
-    private static final class TestIndexDocumentImpl implements IndexDocument {
-
-        public final List<String> indexedKeys = new ArrayList<String>();
-        public final List<String> indexedValues = new ArrayList<String>();
-        public final List<String> unindexedKeys = new ArrayList<String>();
-        public final List<String> unindexedValues = new ArrayList<String>();
-
-        private final Indexable indexable;
-        private final IndexDocument original;
-
-        public TestIndexDocumentImpl(Indexable indexable, IndexDocument original) {
-            this.indexable = indexable;
-            this.original = original;
-        }
-
-        public Indexable getIndexable() {
-            return indexable;
-        }
-
-        public IndexDocument getOriginal() {
-            return original;
-        }
-
-        public @Override void addPair(String key, String value, boolean searchable, boolean stored) {
-            original.addPair(key, value, searchable, stored);
-
-            if (searchable) {
-                indexedKeys.add(key);
-                indexedValues.add(value);
-            } else {
-                unindexedKeys.add(key);
-                unindexedValues.add(value);
-            }
-        }
-
-        public String getValue(String key) {
-            return original.getValue(key);
-        }
-
-        public String[] getValues(String key) {
-            return original.getValues(key);
-        }
-
-        public String getPrimaryKey() {
-            return original.getPrimaryKey();
-        }
-
-    } // End of TestIndexFactoryImpl class
 
     protected Map<String, ClassPath> createClassPathsForTest() {
         return null;
