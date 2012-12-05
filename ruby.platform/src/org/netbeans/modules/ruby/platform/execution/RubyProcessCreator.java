@@ -51,12 +51,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 /**
  * A helper class for migrating from the ruby execution API to the new execution API (extexecution).
- * Contains a lot of copy-pasted code from <code>RubyExecution</code> (which will eventually
- * be removed).
  *
  * @author Erno Mononen
  */
@@ -116,7 +113,7 @@ public final class RubyProcessCreator implements Callable<Process> {
             }
             return debugger.debug();
         }
-        ExternalProcessBuilder builder = null;
+        ExternalProcessBuilder builder;
         List<? extends String> args = buildArgs();
         if (!descriptor.cmd.getName().startsWith("jruby") || LAUNCH_JRUBY_SCRIPT) { // NOI18N
             builder = new ExternalProcessBuilder(descriptor.cmd.getPath());
