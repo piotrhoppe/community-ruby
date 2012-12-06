@@ -107,6 +107,7 @@ public final class RubyPlatformManager {
      * interpreter's paths comparison
      */
     private static final Comparator<RubyPlatform> ALPHABETICAL_COMPARATOR = new Comparator<RubyPlatform>() {
+        @Override
         public int compare(RubyPlatform p1, RubyPlatform p2) {
             int result = Collator.getInstance().compare(
                     p1.getInfo().getLongDescription(), p2.getInfo().getLongDescription());
@@ -212,7 +213,7 @@ public final class RubyPlatformManager {
     }
     
     private static File findPlatform(final String dir, final String ruby) {
-        File f = null;
+        File f;
         if (Utilities.isWindows()) {
             f = new File(dir, ruby + ".exe"); // NOI18N
         } else {
@@ -290,7 +291,7 @@ public final class RubyPlatformManager {
                     } else {
                         // Rubinius libDir is not detected by script
                         if (!"Rubinius".equals(kind)) { // NOI18N
-                            LOGGER.warning("no libDir for platform: " + interpreterPath); // NOI18N
+                            LOGGER.log(Level.WARNING, "no libDir for platform: {0}", interpreterPath); // NOI18N
                             skipped.add(interpreterPath);
                             continue;
                         }
@@ -326,6 +327,7 @@ public final class RubyPlatformManager {
                 }
             }
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     for (String interpreter : skipped) {
                         try {
@@ -336,7 +338,7 @@ public final class RubyPlatformManager {
                     }
                 }
             });
-            LOGGER.fine("RubyPlatform initial list: " + platforms);
+            LOGGER.log(Level.FINE, "RubyPlatform initial list: {0}", platforms);
         }
 
         return platforms;
@@ -407,13 +409,14 @@ public final class RubyPlatformManager {
             return null;
         }
         if (info.getKind() == null) { // # see #128354
-            LOGGER.warning("Getting platform information for " + interpreter + " failed.");
+            LOGGER.log(Level.WARNING, "Getting platform information for {0} failed.", interpreter);
             return null;
         }
 
         final String id = computeID(info.getKind());
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     if (getPlatformByID(id) != null) {
                         throw new IOException("ID " + id + " already taken"); // NOI18N
@@ -432,13 +435,14 @@ public final class RubyPlatformManager {
             getPlatformsInternal().add(plaf);
         }
         firePlatformsChanged();
-        LOGGER.fine("RubyPlatform added: " + plaf);
+        LOGGER.log(Level.FINE, "RubyPlatform added: {0}", plaf);
         return plaf;
     }
 
     public static void removePlatform(final RubyPlatform plaf) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     clearProperties(plaf, props);
@@ -453,12 +457,13 @@ public final class RubyPlatformManager {
             getPlatformsInternal().remove(plaf);
         }
         firePlatformsChanged();
-        LOGGER.fine("RubyPlatform removed: " + plaf);
+        LOGGER.log(Level.FINE, "RubyPlatform removed: {0}", plaf);
     }
 
     public static void storePlatform(final RubyPlatform plaf) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     clearProperties(plaf, props);
@@ -470,7 +475,7 @@ public final class RubyPlatformManager {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
-        LOGGER.fine("RubyPlatform stored: " + plaf);
+        LOGGER.log(Level.FINE, "RubyPlatform stored: {0}", plaf);
     }
 
     private static void clearProperties(RubyPlatform plaf, EditableProperties props) {
@@ -561,6 +566,7 @@ public final class RubyPlatformManager {
             final Process proc = pb.start();
             // FIXME: set timeout
             Thread gatherer = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         proc.waitFor();
@@ -590,15 +596,15 @@ public final class RubyPlatformManager {
                 if (LOGGER.isLoggable(Level.FINER)) {
                     String stdout = Util.readAsString(proc.getInputStream());
                     String stderr = Util.readAsString(proc.getErrorStream());
-                    LOGGER.finer("stdout:\n" + stdout);
-                    LOGGER.finer("stderr:\n " + stderr);
+                    LOGGER.log(Level.FINER, "stdout:\n{0}", stdout);
+                    LOGGER.log(Level.FINER, "stderr:\n {0}", stderr);
                     props.load(new ReaderInputStream(new StringReader(stdout)));
                 } else {
                     props.load(proc.getInputStream());
                 }
                 info = new Info(props);
             } else {
-                LOGGER.severe(interpreter.getAbsolutePath() + " does not seems to be a valid interpreter"); // TODO localize me
+                LOGGER.log(Level.SEVERE, "{0} does not seems to be a valid interpreter", interpreter.getAbsolutePath()); // TODO localize me
                 BufferedReader errors = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
                 String line;
                 while ((line = errors.readLine()) != null) {
@@ -606,7 +612,7 @@ public final class RubyPlatformManager {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.INFO, "Not a ruby platform: " + interpreter.getAbsolutePath()); // NOI18N
+            LOGGER.log(Level.INFO, "Not a ruby platform: {0}", interpreter.getAbsolutePath()); // NOI18N
         }
         return info;
     }
