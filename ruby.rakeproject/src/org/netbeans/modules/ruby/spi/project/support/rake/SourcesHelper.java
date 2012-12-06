@@ -71,7 +71,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
@@ -391,6 +390,7 @@ public final class SourcesHelper {
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         }
         
+        @Override
         public SourceGroup[] getSourceGroups(String type) {
             List<SourceGroup> groups = new ArrayList<SourceGroup>();
             if (type.equals(Sources.TYPE_GENERIC)) {
@@ -457,11 +457,7 @@ public final class SourcesHelper {
             // Remember what we computed here so we know whether to fire changes later.
             List<URL> rootURLs = new ArrayList<URL>(groups.size());
             for (SourceGroup g : groups) {
-                try {
-                    rootURLs.add(g.getRootFolder().getURL());
-                } catch (FileStateInvalidException e) {
-                    assert false : e; // should be a valid file object!
-                }
+                rootURLs.add(g.getRootFolder().toURL());
             }
             lastComputedRoots.put(type, rootURLs);
             return groups.toArray(new SourceGroup[groups.size()]);
@@ -474,6 +470,7 @@ public final class SourcesHelper {
             }
         }
         
+        @Override
         public synchronized void addChangeListener(ChangeListener listener) {
             if (!haveAttachedListeners) {
                 haveAttachedListeners = true;
@@ -484,6 +481,7 @@ public final class SourcesHelper {
             cs.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             cs.removeChangeListener(listener);
         }
@@ -506,32 +504,39 @@ public final class SourcesHelper {
             }
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             // Root might have been created on disk.
             maybeFireChange();
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             maybeFireChange();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             // Root might have been deleted.
             maybeFireChange();
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             // ignore; generally should not happen (listening to dirs)
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             maybeFireChange();
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // #164930 - ignore
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
             // Properties may have changed so as cause external roots to move etc.
             maybeFireChange();
@@ -543,6 +548,7 @@ public final class SourcesHelper {
         
         public PropChangeL() {}
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             // Some properties changed; external roots might have changed, so check them.
             remarkExternalRoots();

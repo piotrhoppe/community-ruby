@@ -59,6 +59,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,6 +78,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -213,6 +215,7 @@ public final class ReferenceHelper {
     // @return array of two elements: [Boolean - any modification, String - reference]
     private Object[] addReference0(final RakeArtifact artifact, final URI location) throws IllegalArgumentException {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<Object[]>() {
+            @Override
             public Object[] run() {
                 int index = findLocationIndex(artifact, location);
                 Project forProj = artifact.getProject();
@@ -235,7 +238,7 @@ public final class ReferenceHelper {
                     try {
                         scriptLocation = new URI(null, null, rel, null);
                     } catch (URISyntaxException ex) {
-                        scriptLocation = forProjDir.toURI().relativize(scriptFile.toURI());
+                        scriptLocation = Utilities.toURI(forProjDir).relativize(Utilities.toURI(scriptFile));
                     }
                     ref = new RawReference(forProjName, artifact.getType(), scriptLocation, artifact.getTargetName(), artifact.getCleanTargetName(), artifact.getID());
                 } else {
@@ -266,7 +269,7 @@ public final class ReferenceHelper {
                 URI artFile = location;
                 String refPath;
                 if (artFile.isAbsolute()) {
-                    refPath = new File(artFile).getAbsolutePath();
+                    refPath = Utilities.toFile(artFile).getAbsolutePath();
                     propertiesFile = RakeProjectHelper.PRIVATE_PROPERTIES_PATH;
                 } else {
                     refPath = "${" + forProjPathProp + "}/" + artFile.getPath(); // NOI18N
@@ -339,7 +342,7 @@ public final class ReferenceHelper {
                 relativePath
             };
         }        
-        else if (CollocationQuery.areCollocated(base, path)) {
+        else if (CollocationQuery.areCollocated(Utilities.toURI(base), Utilities.toURI(path))) {
             // Fine, using a relative path to subproject.
             relativePath = PropertyUtils.relativizeFile(base, path);
             assert relativePath != null : "These dirs are not really collocated: " + base + " & " + path;
@@ -378,7 +381,7 @@ public final class ReferenceHelper {
         if (propertiesFiles.length == 1) {                    
             // check presence of this property in opposite property file and
             // remove it if necessary
-            String propertiesFile = (propertiesFiles[0] == RakeProjectHelper.PROJECT_PROPERTIES_PATH ? 
+            String propertiesFile = (RakeProjectHelper.PROJECT_PROPERTIES_PATH.equals(propertiesFiles[0]) ? 
                 RakeProjectHelper.PRIVATE_PROPERTIES_PATH : RakeProjectHelper.PROJECT_PROPERTIES_PATH);
             EditableProperties props = h.getProperties(propertiesFile);
             if (props.remove(propertyName) != null) {
@@ -447,6 +450,7 @@ public final class ReferenceHelper {
      */
     public boolean isReferenced(final RakeArtifact artifact, final URI location) throws IllegalArgumentException {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 int index = findLocationIndex(artifact, location);
                 Project forProj = artifact.getProject();
@@ -504,6 +508,7 @@ public final class ReferenceHelper {
      */
     public boolean addRawReference(final RawReference ref) {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 try {
                     return addRawReference0(ref);
@@ -520,12 +525,11 @@ public final class ReferenceHelper {
         if (references == null) {
             references = XMLUtil.createDocument("ignore", null, null, null).createElementNS(ref.getNS(), REFS_NAME); // NOI18N
         }
-        boolean modified = false;
+        boolean modified;
         if (references.getNamespaceURI().equals(REFS_NS) && ref.getNS().equals(REFS_NS2)) {
             // upgrade all references to version /2 here:
             references = upgradeTo20(references);
             removeOldReferences();
-            modified = true;
         }
         modified = updateRawReferenceElement(ref, references);
         if (modified) {
@@ -643,6 +647,7 @@ public final class ReferenceHelper {
     
     private boolean removeReference(final String foreignProjectName, final String id, final boolean escaped, final String reference) {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 boolean success = false;
                 try {
@@ -730,6 +735,7 @@ public final class ReferenceHelper {
     
     private boolean removeFileReference(final String fileReference) {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 boolean success = false;
                 // Note: try to delete obsoleted properties from both project.properties
@@ -770,6 +776,7 @@ public final class ReferenceHelper {
      */
     public boolean removeRawReference(final String foreignProjectName, final String id) {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 try {
                     return removeRawReference0(foreignProjectName, id, false);
@@ -833,6 +840,7 @@ public final class ReferenceHelper {
      */
     public RawReference[] getRawReferences() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<RawReference[]>() {
+            @Override
             public RawReference[] run() {
                 Element references = loadReferences();
                 if (references != null) {
@@ -875,6 +883,7 @@ public final class ReferenceHelper {
     // not private only to allow unit testing
     RawReference getRawReference(final String foreignProjectName, final String id, final boolean escaped) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<RawReference>() {
+            @Override
             public RawReference run() {
                 Element references = loadReferences();
                 if (references != null) {
@@ -927,6 +936,7 @@ public final class ReferenceHelper {
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
         return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {
+            @Override
             public String run() {
                 RakeArtifact art = RakeArtifactQuery.findArtifactFromFile(file);
                 if (art != null && art.getType().equals(expectedArtifactType) && art.getProject() != null) {
@@ -999,6 +1009,7 @@ public final class ReferenceHelper {
             throw new IllegalArgumentException("propertyName is null or such a property does not exist: "+propertyName); // NOI18N
         }
         ProjectManager.mutex().writeAccess(new Runnable() {
+            @Override
                 public void run() {
                     if (!extraBaseDirectories.add(propertyName)) {
                         throw new IllegalArgumentException("Already extra base directory property: "+propertyName); // NOI18N
@@ -1023,6 +1034,7 @@ public final class ReferenceHelper {
      */
     public void removeExtraBaseDirectory(final String propertyName) {
         ProjectManager.mutex().writeAccess(new Runnable() {
+            @Override
                 public void run() {
                     if (!extraBaseDirectories.remove(propertyName)) {
                         throw new IllegalArgumentException("Non-existing extra base directory property: "+propertyName); // NOI18N
@@ -1170,6 +1182,7 @@ public final class ReferenceHelper {
      */
     public Object[] findArtifactAndLocation(final String reference) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Object[]>() {
+            @Override
             public Object[] run() {
                 RakeArtifact aa = null;
                 Matcher m = FOREIGN_FILE_REFERENCE.matcher(reference);
@@ -1286,7 +1299,7 @@ public final class ReferenceHelper {
      * @since 1.9
      */
     public void fixReferences(File originalPath) {
-        LOGGER.fine("Fixing refs for: " + originalPath);
+        LOGGER.log(Level.FINE, "Fixing refs for: {0}", originalPath);
 
         String[] prefixesToFix = new String[] {"file.reference.", "project."};
         EditableProperties pub  = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -1359,9 +1372,8 @@ public final class ReferenceHelper {
 
                 absolutePath = FileUtil.normalizeFile(new File(projectDir, relative));
 
-                LOGGER.fine("Removing " + key + ", " +
-                        "path: " + absolutePath.getAbsolutePath() + ", " +
-                        "original path: " + originalPath.getAbsolutePath());
+                LOGGER.log(Level.FINE,"Removing {0}" + ", " + "path: {1}" +
+                        ", " + "original path: {2}", new Object[]{key, absolutePath.getAbsolutePath(), originalPath.getAbsolutePath()});
                 privRemove.add(key);
                 privAdd.put(key, absolutePath.getAbsolutePath());
             }
@@ -1714,6 +1726,7 @@ public final class ReferenceHelper {
          */
         public RakeArtifact toRakeArtifact(final ReferenceHelper helper) {
             return ProjectManager.mutex().readAccess(new Mutex.Action<RakeArtifact>() {
+                @Override
                 public RakeArtifact run() {
                     RakeProjectHelper h = helper.h;
                     String path = helper.eval.getProperty("project." + foreignProjectName); // NOI18N
@@ -1749,6 +1762,7 @@ public final class ReferenceHelper {
             scriptLocation = null;
         }
         
+        @Override
         public String toString() {
             return "ReferenceHelper.RawReference<" + foreignProjectName + "," + 
                 artifactType + "," + newScriptLocation != null ? newScriptLocation : scriptLocation + 
