@@ -8,7 +8,6 @@
 
     <target name="release" depends="init">
         <mkdir dir="${cluster}"/>
-        <copy todir="${cluster}" file="release/rake_tasks_info.rb"/>
         <copy todir="${cluster}">
             <fileset dir=".">
                 <include name="sync-stdio.rb"/>
