@@ -44,26 +44,27 @@
 
 package org.netbeans.modules.ruby.railsprojects;
 
-import java.io.File;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URI;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 
 /**
  * SharabilityQueryImplementation for j2seproject with multiple sources
  */
-public class RailsSharabilityQuery implements SharabilityQueryImplementation, PropertyChangeListener {
+public class RailsSharabilityQuery implements SharabilityQueryImplementation2, PropertyChangeListener {
 
     private final RakeProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots srcRoots;
     private final SourceRoots testRoots;
-    private SharabilityQueryImplementation delegate;
+    private SharabilityQueryImplementation2 delegate;
 
     /**
      * Creates new RailsSharabilityQuery
@@ -89,9 +90,11 @@ public class RailsSharabilityQuery implements SharabilityQueryImplementation, Pr
      * @param file a file to check for sharability (may or may not yet exist)
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
-    public int getSharability(final File file) {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
-            public Integer run() {
+    @Override
+    public Sharability getSharability(final URI file) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Sharability>() {
+            @Override
+            public Sharability run() {
                 synchronized (RailsSharabilityQuery.this) {
                     if (delegate == null) {
                         delegate = createDelegate ();
@@ -102,6 +105,7 @@ public class RailsSharabilityQuery implements SharabilityQueryImplementation, Pr
         });
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
             synchronized (this) {
@@ -110,7 +114,7 @@ public class RailsSharabilityQuery implements SharabilityQueryImplementation, Pr
         }
     }
 
-    private SharabilityQueryImplementation createDelegate () {
+    private SharabilityQueryImplementation2 createDelegate () {
         String[] srcProps = srcRoots.getRootProperties();
         String[] testProps = testRoots.getRootProperties();
         String[] props = new String [srcProps.length + testProps.length];

@@ -65,7 +65,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -126,9 +126,11 @@ public final class RakeProjectHelper {
     
     static {
         RakeBasedProjectFactorySingleton.HELPER_CALLBACK = new RakeBasedProjectFactorySingleton.RakeProjectHelperCallback() {
+            @Override
             public RakeProjectHelper createHelper(FileObject dir, Document projectXml, ProjectState state, RakeBasedProjectType type) {
                 return new RakeProjectHelper(dir, projectXml, state, type);
             }
+            @Override
             public void save(RakeProjectHelper helper) throws IOException {
                 helper.save();
             }
@@ -304,6 +306,7 @@ public final class RakeProjectHelper {
         writingXML = true;
         try {
             dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     // Keep a copy of xml *while holding modifiedMetadataPaths monitor*.
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -321,6 +324,7 @@ public final class RakeProjectHelper {
                     } catch (UserQuestionException uqe) { // #46089
                         needPendingHook();
                         UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
+                            @Override
                             public void accepted() {
                                 // Try again.
                                 assert !writingXML;
@@ -346,9 +350,11 @@ public final class RakeProjectHelper {
                                     writingXML = false;
                                 }
                             }
+                            @Override
                             public void denied() {
                                 reload();
                             }
+                            @Override
                             public void error(IOException e) {
                                 ErrorManager.getDefault().notify(e);
                                 reload();
@@ -428,6 +434,7 @@ public final class RakeProjectHelper {
      */
     void fireExternalChange(final String path) {
         final Mutex.Action<Void> action = new Mutex.Action<Void>() {
+            @Override
             public Void run() {
                 fireChange(path, false);
                 return null;
@@ -442,6 +449,7 @@ public final class RakeProjectHelper {
         } else {
             // Not safe to acquire a new lock, so run later in read access.
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     ProjectManager.mutex().readAccess(action);
                 }
@@ -467,6 +475,7 @@ public final class RakeProjectHelper {
         final RakeProjectEvent ev = new RakeProjectEvent(this, path, expected);
         final boolean xml = path.equals(PROJECT_XML_PATH) || path.equals(PRIVATE_XML_PATH);
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+            @Override
             public Void run() {
                 for (int i = 0; i < _listeners.length; i++) {
                     try {
@@ -607,6 +616,7 @@ public final class RakeProjectHelper {
         if (pendingHookCount == 0 && pendingHook != null) {
             try {
                 ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
                     public Void run() throws IOException {
                         pendingHook.projectXmlSaved();
                         return null;
@@ -646,6 +656,7 @@ public final class RakeProjectHelper {
             throw new IllegalArgumentException("Attempt to load properties from a project XML file"); // NOI18N
         }
         return ProjectManager.mutex().readAccess(new Mutex.Action<EditableProperties>() {
+            @Override
             public EditableProperties run() {
                 return properties.getProperties(path);
             }
@@ -673,6 +684,7 @@ public final class RakeProjectHelper {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            @Override
             public Void run() {
                 if (properties.putProperties(path, props)) {
                     modifying(path);
@@ -695,6 +707,7 @@ public final class RakeProjectHelper {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
         return ProjectManager.mutex().readAccess(new Mutex.Action<PropertyProvider>() {
+            @Override
             public PropertyProvider run() {
                 return properties.getPropertyProvider(path);
             }
@@ -720,6 +733,7 @@ public final class RakeProjectHelper {
         final String namespace = type.getPrimaryConfigurationDataElementNamespace(shared);
         assert namespace != null && namespace.length() > 0;
         return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
+            @Override
             public Element run() {
                 synchronized (modifiedMetadataPaths) {
                     Element el = getConfigurationFragment(name, namespace, shared);
@@ -793,26 +807,32 @@ public final class RakeProjectHelper {
             fireExternalChange(path);
         }
         
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             change(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             change(fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             change(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             change(fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             change(fe);
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
         
@@ -827,6 +847,7 @@ public final class RakeProjectHelper {
      */
     Element getConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
+            @Override
             public Element run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
@@ -865,6 +886,7 @@ public final class RakeProjectHelper {
      */
     void putConfigurationFragment(final Element fragment, final boolean shared) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            @Override
             public Void run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
@@ -907,6 +929,7 @@ public final class RakeProjectHelper {
      */
     boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
@@ -1036,7 +1059,7 @@ public final class RakeProjectHelper {
      * @return a sharability query implementation suitable for the project lookup
      * @see Project#getLookup
      */
-    public SharabilityQueryImplementation createSharabilityQuery(PropertyEvaluator eval, String[] sourceRoots, String[] buildDirectories) {
+    public SharabilityQueryImplementation2 createSharabilityQuery(PropertyEvaluator eval, String[] sourceRoots, String[] buildDirectories) {
         String[] includes = new String[sourceRoots.length + 1];
         System.arraycopy(sourceRoots, 0, includes, 0, sourceRoots.length);
         includes[sourceRoots.length] = ""; // NOI18N
@@ -1111,6 +1134,7 @@ public final class RakeProjectHelper {
         return PropertyUtils.resolvePath(FileUtil.toFile(dir), path);
     }
     
+    @Override
     public String toString() {
         return "RakeProjectHelper[" + getProjectDirectory() + "]"; // NOI18N
     }
