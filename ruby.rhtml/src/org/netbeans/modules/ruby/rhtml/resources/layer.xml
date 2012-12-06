@@ -71,14 +71,6 @@
             </folder>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="RhtmlResolver.xml" url="RhtmlResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rhtml.resources.Bundle"/>
-                <attr name="position" intvalue="230"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="Ruby">
             <file name="_view.rhtml" url="RhtmlTemplate.rhtml">
