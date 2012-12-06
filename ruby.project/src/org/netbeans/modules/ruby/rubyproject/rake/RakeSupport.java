@@ -335,15 +335,11 @@ public final class RakeSupport {
             argList.add(cmd.getPath());
         }
 
-        argList.addAll(ExecutionUtils.getRubyArgs(platform));
-
-        File rakeTaskInfoScript = InstalledFileLocator.getDefault().locate(
-                "rake_tasks_info.rb", "org.netbeans.modules.ruby.project", false);  // NOI18N
-        if (rakeTaskInfoScript == null) {
-            throw new IllegalStateException("Cannot locate rake_tasks_info.rb script"); // NOI18N
-        }
-
-        argList.add(rakeTaskInfoScript.getAbsolutePath());
+        argList.addAll(ExecutionUtils.getRubyArgs(platform));        
+        argList.add("-S");
+        argList.add("rake");
+        argList.add("-T");
+        
 
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
@@ -386,22 +382,31 @@ public final class RakeSupport {
     }
 
     private static String readInputStream(final InputStream is, final boolean readingErrors) {
-        StringBuilder sb = new StringBuilder();
-        InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
+        StringBuilder buf = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String line;
 
         try {
-            while (true) {
-                line = br.readLine();
-                if (line == null) {
-                    break;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("rake ") && line.length() > 5)  {
+                    int nextSpace = line.indexOf(" ", 5);
+                    if (nextSpace == -1) {
+                        if (readingErrors) buf.append(line);
+                    } else {                        
+                        int commentIndex = line.indexOf("#", nextSpace);
+                        
+                        if (commentIndex == -1 || commentIndex+1 >= line.length()) {
+                            if (readingErrors) buf.append(line);
+                        } else {
+                            buf.append(line.substring(5, nextSpace).replaceAll(":", "\\:"));
+                            buf.append('=');
+                            buf.append(line.substring(commentIndex+1).trim());
+                        }
+                    }
+                } else if (readingErrors) {
+                    buf.append(line);
                 }
-                if (!readingErrors && !line.contains("=")) { // not 'key=value' property
-                    continue;
-                }
-                sb.append(line);
-                sb.append('\n');
+                buf.append('\n');
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -412,7 +417,8 @@ public final class RakeSupport {
                 LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
             }
         }
-        return sb.toString();
+        
+        return buf.toString();
     }
 
     static void writeRakeTasks(Project project, final String rakeDOutput) {
