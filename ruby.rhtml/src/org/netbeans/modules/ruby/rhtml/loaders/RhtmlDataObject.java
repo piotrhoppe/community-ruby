@@ -46,6 +46,7 @@ package org.netbeans.modules.ruby.rhtml.loaders;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -53,6 +54,10 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
+@MIMEResolver.Registration(displayName = "#RhtmlResolver",
+        resource = "/org/netbeans/modules/ruby/rhtml/resources/RhtmlResolver.xml",
+        position = 230
+)
 public class RhtmlDataObject extends MultiDataObject
         implements Lookup.Provider {
     
