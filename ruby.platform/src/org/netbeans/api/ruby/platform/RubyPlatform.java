@@ -173,8 +173,8 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         RubyPlatformProvider rpp = project.getLookup().lookup(RubyPlatformProvider.class);
         RubyPlatform result = rpp == null ? null : rpp.getPlatform();
         if (result == null && LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Could not resolve a platform for " + project + ". " +
-                    "Platform provider: " + rpp);
+            LOGGER.log(Level.FINE,"Could not resolve a platform for {0}" +
+                    ". " + "Platform provider: {1}", new Object[]{project, rpp});
         }
         return result;
     }
@@ -214,9 +214,11 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      *        valid Rake installed
      */
     public boolean hasValidRake(boolean warn) {
-        boolean valid = isValid(warn) && hasRubyGemsInstalled(warn);
+        isValid(warn);
+        hasRubyGemsInstalled(warn);
+        
         String rakePath = getRake();
-        valid = (rakePath != null) && new File(rakePath).exists();
+        boolean valid = (rakePath != null) && new File(rakePath).exists();
         possiblyNotifyUser(warn, valid, "rake"); // NOI18N
         return valid;
     }
@@ -259,7 +261,9 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     private boolean hasZenTest() {
-        return getGemManager() != null && getGemManager().isGemInstalled("ZenTest"); //NOI18N
+        GemManager manager = getGemManager();
+        
+        return manager!= null && manager.isGemInstalled("ZenTest"); //NOI18N
     }
 
     private boolean isValidFile(String path) {
@@ -287,8 +291,9 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     public synchronized String getRake() {
         if (rake == null) {
             rake = findExecutable("rake"); // NOI18N
+            GemManager manager = getGemManager();
 
-            if (rake != null && !(new File(rake).exists()) && getGemManager().getLatestVersion("rake") != null) { // NOI18N
+            if (rake != null && !(new File(rake).exists()) && manager != null && manager.getLatestVersion("rake") != null) { // NOI18N
                 // On Windows, rake does funny things - you may only get a rake.bat
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 File f = locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
@@ -401,7 +406,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             try {
                 File r = getHome();
                 if (r != null) {
-                    homeUrl = r.toURI().toURL().toExternalForm();
+                    homeUrl = Utilities.toURI(r).toURL().toExternalForm();
                 }
             } catch (MalformedURLException mue) {
                 Exceptions.printStackTrace(mue);
@@ -562,7 +567,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
         }
         if (showDialog(msg, options) == propertiesButton) {
-            customizer.showCustomizer();
+            if (customizer != null) customizer.showCustomizer();
         }
     }
 

@@ -7,7 +7,7 @@
     <import file="nbproject/build-impl.xml"/>
 
     <target name="jruby.distro.init">
-        <uptodate property="jruby.distro.build.uptodate" targetfile="${cluster}/jruby-${jruby_src_version}">
+        <uptodate property="jruby.distro.build.uptodate" targetfile="${cluster}/jruby">
             <srcfiles dir="${src.dir}" includes="**/*"/>
             <srcfiles dir="external" includes="**/*"/>
         </uptodate>
