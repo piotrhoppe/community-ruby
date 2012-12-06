@@ -46,6 +46,7 @@ package org.netbeans.modules.ruby.lexer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -177,46 +178,54 @@ public class LexUtilities {
     }
     
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends RubyTokenId> getRubyTokenSequence(TokenHierarchy<Document> th, int offset) {
-        TokenSequence<?extends RubyTokenId> ts = th.tokenSequence(RubyTokenId.language());
-
-        if (ts == null) {
-            // Possibly an embedding scenario such as an RHTML file
-            // First try with backward bias true
-            List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
-
-            for (TokenSequence t : list) {
-                if (t.language() == RubyTokenId.language()) {
-                    ts = t;
-
-                    break;
-                } else {
-                    TokenSequence<? extends RubyTokenId> ets = findRhtmlDelimited(t, offset);
-                    if (ets != null) {
-                        return ets;
-                    }
-                }
-            }
+    public static TokenSequence<?extends RubyTokenId> getRubyTokenSequence(final TokenHierarchy<Document> th, final int offset) {
+        final AtomicReference<TokenSequence<? extends RubyTokenId>> out = new AtomicReference<TokenSequence<? extends RubyTokenId>>(null);
+            
+        th.inputSource().render(new Runnable() {
+            @Override
+            public void run() {
+            TokenSequence<?extends RubyTokenId> ts = th.tokenSequence(RubyTokenId.language());
 
             if (ts == null) {
-                list = th.embeddedTokenSequences(offset, false);
+                // Possibly an embedding scenario such as an RHTML file
+                // First try with backward bias true
+                List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
 
                 for (TokenSequence t : list) {
                     if (t.language() == RubyTokenId.language()) {
-                        ts = t;
-
+                        out.set(t);
                         break;
                     } else {
                         TokenSequence<? extends RubyTokenId> ets = findRhtmlDelimited(t, offset);
                         if (ets != null) {
-                            return ets;
+                            out.set(ets);
+                            return;
+                        }
+                    }
+                }
+
+                if (ts == null) {
+                    list = th.embeddedTokenSequences(offset, false);
+
+                    for (TokenSequence t : list) {
+                        if (t.language() == RubyTokenId.language()) {
+                            out.set(t);
+                            break;
+                        } else {
+                            TokenSequence<? extends RubyTokenId> ets = findRhtmlDelimited(t, offset);
+                            if (ets != null) {
+                                out.set(ets);
+                                return;
+                            }
                         }
                     }
                 }
             }
-        }
+            }
+        });
 
-        return ts;
+        return out.get();
+        
     }
 
     public static TokenSequence<?extends RubyTokenId> getPositionedSequence(BaseDocument doc, int offset) {
