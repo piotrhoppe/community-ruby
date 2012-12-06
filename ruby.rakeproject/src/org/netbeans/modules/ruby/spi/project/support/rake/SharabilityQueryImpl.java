@@ -47,17 +47,19 @@ package org.netbeans.modules.ruby.spi.project.support.rake;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
  * Standard impl of {@link SharabilityQueryImplementation}.
  * @author Jesse Glick
  */
-final class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyChangeListener {
+final class SharabilityQueryImpl implements SharabilityQueryImplementation2, PropertyChangeListener {
 
     private final RakeProjectHelper h;
     private final PropertyEvaluator eval;
@@ -101,14 +103,16 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
         return result.toArray(new String[result.size()]);
     }
     
-    public synchronized int getSharability(File file) {
-        String path = file.getAbsolutePath();
+    @Override
+    public synchronized Sharability getSharability(URI uri) {
+        String path = Utilities.toFile(uri).getAbsolutePath();
+        
         if (contains(path, excludePaths, false)) {
-            return SharabilityQuery.NOT_SHARABLE;
+            return Sharability.NOT_SHARABLE;
         }
         return contains(path, includePaths, false) ?
-            (contains(path, excludePaths, true) ? SharabilityQuery.MIXED : SharabilityQuery.SHARABLE) :
-            SharabilityQuery.UNKNOWN;
+            (contains(path, excludePaths, true) ? Sharability.MIXED : Sharability.SHARABLE) :
+            Sharability.UNKNOWN;
     }
     
     /**
@@ -132,8 +136,8 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
         return false;
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         computeFiles();
     }
-    
 }
