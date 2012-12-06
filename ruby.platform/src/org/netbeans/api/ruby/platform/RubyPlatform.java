@@ -1155,7 +1155,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.9.3"); // NOI18N
             info.jversion = "1.7.0"; // NOI18N  // FIXME: Kill this embedding
-            info.patchlevel = "286"; // NOI18N
+            info.patchlevel = "203"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
             // computing as for other platforms

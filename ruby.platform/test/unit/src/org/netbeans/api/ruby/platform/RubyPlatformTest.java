@@ -65,7 +65,7 @@ public class RubyPlatformTest extends RubyTestBase {
         assertEquals("right version", "1.9.3", jruby.getVersion());
         assertEquals("right ruby home", TestUtil.getXTestJRubyHome(), jruby.getHome());
         assertEquals("right ruby home", new File(jruby.getHome(), "lib").getAbsolutePath(), jruby.getLibDir());
-        assertEquals("right ruby lib", new File(jruby.getHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getVersionLibDir());
+        assertEquals("right ruby lib", new File(jruby.getHome(), "lib/ruby/1.9").getAbsolutePath(), jruby.getVersionLibDir());
     }
 
     public void testHasRubyGemsInstalled() throws Exception {
@@ -152,6 +152,7 @@ public class RubyPlatformTest extends RubyTestBase {
         final boolean[] gotEvent = new boolean[1];
         jruby.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("gems".equals(evt.getPropertyName())) {
                     gotEvent[0] = true;
