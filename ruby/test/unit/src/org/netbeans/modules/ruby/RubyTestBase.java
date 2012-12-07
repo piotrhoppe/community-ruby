@@ -229,14 +229,17 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
         return parserResult.getSnapshot().getText().toString();
     }
 
-    protected void failsDueToIssue182494(Callable<Void> test) throws Exception {
+    protected void failsToRun(Callable<Void> test, String issueNumber) throws Exception {
         try {
             test.call();
             System.out.println("Expected " + getName() + " to fail, but it passes.");
         } catch (AssertionError ae) {
-            String msg = "Skipping " + getName() + " - fails due to #182494";
+            String msg = "Skipping " + getName() + " - fails due to " + issueNumber;
             System.out.println(msg);
             log(msg);
-        }
+        }        
+    }
+    protected void failsDueToIssue182494(Callable<Void> test) throws Exception {
+        failsToRun(test, "#182494");
     }
 }
