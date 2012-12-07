@@ -107,9 +107,10 @@ public abstract class HintTestBase extends RubyTestBase {
         // files, hence I'm reducing the list size (not using subList 
         // to get a better sample of the original files - may not make too much sense
         // but here we go anyway)
-        List<FileObject> files = new ArrayList<FileObject>(jrubyFiles.size() / 4);
+        int factor = 16;
+        List<FileObject> files = new ArrayList<FileObject>(jrubyFiles.size() / factor);
         for (int i = 0; i < jrubyFiles.size(); i++) {
-            if (i % 4 == 0) {
+            if (i % factor == 0) {
                 files.add(jrubyFiles.get(i));
             }
         }
