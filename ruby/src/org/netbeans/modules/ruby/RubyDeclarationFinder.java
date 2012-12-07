@@ -319,7 +319,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                             // for methods and classes
                             String text = doc.getText(range.getStart(), range.getLength());
 
-                            if ((index == null) || (text.length() == 0)) return;
+                            if (index == null || text.length() == 0) return;
 
                             if (Character.isUpperCase(text.charAt(0))) {
                                 // A Class or Constant?

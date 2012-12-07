@@ -184,9 +184,13 @@ public class LexUtilities {
         th.inputSource().render(new Runnable() {
             @Override
             public void run() {
-            TokenSequence<?extends RubyTokenId> ts = th.tokenSequence(RubyTokenId.language());
+                TokenSequence<? extends RubyTokenId> ts = th.tokenSequence(RubyTokenId.language());
 
-            if (ts == null) {
+                if (ts != null) {
+                    out.set(ts);
+                    return;
+                }
+                
                 // Possibly an embedding scenario such as an RHTML file
                 // First try with backward bias true
                 List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
@@ -220,7 +224,6 @@ public class LexUtilities {
                         }
                     }
                 }
-            }
             }
         });
 
