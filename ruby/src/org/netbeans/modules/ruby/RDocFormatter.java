@@ -54,7 +54,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.rmi.CORBA.Util;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 
@@ -238,8 +237,6 @@ class RDocFormatter {
 
             sb.append("<li>"); // NOI18N
             appendTokenized(text.substring(text.indexOf(' ') + 1));
-
-            return;
         } else if (text.matches("^[0-9]+\\.\\s*( .*)?")) {
             if (!inNumberedList) {
                 sb.append("<ol>\n"); // NOI18N
@@ -256,8 +253,6 @@ class RDocFormatter {
             if (index != -1) {
                 appendTokenized(text.substring(index + 1));
             }
-
-            return;
         } else if (text.matches("^\\[[\\S]+\\]\\s*( .+)?")) { // NOI18N
             // Labelled list:  [+foo+] whatever
             if (!inLabelledList) {
@@ -273,8 +268,6 @@ class RDocFormatter {
             appendTokenized(text.substring(1, index)); // label between []'s
             sb.append("</td><td>");
             appendTokenized(text.substring(index + 1));
-
-            return;
         } else if (text.matches("^[\\S]+::\\s*( .*)?")) { // NOI18N
             // Labelled list:  foo::
             if (!inLabelledList) {
@@ -290,8 +283,6 @@ class RDocFormatter {
             appendTokenized(text.substring(0, index)); // label
             sb.append("</td><td>");
             appendTokenized(text.substring(index + 2));
-
-            return;
         } else if (!inBulletedList && !inNumberedList && !inLabelledList &&
                 text.length() > 0 && Character.isWhitespace(text.charAt(0))) { // Indented text in list is in same paragraph
 
@@ -305,8 +296,6 @@ class RDocFormatter {
             }
 
             appendTokenized(text);
-
-            return;
         } else if (text.startsWith("=")) { // NOI18N
             // Generate a heading
             // Count ='s
@@ -337,8 +326,6 @@ class RDocFormatter {
 
             // Normal line with lots of ='s
             appendTokenized(text);
-
-            return;
         } else if (text.startsWith("#---") || (text.startsWith("---"))) { // NOI18N
             // Generate a separator
             // See if the line contains only -'s
@@ -359,8 +346,6 @@ class RDocFormatter {
             }
 
             appendTokenized(text);
-
-            return;
         } else {
             if (text.startsWith("####")) {
                 // Generate a separator
@@ -384,8 +369,6 @@ class RDocFormatter {
             }
 
             appendTokenized(text);
-
-            return;
         }
     }
 
@@ -912,7 +895,7 @@ class RDocFormatter {
         int r = c.getRed();
         int g = c.getGreen();
         int b = c.getBlue();
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append('#');
 
         String rs = Integer.toHexString(r);

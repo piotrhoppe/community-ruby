@@ -177,6 +177,18 @@ public class LexUtilities {
         return null;
     }
     
+    public static TokenSequence<?> getRubyTokenSequence(final Document doc) {
+        final AtomicReference<TokenSequence<?>> out = new AtomicReference<TokenSequence<?>>(null);
+        
+        doc.render(new Runnable() {
+            @Override public void run() {
+                out.set(TokenHierarchy.get(doc).tokenSequence());
+            }
+        });
+        
+        return out.get();
+    }
+    
     @SuppressWarnings("unchecked")
     public static TokenSequence<?extends RubyTokenId> getRubyTokenSequence(final TokenHierarchy<Document> th, final int offset) {
         final AtomicReference<TokenSequence<? extends RubyTokenId>> out = new AtomicReference<TokenSequence<? extends RubyTokenId>>(null);
