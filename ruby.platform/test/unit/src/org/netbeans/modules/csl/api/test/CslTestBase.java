@@ -77,6 +77,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -3414,7 +3415,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         assertEquals(modifiedText, doc.getText(0, doc.getLength()));
         // Make sure the hierarchy is activated - this happens when we obtain a token sequence
-        TokenSequence ts = th.tokenSequence();
+        TokenSequence ts = getRubyTokenSequence(doc, th);
         ts.moveStart();
         for (int i = 0; i < 10; i++) {
             if (!ts.moveNext()) {
@@ -3424,6 +3425,18 @@ public abstract class CslTestBase extends NbTestCase {
 
         return new Pair<EditHistory,String>(history, modifiedText);
     }
+    
+    public static TokenSequence<?> getRubyTokenSequence(final Document doc, final TokenHierarchy th) {
+        final AtomicReference<TokenSequence<?>> out = new AtomicReference<TokenSequence<?>>(null);
+        
+        doc.render(new Runnable() {
+            @Override public void run() {
+                out.set(th.tokenSequence());
+            }
+        });
+        
+        return out.get();
+    }    
 
 //    /**
 //     * Produce an incremental parser result for the given test file with the given

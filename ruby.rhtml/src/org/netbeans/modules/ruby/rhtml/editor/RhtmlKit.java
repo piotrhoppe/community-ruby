@@ -52,7 +52,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -72,7 +71,7 @@ import org.netbeans.modules.csl.api.SelectCodeElementAction;
 import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rhtml.RhtmlDocument;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -98,7 +97,7 @@ public class RhtmlKit extends HtmlKit {
     
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx(RhtmlKit.class);
+        return new org.openide.util.HelpCtx("org.netbeans.modules.ruby.rhtml.editor.RhtmlKit");
     }
     
     static final long serialVersionUID =-1381945567613910297L;
@@ -183,8 +182,7 @@ public class RhtmlKit extends HtmlKit {
             try {
                 char ch = doc.getText(dotPos-1, 1).charAt(0);
                 if (ch == '%') {
-                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                    TokenSequence<?> ts = th.tokenSequence();
+                    TokenSequence<?> ts = LexUtilities.getRubyTokenSequence(doc);
                     ts.move(dotPos);
                     if (ts.movePrevious()) {
                         Token<?> token = ts.token();
@@ -227,8 +225,7 @@ public class RhtmlKit extends HtmlKit {
         }
         
         if ((dotPos > 0) && (c == '%' || c == '>')) {
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            TokenSequence<?> ts = th.tokenSequence();
+            TokenSequence<?> ts = LexUtilities.getRubyTokenSequence(doc);
             ts.move(dotPos);
             try {
                 if (ts.moveNext() || ts.movePrevious()) {
@@ -284,55 +281,6 @@ public class RhtmlKit extends HtmlKit {
         
         return false;
     }
-
-    // This code used to customize the break behavior and insert a newline AFTER the closing %> tag which isn't
-    // always what people want
-    //    private boolean handleBreak(BaseDocument doc, Caret caret) throws BadLocationException {
-    //        int dotPos = caret.getDot();
-    //
-    //        // First see if we're -right- before a %>, if so, just enter out
-    //        // of it
-    //        if (dotPos <= doc.getLength()-3) {
-    //            String text = doc.getText(dotPos, 3);
-    //            if (text.equals(" %>") || text.startsWith("%>") || text.equals("-%>") || text.equals("% -%")) { // NOI18N
-    //                TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-    //                TokenSequence<?> ts = th.tokenSequence();
-    //                ts.move(dotPos);
-    //                if (ts.moveNext()) {
-    //                    // Go backwards and make sure we have nothing before the previous
-    //                    // delimiter
-    //                    TokenId id = ts.token().id();
-    //                    boolean notJustSpace = false;
-    //                    if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR || id == RhtmlTokenId.DELIMITER) {
-    //                        do {
-    //                            id = ts.token().id();
-    //                            if (id == RhtmlTokenId.DELIMITER && ts.token().text().charAt(0) == '<') {
-    //                                if (notJustSpace ) {
-    //                                    caret.setDot(dotPos + text.indexOf('>')+1);
-    //                                    return true;
-    //                                }
-    //                                return false;
-    //                            } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
-    //                                if (!notJustSpace) {
-    //                                    TokenSequence<?> ets = ts.embedded();
-    //                                    if (ets != null) {
-    //                                        ets.moveStart();
-    //                                        while (ets.moveNext()) {
-    //                                            if (ets.token().id() != RubyTokenId.WHITESPACE) {
-    //                                                notJustSpace = true;
-    //                                            }
-    //                                        }
-    //                                    }
-    //                                }
-    //                            }
-    //                        } while (ts.movePrevious());
-    //                    }
-    //                }
-    //            }
-    //        }
-    //        
-    //        return false;
-    //    }
 
     private class RhtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         private ExtDefaultKeyTypedAction htmlAction;
@@ -395,12 +343,9 @@ public class RhtmlKit extends HtmlKit {
     }
     
     private static Token<?> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-        TokenSequence<?> ts = th.tokenSequence();
+        TokenSequence<?> ts = LexUtilities.getRubyTokenSequence(doc);
         ts.move(offset);
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return null;
-        }
+        if (!ts.moveNext() && !ts.movePrevious()) return null;
 
         if (checkEmbedded) {
             TokenSequence<?> es = ts.embedded();
