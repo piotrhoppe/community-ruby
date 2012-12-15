@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.spellchecker.bindings.ruby;
 
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -89,14 +90,16 @@ public abstract class AbstractRubyTokenList implements TokenList {
     }
 
     private int[] findNextSpellSpan() throws BadLocationException {
-        TokenHierarchy<Document> h = TokenHierarchy.get((Document)doc);
-        @SuppressWarnings("unchecked")
-        //the cast below should be safe (and not necessary),
-        //but JDK5 compiler fails to compile the class without it and complains about the cast.
-        //likely a compiler bug
-        TokenSequence<? extends TokenId> ts = (TokenSequence<? extends TokenId>) h.tokenSequence();
+        final AtomicReference<TokenSequence<? extends TokenId>> out = new AtomicReference<TokenSequence<? extends TokenId>>(null);
+        
+        ((Document) doc).render(new Runnable() {
+            public void run() {
+                TokenHierarchy<Document> h = TokenHierarchy.get((Document) doc);
+                out.set(h.tokenSequence());
+            }
+        });
 
-        return findNextSpellSpan(ts, nextBlockStart);
+        return findNextSpellSpan(out.get(), nextBlockStart);
     }
 
     /** Given a sequence of Ruby tokens, return the next span of eligible comments */

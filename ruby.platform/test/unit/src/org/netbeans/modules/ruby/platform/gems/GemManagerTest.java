@@ -102,7 +102,7 @@ public class GemManagerTest extends RubyTestBase {
         try {
             assertTrue("local not loaded yet", gm.needsLocalReload());
             List<String> errors = gm.reloadLocalIfNeeded();
-            assertTrue("no errros", errors.isEmpty());
+            assertTrue("no errros " + errors, errors.isEmpty());
             assertTrue("local loaded", !gm.needsLocalReload());
         } finally {
             gm.reset();
