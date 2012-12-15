@@ -132,13 +132,13 @@ public class RubyValidation extends JellyTestCase {
      * - open IRB shell window 
      * - close it
      */
-    public void testIrbShell() {
-        String irbItem = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbAction");
-        String irbTitle = Bundle.getString("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbTopComponent");
-        ProjectRootNode projectRootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
-        new ActionNoBlock(null, irbItem).perform(projectRootNode);
-        new OutputTabOperator(irbTitle).close();
-    }   
+//    public void testIrbShell() {
+//        String irbItem = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbAction");
+//        String irbTitle = Bundle.getString("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbTopComponent");
+//        ProjectRootNode projectRootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
+//        new ActionNoBlock(null, irbItem).perform(projectRootNode);
+//        new OutputTabOperator(irbTitle).close();
+//    }   
 
 
     /** Test Ruby Application
@@ -149,29 +149,29 @@ public class RubyValidation extends JellyTestCase {
      * - wait until project is in Projects view
      * - wait classpath scanning finished
      */
-    public void testCreateRubyProject() {
-        //workaround for 142928
-        NewProjectWizardOperator.invoke().cancel();
-        // create new web application project
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        // "Ruby"
-        String rubyLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "Templates/Project/Ruby");
-        npwo.selectCategory(rubyLabel);
-        // "Ruby Application"
-        String rubyApplicationLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "TXT_NewJavaApp");
-        npwo.selectProject(rubyApplicationLabel);
-        npwo.next();
-        NewRubyProjectNameLocationStepOperator npnlso = new NewRubyProjectNameLocationStepOperator();
-        npnlso.txtProjectName().setText(SAMPLE_RUBY_PROJECT_NAME);
-        npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
-        npnlso.finish();
-            // wait project appear in projects view
-            // wait 30 second
-        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
-        new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
-        // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
-    }
+//    public void testCreateRubyProject() {
+//        //workaround for 142928
+//        NewProjectWizardOperator.invoke().cancel();
+//        // create new web application project
+//        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+//        // "Ruby"
+//        String rubyLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "Templates/Project/Ruby");
+//        npwo.selectCategory(rubyLabel);
+//        // "Ruby Application"
+//        String rubyApplicationLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "TXT_NewJavaApp");
+//        npwo.selectProject(rubyApplicationLabel);
+//        npwo.next();
+//        NewRubyProjectNameLocationStepOperator npnlso = new NewRubyProjectNameLocationStepOperator();
+//        npnlso.txtProjectName().setText(SAMPLE_RUBY_PROJECT_NAME);
+//        npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
+//        npnlso.finish();
+//            // wait project appear in projects view
+//            // wait 30 second
+//        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
+//        new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
+//        // wait classpath scanning finished
+//        ProjectSupport.waitScanFinished();
+//    }
     
     /** Test run Ruby file
      * - find main.rb in editor
@@ -179,56 +179,56 @@ public class RubyValidation extends JellyTestCase {
      * - wait for main.rb output tab
      * - check "Hello World" is printed out
      */
-    @RandomlyFails
-    public void testRunRubyFile() {
-        // wait main.rb is opened in editor
-        EditorOperator editor = new EditorOperator("main.rb"); // NOI18N
-        // "Run "main.rb""
-        String runFileItem = Bundle.getStringTrimmed(
-                "org.netbeans.modules.project.ui.actions.Bundle",
-                "LBL_RunSingleAction_Name",
-                new Object[]{1, "main.rb"});
-        // call "Run "main.rb"" in editor
-        new ActionNoBlock(null, runFileItem).performPopup(editor);
-        
-        String dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", 
-                "RunFile");
-        new NbDialogOperator(dialogTitle).ok();
-
-        // check message in output tab
-        new OutputTabOperator("main.rb").waitText("Hello World"); // NOI18N
-    }
+//    @RandomlyFails
+//    public void testRunRubyFile() {
+//        // wait main.rb is opened in editor
+//        EditorOperator editor = new EditorOperator("main.rb"); // NOI18N
+//        // "Run "main.rb""
+//        String runFileItem = Bundle.getStringTrimmed(
+//                "org.netbeans.modules.project.ui.actions.Bundle",
+//                "LBL_RunSingleAction_Name",
+//                new Object[]{1, "main.rb"});
+//        // call "Run "main.rb"" in editor
+//        new ActionNoBlock(null, runFileItem).performPopup(editor);
+//        
+//        String dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", 
+//                "RunFile");
+//        new NbDialogOperator(dialogTitle).ok();
+//
+//        // check message in output tab
+//        new OutputTabOperator("main.rb").waitText("Hello World"); // NOI18N
+//    }
     
     /** Test Ruby on Rails Application
      * - create new Ruby on Rails Application project
      * - wait until project is in Projects view
      * - wait classpath scanning finished
      */
-    public void testCreateRailsProject() {
-        // create new web application project
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        // "Ruby"
-        String rubyLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "Templates/Project/Ruby");
-        npwo.selectCategory(rubyLabel);
-        // "Ruby on Rails Application"
-        String railsApplicationLabel = Bundle.getString("org.netbeans.modules.ruby.railsprojects.ui.wizards.Bundle", "Templates/Project/Ruby/railsApp.xml");
-        npwo.selectProject(railsApplicationLabel);
-        npwo.next();
-        NewRubyProjectNameLocationStepOperator npnlso = new NewRubyProjectNameLocationStepOperator();
-        npnlso.txtProjectName().setText(SAMPLE_RAILS_PROJECT_NAME);
-        npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
-
-        //select WEBrick server
-        JComboBoxOperator cb = new JComboBoxOperator(npnlso, 0);
-        cb.selectItem("WEBrick");
-        npnlso.finish();
-        // wait project appear in projects view
-        // wait 30 second
-        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
-        new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
-        // wait classpath scanning finished
-        //WatchProjects.waitScanFinished();
-    }
+//    public void testCreateRailsProject() {
+//        // create new web application project
+//        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+//        // "Ruby"
+//        String rubyLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "Templates/Project/Ruby");
+//        npwo.selectCategory(rubyLabel);
+//        // "Ruby on Rails Application"
+//        String railsApplicationLabel = Bundle.getString("org.netbeans.modules.ruby.railsprojects.ui.wizards.Bundle", "Templates/Project/Ruby/railsApp.xml");
+//        npwo.selectProject(railsApplicationLabel);
+//        npwo.next();
+//        NewRubyProjectNameLocationStepOperator npnlso = new NewRubyProjectNameLocationStepOperator();
+//        npnlso.txtProjectName().setText(SAMPLE_RAILS_PROJECT_NAME);
+//        npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
+//
+//        //select WEBrick server
+//        JComboBoxOperator cb = new JComboBoxOperator(npnlso, 0);
+//        cb.selectItem("WEBrick");
+//        npnlso.finish();
+//        // wait project appear in projects view
+//        // wait 30 second
+//        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
+//        new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
+//        // wait classpath scanning finished
+//        //WatchProjects.waitScanFinished();
+//    }
     
     /** Test Rails Generator
      * - call "Generate..." action on project node
@@ -239,53 +239,53 @@ public class RubyValidation extends JellyTestCase {
      * - check files myapp_controller.rb, myapp_helper.rb, myview.rhtml, 
      * myapp_controller_test.rb are opened in editor and available in Projects view
      */
-    public void testRailsGenerate() {
-        ProjectRootNode projectRootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
-        final String railsProjectBundle = "org.netbeans.modules.ruby.railsprojects.Bundle";
-
-        // "Generate..."
-        String generateItem = Bundle.getStringTrimmed(railsProjectBundle,"rails-generator");
-        new ActionNoBlock(null, generateItem).perform(projectRootNode);
-        // "Rails Generator"
-        String generatorTitle = Bundle.getStringTrimmed(railsProjectBundle,"RailsGenerator");
-        NbDialogOperator generatorOper = new NbDialogOperator(generatorTitle);
-        // "Name:"
-        String nameLabel = Bundle.getStringTrimmed(railsProjectBundle,"Name");
-        JTextFieldOperator nameOper = new JTextFieldOperator((JTextField)new JLabelOperator(generatorOper, nameLabel).getLabelFor());
-        nameOper.setText("myapp");  // NOI18N
-        // "Views:"
-        String viewsTextFieldLabel = Bundle.getStringTrimmed(railsProjectBundle,"Views");
-        JTextFieldOperator viewsOper = new JTextFieldOperator((JTextField)new JLabelOperator(generatorOper, viewsTextFieldLabel).getLabelFor());
-        viewsOper.setText("myview");
-        generatorOper.ok();
-        
-        // wait 180 second
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 180000);
-        
-        String filename = "myapp_controller.rb"; // NOI18N
-        new EditorOperator(filename);
-        // "Controllers"
-        String controllersLabel = Bundle.getString(railsProjectBundle,"app_controllers");
-        new Node(projectRootNode, controllersLabel+"|"+filename);
-        
-        filename = "myapp_helper.rb"; // NOI18N
-        new EditorOperator(filename);
-        // "Helpers"
-        String helpersLabel = Bundle.getString(railsProjectBundle,"app_helpers");
-        new Node(projectRootNode, helpersLabel+"|"+filename);
-        
-        filename = "myview.html.erb"; // NOI18N
-        new EditorOperator(filename);
-        // "Views"
-        String viewsLabel = Bundle.getString(railsProjectBundle,"app_views");
-        new Node(projectRootNode, viewsLabel+"|myapp|"+filename);
-        
-        filename = "myapp_controller_test.rb"; // NOI18N
-        new EditorOperator(filename);
-        // "Test Files"
-        String testFilesLabel = Bundle.getString(railsProjectBundle, "test");
-        // test/functional
-        String functionalTestsLabel = "functional"; //NOI18N
-        new Node(projectRootNode, testFilesLabel+"|"+functionalTestsLabel+"|"+filename);
-    }
+//    public void testRailsGenerate() {
+//        ProjectRootNode projectRootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
+//        final String railsProjectBundle = "org.netbeans.modules.ruby.railsprojects.Bundle";
+//
+//        // "Generate..."
+//        String generateItem = Bundle.getStringTrimmed(railsProjectBundle,"rails-generator");
+//        new ActionNoBlock(null, generateItem).perform(projectRootNode);
+//        // "Rails Generator"
+//        String generatorTitle = Bundle.getStringTrimmed(railsProjectBundle,"RailsGenerator");
+//        NbDialogOperator generatorOper = new NbDialogOperator(generatorTitle);
+//        // "Name:"
+//        String nameLabel = Bundle.getStringTrimmed(railsProjectBundle,"Name");
+//        JTextFieldOperator nameOper = new JTextFieldOperator((JTextField)new JLabelOperator(generatorOper, nameLabel).getLabelFor());
+//        nameOper.setText("myapp");  // NOI18N
+//        // "Views:"
+//        String viewsTextFieldLabel = Bundle.getStringTrimmed(railsProjectBundle,"Views");
+//        JTextFieldOperator viewsOper = new JTextFieldOperator((JTextField)new JLabelOperator(generatorOper, viewsTextFieldLabel).getLabelFor());
+//        viewsOper.setText("myview");
+//        generatorOper.ok();
+//        
+//        // wait 180 second
+//        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 180000);
+//        
+//        String filename = "myapp_controller.rb"; // NOI18N
+//        new EditorOperator(filename);
+//        // "Controllers"
+//        String controllersLabel = Bundle.getString(railsProjectBundle,"app_controllers");
+//        new Node(projectRootNode, controllersLabel+"|"+filename);
+//        
+//        filename = "myapp_helper.rb"; // NOI18N
+//        new EditorOperator(filename);
+//        // "Helpers"
+//        String helpersLabel = Bundle.getString(railsProjectBundle,"app_helpers");
+//        new Node(projectRootNode, helpersLabel+"|"+filename);
+//        
+//        filename = "myview.html.erb"; // NOI18N
+//        new EditorOperator(filename);
+//        // "Views"
+//        String viewsLabel = Bundle.getString(railsProjectBundle,"app_views");
+//        new Node(projectRootNode, viewsLabel+"|myapp|"+filename);
+//        
+//        filename = "myapp_controller_test.rb"; // NOI18N
+//        new EditorOperator(filename);
+//        // "Test Files"
+//        String testFilesLabel = Bundle.getString(railsProjectBundle, "test");
+//        // test/functional
+//        String functionalTestsLabel = "functional"; //NOI18N
+//        new Node(projectRootNode, testFilesLabel+"|"+functionalTestsLabel+"|"+filename);
+//    }
 }
