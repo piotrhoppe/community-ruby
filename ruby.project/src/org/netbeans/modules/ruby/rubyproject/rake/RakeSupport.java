@@ -85,7 +85,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.FilterNode;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -152,7 +151,7 @@ public final class RakeSupport {
                 File file = FileUtil.toFile(f);
                 try {
                     String canonicalName = file.getCanonicalFile().getName();
-                    if (file != null && s.equals(canonicalName)) {
+                    if (s.equals(canonicalName)) {
                         // logging for #179305
                         LOGGER.log(Level.FINE, "Found rakefile: {0}, searching with: {1}. Full path: {2}",
                                 new Object[]{canonicalName, s, file.getCanonicalPath()});
@@ -171,10 +170,9 @@ public final class RakeSupport {
      */
     public static boolean isMainRakeFile(FileObject fo) {
         for (String s : RakeSupport.RAKEFILE_NAMES) {
-            if (s.equals(fo.getNameExt())) {
-                return true;
-            }
+            if (s.equals(fo.getNameExt())) return true;
         }
+        
         return false;
     }
 
@@ -183,19 +181,9 @@ public final class RakeSupport {
      * #isMainRakeFile main Rake file} or file with <tt>.rake</tt> extension.
      */
     public static boolean isRakeFile(FileObject fo) {
-        if (!fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
-            return false;
-        }
+        if (!fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) return false;
 
-        if (isMainRakeFile(fo)) {
-            return true;
-        }
-
-        if (fo.getExt().equalsIgnoreCase("rake")) { // NOI18N
-            return true;
-        }
-
-        return false;
+        return (isMainRakeFile(fo) || fo.getExt().equalsIgnoreCase("rake")); // NOI18N
     }
 
     /**
@@ -206,10 +194,9 @@ public final class RakeSupport {
         Collection<? extends DataObject> lookupAll = context.lookupAll(DataObject.class);
         if (lookupAll.size() == 1) {
             FileObject f = lookupAll.iterator().next().getPrimaryFile();
-            if (RakeSupport.isRakeFile(f)) {
-                return true;
-            }
+            if (RakeSupport.isRakeFile(f)) return true;
         }
+        
         return false;
     }
 
@@ -228,7 +215,7 @@ public final class RakeSupport {
 
         try {
             projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
+                @Override public void run() throws IOException {
                     FileObject rakeD = project.getProjectDirectory().getFileObject(RAKE_D_OUTPUT);
                     // clean old content
                     if (rakeD != null && rakeD.isValid() && rakeD.isData()) {
@@ -336,9 +323,11 @@ public final class RakeSupport {
         }
 
         argList.addAll(ExecutionUtils.getRubyArgs(platform));        
-        argList.add("-S");
-        argList.add("rake");
-        argList.add("-T");
+        argList.add("-S"); // NOI18N
+        argList.add("rake"); // NOI18N
+        argList.add("-T"); // NOI18N
+        argList.add("-D"); // NOI18N
+        argList.add("-A"); // NOI18N
         
 
         String[] args = argList.toArray(new String[argList.size()]);
@@ -350,27 +339,25 @@ public final class RakeSupport {
         ExecutionUtils.setupProcessEnvironment(pb.environment(), cmd.getParent(), false);
         GemManager.adjustEnvironment(platform, pb.environment());
 
-        int exitCode = -1;
-
         String stdout = null;
         try {
             ExecutionUtils.logProcess(pb);
             Process process = pb.start();
 
-            stdout = readInputStream(process.getInputStream(), false);
-            String stderr = readInputStream(process.getErrorStream(), true);
+            stdout = readInputStream(process.getInputStream());
+            String stderr = readErrorStream(process.getErrorStream());
             
-            exitCode = process.waitFor();
+            int exitCode = process.waitFor();
 
             if (warn && exitCode != 0) {
-                LOGGER.severe("rake process failed (workdir: " + pwd + "):\nstdout:\n\n" + stdout + // NOI18N
-                        "stderr:\n" + stderr); // NOI18N
+                LOGGER.log(Level.SEVERE, "rake process failed (workdir: {0}):\nstdout:\n\n{1}stderr:\n{2}", // NOI18N
+                        new Object[]{pwd, stdout, stderr}); 
                 Util.notifyLocalized(RakeSupport.class, "RakeSupport.rake.task.fetching.fails", // NOI18N
                         NotifyDescriptor.ERROR_MESSAGE, pwd, stderr);
                 return null;
             }
             if (stderr.length() > 0) {
-                LOGGER.warning("rake process warnings:\n\n" + stderr); // NOI18N
+                LOGGER.log(Level.WARNING, "rake process warnings:\n\n{0}", stderr); // NOI18N
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -380,33 +367,66 @@ public final class RakeSupport {
 
         return stdout;
     }
+    
+    private static String readErrorStream(InputStream is) {
+        StringBuilder buf = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        String line;
+        
+        try {
+            while ((line = reader.readLine()) != null) {
+                buf.append(line);
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
+            }
+        }        
+        return buf.toString();
+    }
 
-    private static String readInputStream(final InputStream is, final boolean readingErrors) {
+    /*
+     * Expects output where rake {taskname}\n(.*\n)+\n [rake -T -D parsing]:
+     * rake build
+     *    Build image_voodoo-0.8.3.gem into the pkg directory
+     * 
+     * rake install
+     *    Build and install image_voodoo-0.8.3.gem into system gems
+     * 
+     * ...
+     *
+     */
+    private static String readInputStream(InputStream is) {
         StringBuilder buf = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String line;
 
         try {
+            String currentTaskName = null;
+            StringBuilder description = new StringBuilder();
             while ((line = reader.readLine()) != null) {
-                if (line.startsWith("rake ") && line.length() > 5)  {
-                    int nextSpace = line.indexOf(" ", 5);
-                    if (nextSpace == -1) {
-                        if (readingErrors) buf.append(line);
-                    } else {                        
-                        int commentIndex = line.indexOf("#", nextSpace);
-                        
-                        if (commentIndex == -1 || commentIndex+1 >= line.length()) {
-                            if (readingErrors) buf.append(line);
-                        } else {
-                            buf.append(line.substring(5, nextSpace).replaceAll(":", "\\:"));
-                            buf.append('=');
-                            buf.append(line.substring(commentIndex+1).trim());
-                        }
-                    }
-                } else if (readingErrors) {
-                    buf.append(line);
+                if (line.startsWith("rake ") && line.length() > 5)  { // NOI18N
+                    currentTaskName = line.substring(5).replaceAll(":", "\\\\:"); // NOI18N
+                } else if ("".equals(line)) { // NOI18N
+                    String desc = description.toString();
+
+                    // Guard against no-doc rake task
+                    if (desc.length() > 2) desc = desc.substring(0, desc.length() - 2);
+
+                    buf.append(currentTaskName).append('=').append(desc).append("\n"); // NOI18N
+                    currentTaskName = null;
+                    description = new StringBuilder();
+                } else {
+                    description.append(line.trim()).append("\\n");
                 }
-                buf.append('\n');
+            }
+            
+            if (currentTaskName != null) { // last task
+                buf.append(currentTaskName).append('=').append(description.toString().replaceAll("\n", "\\n")).append("\n"); // NOI18N
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -426,7 +446,7 @@ public final class RakeSupport {
 
         try {
             projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
+                @Override
                 public void run() throws IOException {
                     FileObject rakeTasksFile = projectDir.getFileObject(RAKE_D_OUTPUT);
 
