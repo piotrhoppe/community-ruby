@@ -43,13 +43,8 @@
  */
 package org.netbeans.jellytools;
 
-import java.awt.Component;
-import java.io.IOException;
-import javax.swing.JPanel;
 import junit.framework.Test;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.MainWindowOperator.StatusTextTracer;
-import org.netbeans.jellytools.actions.Action;
 
 /**
  * Test of org.netbeans.jellytools.NewFileNameLocationStepOperator.
@@ -76,6 +71,7 @@ public class NewRubyFileNameLocationStepOperatorTest extends JellyTestCase {
         return createModuleTest(NewRubyFileNameLocationStepOperatorTest.class, tests);
     }
     
+    @Override
     protected void setUp() throws Exception {
         System.out.println("### "+getName()+" ###");        
         
@@ -90,34 +86,34 @@ public class NewRubyFileNameLocationStepOperatorTest extends JellyTestCase {
     }
 
     /** Test of invoke method. Opens New File wizard and waits for the dialog. */
-    public void testInvoke() throws Exception {
-
-        openDataProjects("SampleRubyProject");
-
-        NewFileWizardOperator wop = NewFileWizardOperator.invoke();
-        wop.selectProject("SampleRubyProject"); //NOI18N
-
-        
-        // Ruby
-        String rubyLabel = "Ruby"; //TODO: find appropriate bundle and load messages from it
-        // Ruby File
-        String rubyFileLabel = "Ruby File"; //TODO: find appropriate bundle and load messages from it
-        wop.selectCategory(rubyLabel);
-        wop.selectFileType(rubyFileLabel);
-        wop.next();
-        op = new NewRubyFileNameLocationStepOperator();
-    }
-    
-    public void testComponents() {        
-        op.txtObjectName().setText("NewObject"); // NOI18N
-        assertEquals("Project name not propagated from previous step", "SampleRubyProject", op.txtProject().getText()); // NOI18N        
-        op.selectSourceFilesLocation();
-        
-        String filePath = op.txtCreatedFile().getText();
-        assertTrue("Created file path doesn't contain SampleProject.", filePath.indexOf("SampleRubyProject") > 0);  // NOI18N
-        assertTrue("Created file path doesn't contain lib folder name.", filePath.indexOf("lib") > 0);  // NOI18N
-        assertTrue("Created file path doesn't contain NewObject name.", filePath.indexOf("NewObject") > 0);  //NOI18N
-        op.cancel();         
-    }
+//    public void testInvoke() throws Exception {
+//
+//        openDataProjects("SampleRubyProject");
+//
+//        NewFileWizardOperator wop = NewFileWizardOperator.invoke();
+//        wop.selectProject("SampleRubyProject"); //NOI18N
+//
+//        
+//        // Ruby
+//        String rubyLabel = "Ruby"; //TODO: find appropriate bundle and load messages from it
+//        // Ruby File
+//        String rubyFileLabel = "Ruby File"; //TODO: find appropriate bundle and load messages from it
+//        wop.selectCategory(rubyLabel);
+//        wop.selectFileType(rubyFileLabel);
+//        wop.next();
+//        op = new NewRubyFileNameLocationStepOperator();
+//    }
+//    
+//    public void testComponents() {        
+//        op.txtObjectName().setText("NewObject"); // NOI18N
+//        assertEquals("Project name not propagated from previous step", "SampleRubyProject", op.txtProject().getText()); // NOI18N        
+//        op.selectSourceFilesLocation();
+//        
+//        String filePath = op.txtCreatedFile().getText();
+//        assertTrue("Created file path doesn't contain SampleProject.", filePath.indexOf("SampleRubyProject") > 0);  // NOI18N
+//        assertTrue("Created file path doesn't contain lib folder name.", filePath.indexOf("lib") > 0);  // NOI18N
+//        assertTrue("Created file path doesn't contain NewObject name.", filePath.indexOf("NewObject") > 0);  //NOI18N
+//        op.cancel();         
+//    }
     
 }
