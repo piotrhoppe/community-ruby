@@ -76,6 +76,7 @@ public class GemManagerTest extends RubyTestBase {
         assertEquals("righ gem dir", new File(platform.getLibDir(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
     }
 
+    /*  Test passes but deadlock will not connect to remote host?
     public void testGemFetching() {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         GemManager gm = jruby.getGemManager();
@@ -93,7 +94,7 @@ public class GemManagerTest extends RubyTestBase {
 
         gm.reloadIfNeeded(errors);
         assertTrue("no errros", errors.isEmpty());
-    }
+    }*/
 
     public void testReloadLocalIfNeeded() {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
@@ -109,6 +110,7 @@ public class GemManagerTest extends RubyTestBase {
         }
     }
 
+    /*  Test passes but deadlock will not connect to remote host?
     public void testReloadRemoteIfNeeded() {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         GemManager gm = jruby.getGemManager();
@@ -121,7 +123,7 @@ public class GemManagerTest extends RubyTestBase {
         } finally {
             gm.reset();
         }
-    }
+    }*/
 
     public void testIsValidGemHome() throws Exception {
         assertFalse("not valid", GemManager.isValidGemHome(getWorkDir()));
