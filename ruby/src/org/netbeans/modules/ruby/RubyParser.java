@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,7 +80,6 @@ import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -102,9 +102,9 @@ import org.openide.util.NbBundle;
 public final class RubyParser extends Parser {
 
     /**
-     * System property for defaulting to 1.9 parser.
+     * System property for defaulting to 1.8 parser.
      */
-    private static boolean DEFAULT_TO_RUBY19 = Boolean.getBoolean("ruby.parser.default19"); //NOI18N
+    private static boolean DEFAULT_TO_RUBY18 = Boolean.getBoolean("ruby.parser.default18"); //NOI18N
 
     private RubyParseResult lastResult;
 
@@ -122,6 +122,7 @@ public final class RubyParser extends Parser {
         Context context = new Context(snapshot, event);
         final List<Error> errors = new ArrayList<Error>();
         context.errorHandler = new ParseErrorHandler() {
+            @Override
             public void error(Error error) {
                 errors.add(error);
             }
@@ -488,10 +489,12 @@ public final class RubyParser extends Parser {
         try {
             IRubyWarnings warnings =
                 new IRubyWarnings() {
+                    @Override
                     public boolean isVerbose() {
                         return false;
                     }
 
+                    @Override
                     public void warn(ID id, SourcePosition position, String message, Object... data) {
                         if (!ignoreErrors) {
                             notifyError(context, id, Severity.WARNING, message, position.getStartOffset(),
@@ -499,6 +502,7 @@ public final class RubyParser extends Parser {
                         }
                     }
 
+                    @Override
                     public void warn(ID id, String fileName, int lineNumber, String message, Object... data) {
                         // XXX What about a the position? Compute from fileName+lineNumber?
                         if (!ignoreErrors) {
@@ -507,6 +511,7 @@ public final class RubyParser extends Parser {
                         }
                     }
 
+                    @Override
                     public void warn(ID id, String message, Object... data) {
                         if (!ignoreErrors) {
                             notifyError(context, id, Severity.WARNING, message, -1,
@@ -514,6 +519,7 @@ public final class RubyParser extends Parser {
                         }
                     }
 
+                    @Override
                     public void warning(ID id, String message, Object... data) {
                         if (!ignoreErrors) {
                             notifyError(context, id, Severity.WARNING, message, -1,
@@ -521,6 +527,7 @@ public final class RubyParser extends Parser {
                         }
                     }
 
+                    @Override
                     public void warning(ID id, SourcePosition position, String message, Object... data) {
                         if (!ignoreErrors) {
                             notifyError(context, id, Severity.WARNING, message, position.getStartOffset(),
@@ -528,6 +535,7 @@ public final class RubyParser extends Parser {
                         }
                     }
 
+                    @Override
                     public void warning(ID id, String fileName, int lineNumber, String message, Object... data) {
                         // XXX What about a the position? Compute from fileName+lineNumber?
                         if (!ignoreErrors) {
@@ -556,6 +564,8 @@ public final class RubyParser extends Parser {
             LexerSource lexerSource =
                     LexerSource.getSource(fileName, new StringReader(source), configuration);
             result = parser.parse(configuration, lexerSource);
+        } catch (IOException e) {
+            // FIXME: This should do something other than ignore?
         } catch (SyntaxException e) {
             int offset = e.getPosition().getStartOffset();
 
@@ -577,13 +587,11 @@ public final class RubyParser extends Parser {
 
         Node root = (result != null) ? result.getAST() : null;
 
-        RootNode realRoot = null;
-
         if (root instanceof RootNode) {
             // Quick workaround for now to avoid NPEs all over when
             // code looks at RootNode, whose getPosition()==null.
             // Its bodynode is what used to be returned as the root!
-            realRoot = (RootNode)root;
+            RootNode realRoot = (RootNode)root;
             root = realRoot.getBodyNode();
         }
 
@@ -614,40 +622,37 @@ public final class RubyParser extends Parser {
         // uses, or in case JRuby that can support both 1.8 and 1.9 we check for the 
         // specified compat level
         FileObject fo = context.snapshot.getSource().getFileObject();
-        if (fo == null) {
-            return getDefaultParser();
-        }
+        if (fo == null) return getDefaultParser();
+
         Project owner = FileOwnerQuery.getOwner(fo);
-        if (owner == null) {
-            return getDefaultParser();
-        }
+        if (owner == null) return getDefaultParser();
+
         RubyPlatform platform = RubyPlatform.platformFor(owner);
-        if (platform == null) {
-            return getDefaultParser();
-        }
-        if (platform.isJRuby()) {
-            return getParserForJRuby(owner);
-        }
-        if (platform.is19()) {
-            return new Ruby19Parser();
-        }
+
+        if (platform == null) return getDefaultParser();
+        if (platform.isJRuby()) return getParserForJRuby(owner);
+        if (platform.is19()) return new Ruby19Parser();
+        // FIXME: Update to 2.0 parser once jruby-parser add 2.0 parser support
+        if (platform.is20()) return new Ruby19Parser();
+
         return new Ruby18Parser();
     }
 
     private static org.jrubyparser.parser.RubyParser getDefaultParser() {
-        return DEFAULT_TO_RUBY19 ? new Ruby19Parser() : new Ruby18Parser();
+        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby19Parser();
     }
 
+    // FIXME: This should figure this out much differently.
     private static org.jrubyparser.parser.RubyParser getParserForJRuby(Project project) {
         PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
         if (evaluator != null) {
             // specified in SharedRubyProjectProperties, but don't want add a dep to it.
             String jvmArgs = evaluator.getProperty("jvm.args"); //NOI18N
             if (jvmArgs != null) {
-                return jvmArgs.contains("jruby.compat.version=RUBY1_9") ? new Ruby19Parser() : new Ruby18Parser();
+                return jvmArgs.contains("jruby.compat.version=RUBY1_8") ? new Ruby18Parser() : new Ruby19Parser();
             }
         }
-        return new Ruby18Parser();
+        return new Ruby19Parser();
     }
 
     protected RubyParseResult createParseResult(Snapshot snapshots, Node rootNode) {

@@ -2279,7 +2279,7 @@ public class AstUtilities {
      * @param exits accumulator for found exit points
      */
     public static void findExitPoints(final MethodDefNode defNode, final Collection<? super Node> exits) {
-        Node body = defNode.getBodyNode();
+        Node body = defNode.getBody();
         if (body != null) { // method with empty body
             findExitPoints(body, exits);
         }
@@ -2339,18 +2339,18 @@ public class AstUtilities {
             CaseNode caseNode = (CaseNode) node;
             ListNode cases = caseNode.getCases();
             List<Node> result = new ArrayList<Node>(cases.childNodes());
-            result.add(caseNode.getElseNode());
+            result.add(caseNode.getElse());
             return result;
         }
         if (node instanceof WhenNode) {
             WhenNode whenNode = (WhenNode) node;
-            return Collections.singletonList(whenNode.getBodyNode());
+            return Collections.singletonList(whenNode.getBody());
         }
         if (node instanceof OrNode) {
             return node.childNodes();
         }
         if (node instanceof AndNode) {
-            return Collections.singletonList(((AndNode) node).getSecondNode());
+            return Collections.singletonList(((AndNode) node).getSecond());
         }
         if (node instanceof ReturnNode
                 || isCall(node)

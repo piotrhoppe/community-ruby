@@ -94,7 +94,7 @@ public class ColonToThen extends RubyAstRule {
         ParserResult info = context.parserResult;
 
         WhenNode when = (WhenNode)node;
-        Node body = when.getBodyNode();
+        Node body = when.getBody();
         if (RubyHints.isNullOrInvisible(body)) {
             return;
         }
