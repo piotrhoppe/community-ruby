@@ -45,7 +45,6 @@ package org.netbeans.modules.ruby.lexer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.jrubyparser.IRubyWarnings;
@@ -141,12 +140,12 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
 
         if (state instanceof JRubyLexerRestartInfo) {
             ((JRubyLexerRestartInfo)state).initializeState(this);
-        } else if (state instanceof Integer) {
-            int stateValue = ((Integer)state).intValue();
-            lexer.setState(LexState.fromOrdinal(stateValue));
+        } else if (state instanceof LexState) {
+            lexer.setState((LexState) state);
         }
     }
 
+    @Override
     public void release() {
         if (REUSE_LEXERS) {
             // Possibly reset the structures that could cause memory leaks
@@ -156,6 +155,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
         }
     }
 
+    @Override
     public Object state() {
         if (JRubyLexerRestartInfo.needsStateStorage(this)) {
             return new JRubyLexerRestartInfo(this);
@@ -173,9 +173,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
             return new JRubyLexerRestartInfo(this);
         }
 
-        // The lexer can store integer states very efficiently
-        // (besides, Integer.valueOf will cache all these values since they are < 128)
-        return Integer.valueOf(state.getOrdinal());
+        return state;
     }
 
     private Token<RubyTokenId> token(RubyTokenId id, int length) {
@@ -185,6 +183,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
                                    : tokenFactory.createToken(id, length);
     }
 
+    @Override
     public Token<RubyTokenId> nextToken() {
         int token = 0;
         int tokenLength = 0;
@@ -294,8 +293,8 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
             // should be lexed as a symbol
             String category = id.primaryCategory();
             boolean isString = "string".equals(category); // NOI18N
-            boolean inEmbedded = id == RubyTokenId.EMBEDDED_RUBY;
-            if (!(isString || inEmbedded) || (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END)) {
+            boolean inEmbeddedString = id == RubyTokenId.EMBEDDED_RUBY;
+            if (!(isString || inEmbeddedString) || (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END)) {
                 inSymbol = (token == Tokens.tSYMBEG);
             }
 
@@ -674,9 +673,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
                 return false;
             }
 
-            if ((this.lexState != other.lexState) &&
-                    ((this.lexState == null) ||
-                    !(this.lexState.getOrdinal() == other.lexState.getOrdinal()))) {
+            if (this.lexState != other.lexState && this.lexState == null) {
                 return false;
             }
 
@@ -793,6 +790,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
             this.input = input;
         }
 
+        @Override
         public int read(char[] buf, int off, int len) throws IOException {
             for (int i = 0; i < len; i++) {
                 int c = input.read();
@@ -807,6 +805,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
             return len;
         }
 
+        @Override
         public void close() throws IOException {
         }
     }
@@ -841,25 +840,32 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
      */
     private static class NullWarnings implements IRubyWarnings {
 
+        @Override
         public boolean isVerbose() {
             return false;
         }
 
+        @Override
         public void warn(ID id, String message, Object... data) {
         }
 
+        @Override
         public void warning(ID id, String message, Object... data) {
         }
 
+        @Override
         public void warn(ID id, String fileName, int lineNumber, String message, Object... data) {
         }
 
+        @Override
         public void warning(ID id, String fileName, int lineNumber, String message, Object... data) {
         }
 
+        @Override
         public void warn(ID arg0, SourcePosition arg1, String arg2, Object... arg3) {
         }
 
+        @Override
         public void warning(ID arg0, SourcePosition arg1, String arg2, Object... arg3) {
         }
     }

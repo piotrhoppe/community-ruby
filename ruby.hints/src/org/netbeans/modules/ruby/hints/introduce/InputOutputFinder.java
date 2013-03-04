@@ -214,9 +214,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             //    x,y=x+1,y+1
             // properly sees that "x" is read before it is written. 
             MultipleAsgnNode multiple = (MultipleAsgnNode)node;
-            if (multiple.getValueNode() != null) {
-                new ParseTreeWalker(this).walk(multiple.getValueNode());
-            }
+            if (multiple.getValue() != null) new ParseTreeWalker(this).walk(multiple.getValue());
             break;
         }
         case WHENNODE:

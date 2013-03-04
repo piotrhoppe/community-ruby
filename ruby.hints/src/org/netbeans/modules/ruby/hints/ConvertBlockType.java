@@ -656,7 +656,7 @@ public class ConvertBlockType extends RubyAstRule {
             assert path.leaf().getNodeType() == NodeType.ITERNODE;
             Node n = path.leafParent();
             if (n != null && AstUtilities.isCall(n) && n instanceof IArgumentNode && 
-                    ((IArgumentNode)n).getArgsNode() != null) {
+                    ((IArgumentNode)n).getArgs() != null) {
                 // Yes, call has args - check parens
                 int end = node.getPosition().getStartOffset(); // Start of do/{ - end of args
                 for (int i = end-1; i >= 0 && i < doc.getLength(); i--) {

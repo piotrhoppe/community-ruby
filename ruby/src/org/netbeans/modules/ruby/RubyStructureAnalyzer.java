@@ -156,6 +156,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     public RubyStructureAnalyzer() {
     }
 
+    @Override
     public List<?extends StructureItem> scan(final ParserResult result) {
         if (RubyUtils.isRhtmlOrYamlFile(RubyUtils.getFileObject(result))) {
             return scanRhtml(result);
@@ -427,6 +428,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 //        cache.put(file, scan);
     }
 
+    @Override
     public Map<String, List<OffsetRange>> folds(final ParserResult result) {
         if (RubyUtils.isRhtmlFile(RubyUtils.getFileObject(result))) {
             return Collections.emptyMap();
@@ -572,7 +574,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             co.setFqn(AstUtilities.getFqnName(path));
 
             // Pass on to children
-            Node receiver = ((SClassNode)node).getReceiverNode();
+            Node receiver = ((SClassNode)node).getReceiver();
 
             if (receiver instanceof INameNode) {
                 in = AstUtilities.getName(receiver);
@@ -759,7 +761,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
             if (name.equals("require")) { // XXX Load too?
 
-                Node argsNode = ((FCallNode)node).getArgsNode();
+                Node argsNode = ((FCallNode)node).getArgs();
 
                 if (argsNode instanceof ListNode) {
                     ListNode args = (ListNode)argsNode;
@@ -796,7 +798,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         // try inferring type only if define_method(sym, method)
                         // was invoked w/o the method param
                         if (values.size() == 1) {
-                            Node iter = ((FCallNode) node).getIterNode();
+                            Node iter = ((FCallNode) node).getIter();
                             if (iter != null) {
                                 co.setType(typeInferencer.inferType(iter));
                             }
@@ -835,7 +837,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     addToParent(parent, co);
                 }
             } else if ((includes != null) && name.equals("include")) {
-                Node argsNode = ((FCallNode)node).getArgsNode();
+                Node argsNode = ((FCallNode)node).getArgs();
                 if (argsNode instanceof ListNode) {
                     includes.addAll(AstUtilities.getValuesAsFqn((ListNode)argsNode));
                 }
@@ -877,7 +879,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                                          // TODO: module_function without arguments will make all the following methods
                                                          // module function - is this common?
 
-                Node argsNode = ((FCallNode)node).getArgsNode();
+                Node argsNode = ((FCallNode)node).getArgs();
 
                 if (argsNode instanceof ListNode) {
                     ListNode args = (ListNode)argsNode;
@@ -944,8 +946,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
             if (isTestFile && TestNameResolver.isTestMethodName(name)) {
                 String desc = name;
                 FCallNode fc = (FCallNode) node;
-                if (fc.getIterNode() != null || "it".equals(name)) { // NOI18N   // "it" without do/end: pending
-                    Node argsNode = fc.getArgsNode();
+                if (fc.getIter() != null || "it".equals(name)) { // NOI18N   // "it" without do/end: pending
+                    Node argsNode = fc.getArgs();
 
                     if (argsNode instanceof ListNode) {
                         ListNode args = (ListNode) argsNode;
@@ -1072,7 +1074,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return null;
         }
         
-        Node receiver = call.getReceiverNode();
+        Node receiver = call.getReceiver();
         if (receiver == null || !(receiver instanceof INameNode)) {
             return null;
         }
@@ -1082,7 +1084,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return null;
         }
         
-        Node argsNode = call.getArgsNode();
+        Node argsNode = call.getArgs();
 
         if (argsNode instanceof ListNode) {
             ListNode args = (ListNode)argsNode;
@@ -1221,10 +1223,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
             kind = node.getKind();
         }
 
+        @Override
         public String getName() {
             return node.getName();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(node.getName());
@@ -1276,18 +1280,22 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return types;
         }
 
+        @Override
         public ElementHandle getElementHandle() {
             return node;
         }
 
+        @Override
         public ElementKind getKind() {
             return kind;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return node.getModifiers();
         }
 
+        @Override
         public boolean isLeaf() {
             switch (kind) {
             case ATTRIBUTE:
@@ -1307,7 +1315,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
             case TEST: {
                 List<AstElement> nested = node.getChildren();
-                return nested == null || nested.size() == 0;
+                return nested == null || nested.isEmpty();
             }
 
             default:
@@ -1315,6 +1323,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             }
         }
 
+        @Override
         public List<? extends StructureItem> getNestedItems() {
             List<AstElement> nested = node.getChildren();
 
@@ -1333,10 +1342,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
             }
         }
 
+        @Override
         public long getPosition() {
             return node.getNode().getPosition().getStartOffset();
         }
 
+        @Override
         public long getEndPosition() {
             return node.getNode().getPosition().getEndOffset();
         }
@@ -1423,6 +1434,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return getName() + " (kind: " + kind + ')';
         }
 
+        @Override
         public ImageIcon getCustomIcon() {
             if (kind == ElementKind.TEST) {
                 // see #138409 -- use the same icon for all kind of test/unit tests
@@ -1435,6 +1447,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return null;
         }
 
+        @Override
         public String getSortText() {
             return getName();
         }
@@ -1633,6 +1646,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return DEFAULT_LABEL;
     }
     
+    @Override
     public Configuration getConfiguration() {
         return null;
     }
@@ -1733,6 +1747,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return true;
         }
 
+        @Override
         public ImageIcon getCustomIcon() {
             if (keywordIcon == null) {
                 keywordIcon = ImageUtilities.loadImageIcon(RUBY_KEYWORD, false);
@@ -1741,6 +1756,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return keywordIcon;
         }
         
+        @Override
         public String getSortText() {
             return Integer.toHexString(10000+(int)getPosition());
         }

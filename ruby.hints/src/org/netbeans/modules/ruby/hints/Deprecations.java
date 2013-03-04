@@ -194,7 +194,7 @@ public class Deprecations extends RubyAstRule {
     
     private static String getStringArg(Node node) {
         if (node.getNodeType() == NodeType.FCALLNODE) {
-            Node argsNode = ((FCallNode)node).getArgsNode();
+            Node argsNode = ((FCallNode)node).getArgs();
 
             if (argsNode instanceof ListNode) {
                 ListNode args = (ListNode)argsNode;

@@ -200,11 +200,12 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return info;
     }
 
-    /**
-     * @return whether this platform represents Ruby 1.9 platform.
-     */
     public boolean is19() {
         return getVersion() != null && getVersion().startsWith("1.9");
+    }
+    
+    public boolean is20() {
+        return getVersion() != null && getVersion().startsWith("2.0");
     }
 
     /**

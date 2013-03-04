@@ -340,11 +340,11 @@ public class RubyHintsProvider implements HintsProvider {
             // confuses our hints
             // XXX: change this behaviour in the parser?
             WhenNode whenNode = (WhenNode) node;
-            return nodeList(whenNode.getExpressionNodes(), whenNode.getBodyNode());
+            return nodeList(whenNode.getExpression(), whenNode.getBody());
         } else if (node.getNodeType() == NodeType.CASENODE) {
             CaseNode caseNode = (CaseNode) node;
             // include the else node for case nodes
-            return nodeList(caseNode.getCaseNode(), caseNode.getCases(), caseNode.getElseNode());
+            return nodeList(caseNode.getCase(), caseNode.getCases(), caseNode.getElse());
         }
         return node.childNodes();
     }
