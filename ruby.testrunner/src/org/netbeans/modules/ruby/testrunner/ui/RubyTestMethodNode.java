@@ -121,7 +121,7 @@ public final class RubyTestMethodNode extends TestMethodNode {
                 : testLocation;
 
         return jumpToLocation == null
-                ? new JumpToTestAction(testcase, project, NbBundle.getMessage(RubyTestMethodNode.class, "LBL_GoToSource"), false)
+                ? new JumpToTestAction(testcase, getProject(), NbBundle.getMessage(RubyTestMethodNode.class, "LBL_GoToSource"), false)
                 : new JumpToCallStackAction(this, jumpToLocation);
     }
 
@@ -189,7 +189,7 @@ public final class RubyTestMethodNode extends TestMethodNode {
      * where the given test case is defined.
       */
     private String getFileName(Testcase testcase) {
-        FileObject testRoot = BaseTestMethodNodeAction.getTestSourceRoot(project);
+        FileObject testRoot = BaseTestMethodNodeAction.getTestSourceRoot(getProject());
         String testName = BaseTestMethodNodeAction.getTestMethod(testcase);
         DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(testRoot, testName, true, true);
         FileObject testFile = location.getFileObject();
@@ -207,8 +207,8 @@ public final class RubyTestMethodNode extends TestMethodNode {
         }
         List<Action> actions = new ArrayList<Action>();
         actions.add(getPreferredAction());
-        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(RubyTestMethodNode.class, "LBL_RerunTest"), false));
-        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(RubyTestMethodNode.class, "LBL_DebugTest"), true));
+        actions.add(new RunTestMethodAction(testcase, getProject(), NbBundle.getMessage(RubyTestMethodNode.class, "LBL_RerunTest"), false));
+        actions.add(new RunTestMethodAction(testcase, getProject(), NbBundle.getMessage(RubyTestMethodNode.class, "LBL_DebugTest"), true));
         actions.add(new DiffViewAction(testcase));
 //        actions.add(new DisplayOutputForNodeAction(testcase.getOutput(), testcase.getSession()));
         return actions.toArray(new Action[actions.size()]);
