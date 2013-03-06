@@ -42,7 +42,6 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Set;
 import org.jrubyparser.ast.ArrayNode;

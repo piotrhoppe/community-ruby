@@ -55,6 +55,7 @@ import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.OptArgNode;
 import org.jrubyparser.ast.SplatNode;
 import org.jrubyparser.ast.VCallNode;
 
@@ -220,9 +221,7 @@ public final class Arity {
 
         Arity arity = new Arity(0, 0);
 
-        List<Node> nodes = method.childNodes();
-
-        for (Node c : nodes) {
+        for (Node c : method.childNodes()) {
             if (c instanceof ArgsNode) {
                 arity.initializeFromDef(c);
 
@@ -230,11 +229,7 @@ public final class Arity {
             }
         }
 
-        if (arity.min == -1) {
-            return UNKNOWN;
-        } else {
-            return arity;
-        }
+        return arity.min == -1 ? UNKNOWN : arity;
     }
 
     private void initializeFromDef(Node node) {
@@ -266,13 +261,12 @@ public final class Arity {
             max++;
         } else if (node instanceof LocalAsgnNode) {
             max++;
+        } else if (node instanceof OptArgNode) {
+            max++;
         } else if (node instanceof ListNode) {
-            List<Node> children = node.childNodes();
+            for (Node child : node.childNodes()) {
+                if (child.isInvisible()) continue;
 
-            for (Node child : children) {
-                if (child.isInvisible()) {
-                    continue;
-                }
                 initializeFromDef(child);
             }
         }
