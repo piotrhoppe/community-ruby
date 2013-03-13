@@ -531,7 +531,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         }
                         
                         if (!skip) {
-                            node = AstUtilities.getDefNameNode((MethodDefNode)node);
+                            node = ((MethodDefNode)node).getNameNode();
                             // Found a method match
                             // TODO - check arity - see OccurrencesFinder
                             RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);

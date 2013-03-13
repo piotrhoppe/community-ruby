@@ -49,7 +49,6 @@ import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.INameNode;
-import org.jrubyparser.ast.IScopingNode;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -152,7 +151,7 @@ final class RubyMethodTypeInferencer {
         RubyType receiverType = null;
         switch (callNodeToInfer.getNodeType()) {
             case CALLNODE:
-                receiver = ((CallNode) callNodeToInfer).getReceiverNode();
+                receiver = ((CallNode) callNodeToInfer).getReceiver();
                 break;
             case FCALLNODE:
             case VCALLNODE:

@@ -111,6 +111,7 @@ public final class ContextKnowledge {
 
     RubyType getType(final String symbol) {
         RubyType type = typesForSymbols.get(symbol);
+        
         return type == null ? RubyType.unknown() : type;
     }
 

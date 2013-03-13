@@ -48,9 +48,10 @@ import java.util.ListIterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.jrubyparser.ast.AssignableNode;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
-import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.IArgumentNode;
 import org.jrubyparser.ast.IScopingNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
@@ -183,10 +184,10 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                         skipInstanceMethods = false;
                     }
                 }
-                if (!type.isKnown() && call.isLHSConstant() && callType != null) {
+                if (!type.isKnown() && call.isLHSConstant()) {
                     type = callType;
                 }
-            } else if (AstUtilities.isAssignmentNode(target)) {
+            } else if (target instanceof AssignableNode) {
                 if (!target.childNodes().isEmpty()) {
                     Node child = target.childNodes().get(0);
                     if (AstUtilities.isCall(child)) {
@@ -311,7 +312,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             return RubyTypeInferencer.create(request.createContextKnowledge(), false).inferType(target);
         } else {
             if (target instanceof CallNode) {
-                Node receiver = ((CallNode) target).getReceiverNode();
+                Node receiver = ((CallNode) target).getReceiver();
                 return RubyTypeInferencer.create(request.createContextKnowledge(), false).inferType(receiver);
             } else { // receiver is self
                 IScopingNode clazz = AstUtilities.findClassOrModule(request.path);
@@ -366,10 +367,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             Set<IndexedMethod>[] alternativesHolder, QuerySupport.Kind kind) {
         try {
             Node root = AstUtilities.getRoot(parserResult);
-
-            if (root == null) {
-                return false;
-            }
+            if (root == null) return false;
 
             IndexedMethod targetMethod = null;
             int index = -1;
@@ -382,29 +380,23 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
             // Adjust offset to the left
             BaseDocument doc = RubyUtils.getDocument(parserResult, true);
-            if (doc == null) {
-                return false;
-            }
+            if (doc == null) return false;
+
             int newLexOffset = LexUtilities.findSpaceBegin(doc, lexOffset);
-            if (newLexOffset < lexOffset) {
-                astOffset -= (lexOffset - newLexOffset);
-            }
+            if (newLexOffset < lexOffset) astOffset -= (lexOffset - newLexOffset);
 
             RubyParseResult rpr = AstUtilities.getParseResult(parserResult);
             OffsetRange range = rpr.getSanitizedRange();
             if (range != OffsetRange.NONE && range.containsInclusive(astOffset)) {
                 if (astOffset != range.getStart()) {
                     astOffset = range.getStart() - 1;
-                    if (astOffset < 0) {
-                        astOffset = 0;
-                    }
+                    if (astOffset < 0) astOffset = 0;
+
                     path = new AstPath(root, astOffset);
                 }
             }
 
-            if (path == null) {
-                path = new AstPath(root, astOffset);
-            }
+            if (path == null) path = new AstPath(root, astOffset);
 
             int currentLineStart = Utilities.getRowStart(doc, lexOffset);
             if (callLineStart != -1 && currentLineStart == callLineStart) {
@@ -429,23 +421,8 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                     Node node = it.next();
                     if (AstUtilities.isCall(node) &&
                             name.equals(AstUtilities.getCallName(node))) {
-                        if (node.getNodeType() == NodeType.CALLNODE) {
-                            Node argsNode = ((CallNode) node).getArgsNode();
-
-                            if (argsNode != null) {
-                                index = AstUtilities.findArgumentIndex(argsNode, astOffset);
-
-                                if (index == -1 && astOffset < originalAstOffset) {
-                                    index = AstUtilities.findArgumentIndex(argsNode, originalAstOffset);
-                                }
-
-                                if (index != -1) {
-                                    call = node;
-                                    anchorOffset = argsNode.getPosition().getStartOffset();
-                                }
-                            }
-                        } else if (node.getNodeType() == NodeType.FCALLNODE) {
-                            Node argsNode = ((FCallNode) node).getArgsNode();
+                        if (node.getNodeType() == NodeType.CALLNODE || node.getNodeType() == NodeType.FCALLNODE) {
+                            Node argsNode = ((IArgumentNode) node).getArgs();
 
                             if (argsNode != null) {
                                 index = AstUtilities.findArgumentIndex(argsNode, astOffset);
@@ -510,7 +487,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                         }
                     }
 
-                    if (node.getNodeType() == NodeType.CALLNODE) {
+                    if (node.getNodeType() == NodeType.CALLNODE || node.getNodeType()== NodeType.FCALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
                             for (int i = 0; i < 3 && it.hasNext(); i++) {
@@ -530,7 +507,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                             }
                         }
 
-                        Node argsNode = ((CallNode) node).getArgsNode();
+                        Node argsNode = ((IArgumentNode) node).getArgs();
 
                         if (argsNode != null) {
                             index = AstUtilities.findArgumentIndex(argsNode, astOffset);
@@ -550,42 +527,6 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                                 index = 0;
                                 call = node;
                                 anchorOffset = callRange.getEnd() + 1;
-                                break;
-                            }
-                        }
-                    } else if (node.getNodeType() == NodeType.FCALLNODE) {
-                        final OffsetRange callRange = AstUtilities.getCallRange(node);
-                        if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
-                            for (int i = 0; i < 3 && it.hasNext(); i++) {
-                                // It's not really a peek in the sense
-                                // that there's no reason to retry these
-                                // nodes later
-                                Node peek = it.next();
-                                if (AstUtilities.isCall(peek) &&
-                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(parserResult, peek.getPosition().getStartOffset())) ==
-                                        Utilities.getRowStart(doc, lexOffset)) {
-                                    // Use the outer method call instead
-                                    if (it.hasPrevious()) {
-                                        it.previous();
-                                    }
-                                    continue nodesearch;
-                                }
-                            }
-                        }
-
-                        Node argsNode = ((FCallNode) node).getArgsNode();
-
-                        if (argsNode != null) {
-                            index = AstUtilities.findArgumentIndex(argsNode, astOffset);
-
-                            if (index == -1 && astOffset < originalAstOffset) {
-                                index = AstUtilities.findArgumentIndex(argsNode, originalAstOffset);
-                            }
-
-                            if (index != -1) {
-                                call = node;
-                                anchorOffset = argsNode.getPosition().getStartOffset();
-
                                 break;
                             }
                         }
@@ -628,10 +569,8 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
             if (index != -1 && haveSanitizedComma && call != null) {
                 Node an = null;
-                if (call.getNodeType() == NodeType.FCALLNODE) {
-                    an = ((FCallNode) call).getArgsNode();
-                } else if (call.getNodeType() == NodeType.CALLNODE) {
-                    an = ((CallNode) call).getArgsNode();
+                if (call.getNodeType() == NodeType.FCALLNODE || call.getNodeType() == NodeType.CALLNODE) {
+                    an = ((IArgumentNode) call).getArgs();
                 }
                 if (an != null && index < an.childNodes().size() &&
                         an.childNodes().get(index).getNodeType() == NodeType.HASHNODE) {
@@ -650,7 +589,6 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 callMethod = null;
                 return false;
             } else if (targetMethod == null) {
-                // Look up the
                 // See if we can find the method corresponding to this call
                 targetMethod = new RubyDeclarationFinder().findMethodDeclaration(parserResult, call, path,
                         alternativesHolder);

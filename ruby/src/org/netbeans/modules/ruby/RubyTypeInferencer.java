@@ -45,6 +45,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IScopingNode;
 import org.jrubyparser.ast.IterNode;
 import org.jrubyparser.ast.MethodDefNode;
@@ -119,9 +120,7 @@ public final class RubyTypeInferencer {
         // type.
         if (type.isKnown()) {
             for (String realType : type.getRealTypes()) {
-                if (realType.startsWith("Array<")) { // NOI18N
-                    return RubyType.ARRAY;
-                }
+                if (realType.startsWith("Array<")) return RubyType.ARRAY; // NOI18N
             }
         }
 
@@ -142,18 +141,15 @@ public final class RubyTypeInferencer {
      */
     static String getLocalVarPath(Node root, Node target, String currentMethod) {
         String varName = AstUtilities.getName(target);
-        if (currentMethod != null) {
-            return  currentMethod + "/" + varName;
-        }
-        return getLocalVarPath(new AstPath(root, target), varName);
+        
+        return currentMethod == null ? getLocalVarPath(new AstPath(root, target), varName) :
+                currentMethod + "/" + varName;
     }
     
     private static String getLocalVarPath(AstPath path, String varName) {
         Node methodNode = AstUtilities.findMethod(path);
-        if (methodNode != null) {
-            return AstUtilities.getName(methodNode) + "/" + varName;
-        }
-        return varName;
+
+        return methodNode == null ? varName : AstUtilities.getName(methodNode) + "/" + varName;
     }
 
     /** Called on AsgnNodes to compute RHS. */
@@ -163,10 +159,8 @@ public final class RubyTypeInferencer {
 
     RubyType inferTypesOfRHS(final Node node, String currentMethod) {
         List<Node> children = node.childNodes();
-        if (children.size() != 1) {
-            return RubyType.unknown();
-        }
-        return inferType(children.get(0), currentMethod);
+
+        return children.size() != 1 ? RubyType.unknown() : inferType(children.get(0), currentMethod);
     }
 
 
@@ -176,12 +170,10 @@ public final class RubyTypeInferencer {
 
     private RubyType inferType(final Node node, String currentMethod) {
         RubyType type = knowledge.getType(node);
-        if (type != null) {
-            return type;
-        }
-        if (!knowledge.wasAnalyzed()) {
-            analyzer.analyze();
-        }
+        if (type != null) return type;
+
+        if (!knowledge.wasAnalyzed()) analyzer.analyze();
+
         switch (node.getNodeType()) {
             case LOCALVARNODE:
                 // uses currentMethod if passed; while it is not 100% accurate (currentMethod gets assigned
@@ -190,37 +182,26 @@ public final class RubyTypeInferencer {
                 type = knowledge.getType(getLocalVarPath(knowledge.getRoot(), node, currentMethod));
                 break;
             case GLOBALVARNODE:
-                String name = AstUtilities.getName(node);
-                type = knowledge.getType(name);
+                type = knowledge.getType(((INameNode) node).getName());
                 if (!type.isKnown()) {
-                    // try predefined
-                    RubyType preDefType = RubyPredefinedVariable.getType(name);
-                    if (preDefType != null) {
-                        type = preDefType;
-                    }
+                    RubyType preDefType = RubyPredefinedVariable.getType(((INameNode) node).getName());
+                    if (preDefType != null) type = preDefType;
                 }
                 break;
-            case DVARNODE:
-            case INSTVARNODE:
-            case CLASSVARNODE:
-                type = knowledge.getType(AstUtilities.getName(node));
+            case DVARNODE: case INSTVARNODE: case CLASSVARNODE:
+                type = knowledge.getType(((INameNode) node).getName());
                 break;
             case CONSTNODE:
-                String fqn = AstUtilities.getFqnName(knowledge.getRoot(), node);
-                type = knowledge.getType(fqn);
+                type = knowledge.getType(AstUtilities.getFqnName(knowledge.getRoot(), node));
                 break;
             case COLON2NODE:
                 type = knowledge.getType(AstUtilities.getFqn((Colon2Node) node));
                 break;
             case RETURNNODE:
-                ReturnNode retNode = (ReturnNode) node;
-                type = inferType(retNode.getValueNode(), currentMethod);
+                type = inferType(((ReturnNode) node).getValue(), currentMethod);
                 break;
-            case DEFNNODE:
-            case DEFSNODE: 
-                MethodDefNode methodDefNode = (MethodDefNode) node;
-                currentMethod = methodDefNode.getName();
-                type = inferMethodNode(methodDefNode);
+            case DEFNNODE: case DEFSNODE:
+                type = inferMethodNode((MethodDefNode) node);
                 break;
             case ITERNODE:
                 type = inferIterNode((IterNode) node, currentMethod);
@@ -228,28 +209,22 @@ public final class RubyTypeInferencer {
             case SELFNODE:
                 type = inferSelf(node);
                 break;
-            case SUPERNODE:
-            case ZSUPERNODE:
+            case SUPERNODE: case ZSUPERNODE:
                 type = inferSuperNode(node);
                 break;
         }
-        if (type == null && AstUtilities.isCall(node)) {
-            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge, fast);
-        }
-        if (type == null) {
-            type = getTypeForLiteral(node);
-        }
-        // null element in types set means that we are not able to infer
-        // the expression
+        if (type == null && AstUtilities.isCall(node)) type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge, fast);
+        if (type == null) type = getTypeForLiteral(node);
+
+        // null element in types set means that we are not able to infer the expression
         knowledge.setType(node, type);
         return type;
     }
 
     private RubyType inferSuperNode(Node node) {
         RubyType selfType = inferSelf(node);
-        if (selfType == null || !selfType.isKnown()) {
-            return RubyType.unknown();
-        }
+        if (selfType == null || !selfType.isKnown()) return RubyType.unknown();
+
         MethodDefNode methodDefNode = AstUtilities.findMethod(new AstPath(knowledge.getRoot(), node));
         if (methodDefNode != null && TypeInferenceSettings.getDefault().getMethodTypeInference()) {
             RubyIndex index = knowledge.getIndex();
@@ -257,9 +232,7 @@ public final class RubyTypeInferencer {
                 RubyType resultType = new RubyType();
                 for (String each : selfType.getRealTypes()) {
                     IndexedMethod method = index.getSuperMethod(each, methodDefNode.getName(), true);
-                    if (method != null) {
-                        resultType.append(method.getType());
-                    }
+                    if (method != null) resultType.append(method.getType());
                 }
                 return resultType;
             }
@@ -268,17 +241,14 @@ public final class RubyTypeInferencer {
     }
 
     private RubyType inferSelf(Node node) {
-        Node root = knowledge.getRoot();
-        AstPath path = new AstPath(root, node);
-        IScopingNode clazz = AstUtilities.findClassOrModule(path);
-        if (clazz == null) {
-            return null;
-        }
+        IScopingNode clazz = AstUtilities.findClassOrModule(new AstPath(knowledge.getRoot(), node));
+        if (clazz == null) return null;
+
         return RubyType.create(AstUtilities.getClassOrModuleName(clazz));
     }
 
     private RubyType inferIterNode(IterNode iterNode, String currentMethod) {
-        Node body = iterNode.getBodyNode();
+        Node body = iterNode.getBody();
         RubyType result = new RubyType();
         if (body != null) {
             Set<Node> exits = new LinkedHashSet<Node>();
@@ -293,20 +263,15 @@ public final class RubyTypeInferencer {
     private RubyType inferMethodNode(MethodDefNode methodDefNode) {
         String name = methodDefNode.getName();
         RubyType fastType = RubyMethodTypeInferencer.fastCheckType(name);
-        if (fastType == null && RubyMethodTypeInferencer.returnsReceiver(name)) {
-            fastType = inferSelf(methodDefNode);
-        }
-        if (fastType != null) {
-            return fastType;
-        }
+        
+        if (fastType == null && RubyMethodTypeInferencer.returnsReceiver(name)) fastType = inferSelf(methodDefNode);
+        if (fastType != null) return fastType;
 
         if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
             List<String> rdocs = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), methodDefNode);
             if (rdocs != null) {
                 RubyType type = RDocAnalyzer.collectTypesFromComment(rdocs);
-                if (type != null && type.isKnown()) {
-                    return type;
-                }
+                if (type != null && type.isKnown()) return type;
             }
         }
         // this can be very time consuming, return if TI is not enabled
@@ -314,9 +279,7 @@ public final class RubyTypeInferencer {
         Set<Node> exits = new LinkedHashSet<Node>();
         AstUtilities.findExitPoints(methodDefNode, exits);
         for (Node exit : exits) {
-            if (!AstUtilities.isRaiseCall(exit)) {
-                result.append(inferType(exit, name));
-            }
+            if (!AstUtilities.isRaiseCall(exit)) result.append(inferType(exit, name));
         }
         return result;
     }
@@ -333,14 +296,9 @@ public final class RubyTypeInferencer {
      */
     static RubyType getTypeForLiteral(final Node node) {
         switch (node.getNodeType()) {
-            case ARRAYNODE:
-            case ZARRAYNODE:
+            case ARRAYNODE: case ZARRAYNODE:
                 return RubyType.ARRAY; // NOI18N
-            case DEFINEDNODE:
-            case STRNODE:
-            case DSTRNODE:
-            case XSTRNODE:
-            case DXSTRNODE:
+            case DEFINEDNODE: case STRNODE: case DSTRNODE: case XSTRNODE: case DXSTRNODE:
                 return RubyType.STRING; // NOI18N
             case FIXNUMNODE:
                 return RubyType.FIXNUM; // NOI18N
@@ -348,23 +306,17 @@ public final class RubyTypeInferencer {
                 return RubyType.BIGNUM; // NOI18N
             case HASHNODE:
                 return RubyType.HASH; // NOI18N
-            case REGEXPNODE:
-            case DREGEXPNODE:
+            case REGEXPNODE: case DREGEXPNODE:
                 return RubyType.REGEXP; // NOI18N
-            case SYMBOLNODE:
-            case DSYMBOLNODE:
+            case SYMBOLNODE: case DSYMBOLNODE:
                 return RubyType.SYMBOL; // NOI18N
             case FLOATNODE:
                 return RubyType.FLOAT; // NOI18N
             case NILNODE:
                 // NilImplicitNode - don't use it, the type is really unknown!
-                if (!node.isInvisible()) {
-                    return RubyType.NIL_CLASS; // NOI18N
-                }
+                if (!node.isInvisible()) return RubyType.NIL_CLASS; // NOI18N
                 break;
-            case SCLASSNODE:
-            case UNDEFNODE:
-            case UNTILNODE:
+            case SCLASSNODE: case UNDEFNODE: case UNTILNODE:
                 return RubyType.NIL_CLASS;
             case NOTNODE:
                 return RubyType.BOOLEAN;
@@ -374,8 +326,7 @@ public final class RubyTypeInferencer {
                 return RubyType.FALSE_CLASS; // NOI18N
             case DOTNODE:
                 return RubyType.RANGE;
-            case BACKREFNODE:
-            case NTHREFNODE:
+            case BACKREFNODE: case NTHREFNODE:
                 return  new RubyType(RubyType.STRING, RubyType.NIL_CLASS);
         }
         return RubyType.unknown();
@@ -385,6 +336,4 @@ public final class RubyTypeInferencer {
     public String toString() {
         return "RubyTypeAnalyzer[knowledge:" + knowledge + ']'; // NOI18N
     }
-
 }
-

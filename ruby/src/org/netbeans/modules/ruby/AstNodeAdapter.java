@@ -151,6 +151,7 @@ class AstNodeAdapter implements TreeNode {
         return children.length == 0;
     }
 
+    @Override
     public Enumeration children() {
         ensureChildrenInitialized();
 

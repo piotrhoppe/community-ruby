@@ -44,6 +44,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,10 +52,7 @@ import java.util.Set;
 import java.util.Map;
 import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.ArgsNode;
-import org.jrubyparser.ast.ArgumentNode;
-import org.jrubyparser.ast.BlockArgNode;
 import org.jrubyparser.ast.DAsgnNode;
-import org.jrubyparser.ast.DVarNode;
 import org.jrubyparser.ast.ForNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.LocalAsgnNode;
@@ -87,8 +85,7 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
  * @todo Stash unused variables in a list I can reference from a quickfix!
  * @author Tor Norbye
  */
-public class RubySemanticAnalyzer extends SemanticAnalyzer {
-    
+public class RubySemanticAnalyzer extends SemanticAnalyzer {    
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private static final Set<String> JAVA_PREFIXES = new HashSet<String>();
@@ -110,11 +107,10 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         SKIP_HIGHLIGHTNING.add("[]");
     }
 
-
-
     public RubySemanticAnalyzer() {
     }
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
@@ -127,6 +123,7 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         cancelled = false;
     }
 
+    @Override
     public final synchronized void cancel() {
         cancelled = true;
     }
@@ -145,47 +142,32 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
     public void run(Result info, SchedulerEvent event) {
         resume();
 
-        if (isCancelled()) {
-            return;
-        }
+        if (isCancelled()) return;
 
         RubyParseResult rpr = AstUtilities.getParseResult(info);
-        if (rpr == null) {
-            return;
-        }
+        if (rpr == null) return;
 
         Node root = rpr.getRootNode();
-        if (root == null) {
-            return;
-        }
+        if (root == null) return;
 
-        Map<OffsetRange, Set<ColoringAttributes>> highlights =
-            new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
+        Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
 
         AstPath path = new AstPath();
         path.descend(root);
         annotate(root, highlights, path, null, false);
         path.ascend();
 
-        if (isCancelled()) {
-            return;
-        }
+        if (isCancelled()) return;
 
         if (highlights.size() > 0) {
-            // XXX - Parsing API
-//            if (rpr.getTranslatedSource() != null) {
-                Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange,Set<ColoringAttributes>>(2*highlights.size());
-                for (Map.Entry<OffsetRange,Set<ColoringAttributes>> entry : highlights.entrySet()) {
-                    OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
-                    if (range != OffsetRange.NONE) {
-                        translated.put(range, entry.getValue());
-                    }
-                }
+            Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange,Set<ColoringAttributes>>(2*highlights.size());
+            for (Map.Entry<OffsetRange,Set<ColoringAttributes>> entry : highlights.entrySet()) {
+                OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
+                    
+                if (range != OffsetRange.NONE) translated.put(range, entry.getValue());
+            }
                 
-                highlights = translated;
-//            }
-            
-            this.semanticHighlights = highlights;
+            this.semanticHighlights = translated;
         } else {
             this.semanticHighlights = null;
         }
@@ -204,69 +186,44 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
             LocalAsgnNode lasgn = (LocalAsgnNode)node;
             Node method = AstUtilities.findLocalScope(node, path);
 
-            boolean isUsed = isUsedInMethod(method, lasgn.getName(), isParameter);
-
-            if (!isUsed) {
-                OffsetRange range = AstUtilities.getLValueRange(lasgn);
-                highlights.put(range, ColoringAttributes.UNUSED_SET);
-            } else if (parameters != null) {
-                String name = ((LocalAsgnNode)node).getName();
-
-                if (parameters.contains(name)) {
-                    OffsetRange range = AstUtilities.getNameRange(node);
-                    highlights.put(range, ColoringAttributes.PARAMETER_SET);
-                }
+            if (!isUsedInMethod(method, lasgn.getName(), isParameter)) {
+                highlights.put(AstUtilities.offsetRangeFor(lasgn.getLeftHandSidePosition()), ColoringAttributes.UNUSED_SET);
+            } else if (parameters != null && parameters.contains(lasgn.getName())) {
+                highlights.put(AstUtilities.getNameRange(node), ColoringAttributes.PARAMETER_SET);
             }
             break;
         }
         case DASGNNODE: {
             DAsgnNode dasgn = (DAsgnNode)node;
-
             Node method = AstUtilities.findLocalScope(node, path);
 
-            boolean isUsed = isUsedInMethod(method, dasgn.getName(), false);
-
-            if (!isUsed) {
-                OffsetRange range = AstUtilities.getLValueRange(dasgn);
-                highlights.put(range, ColoringAttributes.UNUSED_SET);
+            if (!isUsedInMethod(method, dasgn.getName(), false)) {
+                highlights.put(AstUtilities.offsetRangeFor(dasgn.getLeftHandSidePosition()), ColoringAttributes.UNUSED_SET);
             }
             
             break;
         }
         
-        case DEFNNODE:
-        case DEFSNODE: {
-            MethodDefNode def = (MethodDefNode)node;
-            parameters = AstUtilities.getDefArgs(def, true);
+        case DEFNNODE: case DEFSNODE: {
+            MethodDefNode def = (MethodDefNode) node;
+            parameters = def.getArgs().getNormativeParameterNameList(true);
 
-            if ((parameters != null) && (parameters.size() > 0)) {
+            if (!parameters.isEmpty()) {
                 List<String> unused = new ArrayList<String>();
 
                 for (String parameter : parameters) {
-                    boolean isUsed = isUsedInMethod(node, parameter, true);
-
-                    if (!isUsed) {
-                        unused.add(parameter);
-                    }
+                    if (!isUsedInMethod(node, parameter, true)) unused.add(parameter);
                 }
 
-                if (unused.size() > 0) {
+                if (!unused.isEmpty()) {
                     annotateUnusedParameters(def, highlights, unused);
                     parameters.removeAll(unused);
                 }
 
-                if (parameters != null) {
-                    if (parameters.size() == 0) {
-                        parameters = null;
-                    } else {
-                        annotateParameters(def, highlights, parameters);
-                    }
-                }
+                if (!parameters.isEmpty()) annotateParameters(def, highlights, parameters);
             }
 
-            if (!SKIP_HIGHLIGHTNING.contains(AstUtilities.getName(node))) {
-                highlightMethodName(node, highlights);
-            }
+            if (!SKIP_HIGHLIGHTNING.contains(def.getName())) highlightMethodName(def, highlights);
             break;
         }
         
@@ -286,214 +243,85 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                 // Skip highlighting "org" in "org.foo.Bar" etc.
                 break;
             }
-        //case CALLNODE:
-        case FCALLNODE: {
-            // CallNode seems overly aggressive - it will show all operators for example
-            OffsetRange range = AstUtilities.getCallRange(node);
+        //case CALLNODE: CallNode seems overly aggressive - it will show all operators for example
+        case FCALLNODE: 
             // see #124701
             if (!SKIP_HIGHLIGHTNING.contains(AstUtilities.getName(node))) {
-                highlights.put(range, ColoringAttributes.METHOD_SET);
+                highlights.put(AstUtilities.getCallRange(node), ColoringAttributes.METHOD_SET);
             }
             break;
         }
-        }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             path.descend(child);
             annotate(child, highlights, path, parameters, isParameter);
             path.ascend();
         }
     }
 
-    private void annotateParameters(MethodDefNode node,
-        Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> usedParameterNames) {
-        List<Node> nodes = node.childNodes();
-
-        for (Node c : nodes) {
+    private void annotateParameters(MethodDefNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights,
+            List<String> names, EnumSet<ColoringAttributes> coloringAttribute) {
+        for (Node c : node.childNodes()) {
             if (c.getNodeType() == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
                 if (an.getRequiredCount() > 0) {
-                    List<Node> args = an.childNodes();
-
-                    for (Node arg : args) {
+                    for (Node arg : an.childNodes()) {
                         if (arg instanceof ListNode) { // Many specific types
-                            List<Node> args2 = arg.childNodes();
-
-                            for (Node arg2 : args2) {
-                                if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
-                                    if (usedParameterNames.contains(((ArgumentNode)arg2).getName())) {
-                                        OffsetRange range = AstUtilities.getRange(arg2);
-                                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
-                                    }
-                                } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
-                                    if (usedParameterNames.contains(((LocalAsgnNode)arg2).getName())) {
-                                        OffsetRange range = AstUtilities.getNameRange(arg2);
-                                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
-                                    }
+                            for (Node arg2 : arg.childNodes()) {
+                                if ((arg2.getNodeType() == NodeType.ARGUMENTNODE || arg2.getNodeType() == NodeType.LOCALASGNNODE) &&
+                                        names.contains(((INameNode) arg2).getName())) {
+                                    highlights.put(AstUtilities.offsetRangeFor(arg2.getPosition()), coloringAttribute);
                                 }
                             }
                         }
                     }
                 }
 
-                // Rest args
-                if (an.getRest() != null) {
-                    ArgumentNode bn = an.getRest();
-
-                    if (usedParameterNames.contains(bn.getName())) {
-                        OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
-                    }
+                if (an.getRest() != null && names.contains(an.getRest().getName())) {
+                    highlights.put(AstUtilities.offsetRangeFor(an.getRest().getPosition()), coloringAttribute);
                 }
 
-                // Block args
-                if (an.getRest() != null) {
-                    ArgumentNode bn = an.getRest();
-
-                    if (usedParameterNames.contains(bn.getName())) {
-                        OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
-                    }
-                }
-
-                // Block args
-                if (an.getBlock() != null) {
-                    BlockArgNode bn = an.getBlock();
-
-                    if (usedParameterNames.contains(bn.getName())) {
-                        OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
-                    }
+                if (an.getBlock() != null && names.contains(an.getBlock().getName())) {
+                    highlights.put(AstUtilities.offsetRangeFor(an.getBlock().getPosition()), coloringAttribute);
                 }
             }
         }
     }
+    
+    private void annotateParameters(MethodDefNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
+        annotateParameters(node, highlights, names, ColoringAttributes.PARAMETER_SET);
+    }    
 
-    private void annotateUnusedParameters(MethodDefNode node,
-        Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
-        List<Node> nodes = node.childNodes();
-
-        for (Node c : nodes) {
-            if (c.getNodeType() == NodeType.ARGSNODE) {
-                ArgsNode an = (ArgsNode)c;
-
-                if (an.getRequiredCount() > 0) {
-                    List<Node> args = an.childNodes();
-
-                    for (Node arg : args) {
-                        if (arg instanceof ListNode) { // Check subclasses
-                            List<Node> args2 = arg.childNodes();
-
-                            for (Node arg2 : args2) {
-                                if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
-                                    if (names.contains(((ArgumentNode)arg2).getName())) {
-                                        OffsetRange range = AstUtilities.getRange(arg2);
-                                        highlights.put(range, ColoringAttributes.UNUSED_SET);
-                                    }
-                                } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
-                                    if (names.contains(((LocalAsgnNode)arg2).getName())) {
-                                        OffsetRange range = AstUtilities.getNameRange(arg2);
-                                        highlights.put(range, ColoringAttributes.UNUSED_SET);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Rest args
-                if (an.getRest() != null) {
-                    ArgumentNode bn = an.getRest();
-
-                    if (names.contains(bn.getName())) {
-                        OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.UNUSED_SET);
-                    }
-                }
-
-                if (an.getBlock() != null) {
-                    BlockArgNode bn = an.getBlock();
-
-                    if (names.contains(bn.getName())) {
-                        OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.UNUSED_SET);
-                    }
-                }
-            }
-        }
+    private void annotateUnusedParameters(MethodDefNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
+        annotateParameters(node, highlights, names, ColoringAttributes.UNUSED_SET);
     }
 
     private boolean isUsedInMethod(Node node, String targetName, boolean isParameter) {
         switch (node.getNodeType()) {
-        case LOCALVARNODE: {
-            if (node.getNodeType() == NodeType.LOCALVARNODE) {
-                String name = ((LocalVarNode)node).getName();
-
-                if (targetName.equals(name)) {
-                    return true;
-                }
+            case FORNODE: {
+                // XXX This is no longer necessary, right? Workaround for the fact that ForNode's childNodes implementation
+                // is wrong - Tom is committing a fix; this is until we pick that fix (SVN #3561)  up
+                Node iterNode = ((ForNode)node).getIter();
+                return iterNode instanceof INameNode && targetName.equals(((INameNode) iterNode).getName());
             }
-            break;
-        }
-        case FORNODE: {
-            // XXX This is no longer necessary, right?
-            // Workaround for the fact that ForNode's childNodes implementation
-            // is wrong - Tom is committing a fix; this is until we pick that
-            // fix (SVN #3561)  up
-            Node iterNode = ((ForNode)node).getIterNode();
-            if (iterNode instanceof INameNode) {
-                if (targetName.equals(((INameNode)iterNode).getName())) {
-                    return true;
-                }
-            }
-            break;
-        }
-        case DVARNODE:
-            if (targetName.equals(((DVarNode)node).getName())) {
-                return true;
-            }
-            break;
-        case ALIASNODE: {
-            AliasNode an = (AliasNode)node;
-
-            if (targetName.equals(AstUtilities.getNameOrValue(an.getOldName()))) {
-                return true;
-            }
-            break;
-        }
-        case ZSUPERNODE:
-            // Super with no arguments passes arguments to parent so consider
-            // the parameters used
-            if (isParameter) {
-                return true;
-            }
-            break;
+            case ARGUMENTNODE: case DVARNODE: case LOCALVARNODE:
+                return targetName.equals(((INameNode) node).getName());
+            case ALIASNODE:
+                return targetName.equals(AstUtilities.getNameOrValue(((AliasNode) node).getOldName()));
+            case ZSUPERNODE: // Super with no arguments passes arguments to parent so consider the parameters used
+                return isParameter;
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            // The "outer" foo here is unused - we shouldn't
-            // recurse into method bodies when doing unused detection
+            // The "outer" foo here is unused - we shouldn't recurse into method bodies when doing unused detection:
             // foo = 1; def bar; foo = 2; print foo; end;
-            if (child.getNodeType() == NodeType.DEFSNODE || child.getNodeType() == NodeType.DEFNNODE) {
-                continue;
-            }
-
-            boolean used = isUsedInMethod(child, targetName, isParameter);
-
-            if (used) {
-                return true;
-            }
+            if (child instanceof MethodDefNode) continue;
+            if (isUsedInMethod(child, targetName, isParameter)) return true;
         }
 
         return false;
@@ -501,12 +329,8 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
 
     private void highlightMethodName(Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
         OffsetRange range = AstUtilities.getFunctionNameRange(node);
-
-        if (range != OffsetRange.NONE) {
-            if (!highlights.containsKey(range)) { // Don't block out already annotated private methods
-                highlights.put(range, ColoringAttributes.METHOD_SET);
-            }
-        }
+        
+        // Don't block out already annotated private methods
+        if (range != OffsetRange.NONE && !highlights.containsKey(range)) highlights.put(range, ColoringAttributes.METHOD_SET);
     }
-
 }

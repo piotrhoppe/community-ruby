@@ -1533,7 +1533,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         // If I have the fqn, I can also call RubyIndex.getRDocLocation to pick the
         // best candidate
         if (callNode instanceof CallNode) {
-            Node node = ((CallNode)callNode).getReceiverNode();
+            Node node = ((CallNode)callNode).getReceiver();
             String fqn = null;
 
             if (node instanceof Colon2Node) {

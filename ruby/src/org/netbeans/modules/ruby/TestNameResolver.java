@@ -156,11 +156,10 @@ final class TestNameResolver {
     }
 
     private static String getNodeDesc(FCallNode fc) {
-        if (fc.getIterNode() == null) { // "it" without do/end: pending
-            return null;
-        }
+        // "it" without do/end: pending
+        if (fc.getIter() == null) return null;
 
-        Node argsNode = fc.getArgsNode();
+        Node argsNode = fc.getArgs();
 
         if (argsNode instanceof ListNode) {
             ListNode args = (ListNode) argsNode;

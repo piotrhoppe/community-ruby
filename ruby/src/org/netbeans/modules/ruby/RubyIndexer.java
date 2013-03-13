@@ -46,31 +46,20 @@ package org.netbeans.modules.ruby;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jrubyparser.ast.ArrayNode;
-import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.FCallNode;
-import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
-import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SClassNode;
 import org.jrubyparser.ast.SelfNode;
-import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.INameNode;
-import org.jrubyparser.ast.NewlineNode;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -497,7 +486,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                 return;
             }
 
-            if ((structure == null) || (structure.size() == 0)) {
+            if ((structure == null) || (structure.isEmpty())) {
                 if (requires != null) {
                     IndexDocument document = support.createDocument(indexable);
                     documents.add(document);
@@ -653,7 +642,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                     fqn = classElement.getFqn();
 
                     if (node instanceof SClassNode) {
-                        Node receiver = ((SClassNode)node).getReceiverNode();
+                        Node receiver = ((SClassNode)node).getReceiver();
 
                         if (receiver instanceof Colon2Node) {
                             fqn = AstUtilities.getFqn((Colon2Node)receiver);
@@ -667,7 +656,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                         }
                     } else if (node instanceof ClassNode) {
                         ClassNode clz = (ClassNode)node;
-                        Node superNode = clz.getSuperNode();
+                        Node superNode = clz.getSuper();
                         String superClass = null;
 
                         if (superNode != null) {
@@ -764,7 +753,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                     case CLASS:
                     case MODULE: {
                         if (child.getNode() instanceof SClassNode &&
-                                ((SClassNode)child.getNode()).getReceiverNode() instanceof SelfNode) {
+                                ((SClassNode)child.getNode()).getReceiver() instanceof SelfNode) {
                             // This is a class << self entry; I want to attach all these methods
                             // to the current class.
                             for (AstElement grandChild : child.getChildren()) {
@@ -885,13 +874,13 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
         
         private void indexMethod(AstElement child, IndexDocument document, boolean topLevel, boolean nodoc) {
-            String signature = null;
+            String signature;
             Node childNode = child.getNode();
             // dynamic methods are handled as method elemements as there is no separate
             // element for them (probably such an element should be added to CSL?).
             // checking the type here is hence required as dyn methods don't have a method def node
             if (childNode instanceof MethodDefNode) {
-                signature = AstUtilities.getDefSignature((MethodDefNode) childNode);
+                signature = ((MethodDefNode) childNode).getNormativeSignature();
             } else {
                 signature = child.getName();
             }
@@ -1020,7 +1009,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             }
             RubyType type = child.getType();
             if (type.isKnown()) {
-                signature.append(";;" + type.asIndexedString() + ";");
+                signature.append(";;").append(type.asIndexedString()).append(";");
             }
 
             // TODO - gather documentation on fields? naeh
@@ -1092,11 +1081,9 @@ public class RubyIndexer extends EmbeddingIndexer {
             // Index for require-completion
             String relative = indexable.getRelativePath();
 
-            if (relative != null) {
-                if (relative.endsWith(".rb")) { // NOI18N
-                    relative = relative.substring(0, relative.length() - 3);
-                    document.addPair(FIELD_REQUIRE, relative, true, true);
-                }
+            if (relative.endsWith(".rb")) { // NOI18N
+                relative = relative.substring(0, relative.length() - 3);
+                document.addPair(FIELD_REQUIRE, relative, true, true);
             }
         }
 
@@ -1110,7 +1097,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             for (Node child : node.childNodes()) {
                 if (child instanceof FCallNode
                         && SET_TABLE_NAME.equals(AstUtilities.getName(child))) {
-                    Node arg = ((FCallNode) child).getArgsNode();
+                    Node arg = ((FCallNode) child).getArgs();
                     if (arg != null && arg instanceof ArrayNode) {
                         ArrayNode value = (ArrayNode) arg;
                         if (value.size() > 0) {

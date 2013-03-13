@@ -79,6 +79,7 @@ import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
 import org.jrubyparser.ast.AliasNode;
+import org.jrubyparser.ast.MultipleAsgn19Node;
 import org.jrubyparser.ast.MultipleAsgnNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -163,18 +164,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
 
         this.result = AstUtilities.getParseResult(result);
-        if (this.result == null) {
-            return Collections.<StructureItem>emptyList();
-        }
+        if (this.result == null) return Collections.<StructureItem>emptyList();
 
-        AnalysisResult ar = this.result.getStructure();
-        List<?extends AstElement> elements = ar.getElements();
+        List<?extends AstElement> elements = this.result.getStructure().getElements();
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
         for (AstElement e : elements) {
-            if (!e.isHidden()) {
-                itemList.add(new RubyStructureItem(e, result));
-            }
+            if (!e.isHidden()) itemList.add(new RubyStructureItem(e, this.result));
         }
 
         return itemList;
@@ -251,22 +247,14 @@ public class RubyStructureAnalyzer implements StructureScanner {
         AnalysisResult analysisResult = new AnalysisResult();
 
         Node root = AstUtilities.getRoot(result);
-
-        if (root == null) {
-            return analysisResult;
-        }
+        if (root == null) return analysisResult;
 
         isTestFile = false;
         String name = RubyUtils.getFileObject(result).getNameExt();
         int dot = name.lastIndexOf('.');
-        if (dot != -1) {
-            name = name.substring(0, dot);
-        }
-        if (name.startsWith("test_") ||  // NOI18N
-                name.endsWith("_test") || // NOI18N
-                name.endsWith("_spec")) { // NOI18N
-            isTestFile = true;
-        }
+        if (dot != -1) name = name.substring(0, dot);
+
+        if (name.startsWith("test_") || name.endsWith("_test") || name.endsWith("_spec")) isTestFile = true; // NOI18N
 
         structure = new ArrayList<AstElement>();
         fields = new HashMap<AstClassElement, Set<InstAsgnNode>>();
@@ -341,10 +329,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             Collections.sort(sortedNames);
 
             for (String globalName : sortedNames) {
-                GlobalAsgnNode global = globals.get(globalName);
-                AstElement co = new AstNameElement(result, global, globalName,
-                        ElementKind.GLOBAL);
-                structure.add(co);
+                structure.add(new AstNameElement(result, globals.get(globalName), globalName, ElementKind.GLOBAL));
             }
             names.clear();
         }
@@ -364,9 +349,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     if (o instanceof AstMethodElement) {
                         AstMethodElement jn = (AstMethodElement)o;
 
-                        if (privateMethods.contains(jn.getNode())) {
-                            jn.setAccess(Modifier.PRIVATE);
-                        }
+                        if (privateMethods.contains(jn.getNode())) jn.setAccess(Modifier.PRIVATE);
                     }
                 }
 
@@ -379,9 +362,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     if (o instanceof AstMethodElement) {
                         AstMethodElement jn = (AstMethodElement)o;
 
-                        if (protectedMethods.contains(jn.getNode())) {
-                            jn.setAccess(Modifier.PROTECTED);
-                        }
+                        if (protectedMethods.contains(jn.getNode())) jn.setAccess(Modifier.PROTECTED);
                     }
                 }
 
@@ -526,12 +507,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
 
-    private void scan(
-            final Node node,
-            final AstPath path,
-            String in,
-            Set<String> includes,
-            AstElement parent) {
+    private void scan(final Node node, final AstPath path, String in, Set<String> includes, AstElement parent) {
         // Recursively search for methods or method calls that match the name and arity
         switch (node.getNodeType()) {
         case CLASSNODE: {
@@ -727,6 +703,39 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
             break;
+        }
+        case MULTIPLEASGN19NODE: {
+            Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
+            RubyTypeAnalyzer.collectMultipleAsgnVars((MultipleAsgn19Node) node, typeInferencer, vars);
+            for (Node each : vars.keySet()) {
+                switch (each.getNodeType()) {
+                    case LOCALASGNNODE: {
+                        if (parent == null && AstUtilities.findMethod(path) == null) {
+                            String name = AstUtilities.getName(each);
+                            if (findExistingVariable(name) == null) {
+                                AstElement co = new AstNameElement(result, each, name, ElementKind.VARIABLE);
+                                co.setType(vars.get(each));
+                                co.setIn(in);
+                                structure.add(co);
+                            }
+                        }
+                        break;
+                    }
+                    case INSTASGNNODE: {
+                        AstClassElement classParent = findClassParent(parent);
+                        if (classParent != null) {
+                            Set<InstAsgnNode> assignments = fields.get(classParent);
+                            if (assignments == null) {
+                                assignments = new HashSet<InstAsgnNode>();
+                                fields.put(classParent, assignments);
+                            }
+                            assignments.add((InstAsgnNode) each);
+                        }
+                        break;
+                    }
+                }
+            }
+            return;
         }
         case LOCALASGNNODE: {
             // Only include variables at the top level
@@ -1062,7 +1071,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         // argument is a LocalVarNode (the parameter node).
         // The parameter list should be an ArrayNode containing just
         // a ConstNode (look for FQNs here, could be a Colon2Node).
-        List<String> argList = AstUtilities.getDefArgs(node, true);
+        List<String> argList = node.getArgs().getNormativeParameterNameList(true);
         
         if (argList == null || argList.size() != 1) {
             return null;
@@ -1331,15 +1340,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 List<RubyStructureItem> children = new ArrayList<RubyStructureItem>(nested.size());
 
                 for (AstElement co : nested) {
-                    if (!co.isHidden()) {
-                        children.add(new RubyStructureItem(co, result));
-                    }
+                    if (!co.isHidden()) children.add(new RubyStructureItem(co, result));
                 }
 
                 return children;
-            } else {
-                return Collections.emptyList();
-            }
+            } 
+              
+            return Collections.emptyList();
         }
 
         @Override

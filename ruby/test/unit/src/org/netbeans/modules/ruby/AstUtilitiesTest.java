@@ -71,7 +71,6 @@ import org.jrubyparser.ast.ReturnNode;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.NilNode;
-import org.jrubyparser.ast.OrNode;
 import org.jrubyparser.ast.TrueNode;
 import org.jrubyparser.ast.VCallNode;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -495,20 +494,12 @@ public class AstUtilitiesTest extends RubyTestBase {
                         AstUtilities.getAliasNewRange(an);
                     }
 
-                    if (AstUtilities.isAttr(node)) {
-                        AstUtilities.getAttrSymbols(node);
-                    }
-
-                    if (node instanceof MethodDefNode) {
-                        AstUtilities.getDefName(node);
-                    }
-
-                    if (node instanceof Colon2Node) {
-                        AstUtilities.getFqn((Colon2Node)node);
-                    }
+                    if (AstUtilities.isAttr(node)) AstUtilities.getAttrSymbols(node);
+                    if (node instanceof MethodDefNode) AstUtilities.getDefName(node);
+                    if (node instanceof Colon2Node) AstUtilities.getFqn((Colon2Node)node);
 
                     if (node instanceof AssignableNode) {
-                        AstUtilities.getLValueRange((AssignableNode)node);
+                        AstUtilities.offsetRangeFor(((AssignableNode)node).getLeftHandSidePosition());
                     }
 
                     if (node instanceof ClassNode) {

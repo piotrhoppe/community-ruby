@@ -55,6 +55,7 @@ import org.jrubyparser.SourcePosition;
 import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.ArgsNode;
 import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.AssignableNode;
 import org.jrubyparser.ast.BackRefNode;
 import org.jrubyparser.ast.BlockArgNode;
 import org.jrubyparser.ast.CallNode;
@@ -344,7 +345,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                         highlightMethod(root, name, defArities, highlights);
                     }
                     if (closest instanceof CallNode
-                            && ((CallNode) closest).getReceiverNode() instanceof SelfNode
+                            && ((CallNode) closest).getReceiver() instanceof SelfNode
                             && noMatchingDefs
                             && callArity.getMinArgs() == 0 && callArity.getMaxArgs() == 0) {
                         // could be self.inst_var
@@ -610,14 +611,9 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
     private void highlightLocal(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof LocalVarNode) {
+        if (node instanceof LocalVarNode || node instanceof LocalAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof LocalAsgnNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getLValueRange((LocalAsgnNode)node);
+                OffsetRange range = AstUtilities.offsetRangeFor(((AssignableNode) node).getLeftHandSidePosition());
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof ArgsNode) {
@@ -690,40 +686,26 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         Map<OffsetRange, ColoringAttributes> highlights) {
         switch (node.getNodeType()) {
         case DVARNODE:
-            if (((DVarNode)node).getName().equals(name)) { // Does not implement INameNode
-
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            if (((INameNode)node).getName().equals(name)) {
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
             break;
         case DASGNNODE:
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getLValueRange((DAsgnNode)node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.offsetRangeFor(((DAsgnNode)node).getLeftHandSidePosition()),
+                        ColoringAttributes.MARK_OCCURRENCES);
             }
             break;
         case ALIASNODE:
-            if (!ignoreAlias) {
-                AliasNode an = (AliasNode)node;
-                handleAliasNode(an, name, highlights);
-            }
+            if (!ignoreAlias) handleAliasNode((AliasNode)node, name, highlights);
             break;
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             switch (child.getNodeType()) {
-            case ITERNODE:
-            //case BLOCKNODE:
-            case DEFNNODE:
-            case DEFSNODE:
-            case CLASSNODE:
-            case SCLASSNODE:
-            case MODULENODE:
+            case ITERNODE: case DEFNNODE: case DEFSNODE: case CLASSNODE: case SCLASSNODE: case MODULENODE:
                 continue;
             }
 
@@ -732,14 +714,10 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
     }
 
     private static void handleAliasNode(AliasNode alias, String name, Map<OffsetRange, ColoringAttributes> highlights) {
-        String oldName = AstUtilities.getNameOrValue(alias.getOldName());
-        String newName = AstUtilities.getNameOrValue(alias.getNewName());
-        if (name.equals(newName)) {
-            OffsetRange range = AstUtilities.getAliasNewRange(alias);
-            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-        } else if (name.equals(oldName)) {
-            OffsetRange range = AstUtilities.getAliasOldRange(alias);
-            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+        if (name.equals(AstUtilities.getNameOrValue(alias.getNewName()))) {
+            highlights.put(AstUtilities.getAliasNewRange(alias), ColoringAttributes.MARK_OCCURRENCES);
+        } else if (name.equals(AstUtilities.getNameOrValue(alias.getOldName()))) {
+            highlights.put(AstUtilities.getAliasOldRange(alias), ColoringAttributes.MARK_OCCURRENCES);
         }
     }
 
@@ -747,13 +725,12 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof InstVarNode) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof InstAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getLValueRange((InstAsgnNode)node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.offsetRangeFor(((InstAsgnNode)node).getLeftHandSidePosition()),
+                        ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
             handleAliasNode((AliasNode) node, name, highlights);
@@ -764,19 +741,16 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
             for (int i = 0; i < symbols.length; i++) {
                 if (name.equals("@" + symbols[i].getName())) {
-                    OffsetRange range = AstUtilities.getRange(symbols[i]);
-                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                    highlights.put(AstUtilities.getRange(symbols[i]), ColoringAttributes.MARK_OCCURRENCES);
                 }
             }
         } else if (node instanceof SymbolNode) {
             if (("@" + ((INameNode)node).getName()).equals(name)) { // NOI18N
-
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof CallNode) {
             CallNode callNode = (CallNode) node;
-            Node receiver = callNode.getReceiverNode();
+            Node receiver = callNode.getReceiver();
             if (receiver != null && receiver instanceof SelfNode) {
                 // check first this isn't a method call - not really exact
                 // as it could be an inherited method, but we can't use index here
@@ -784,8 +758,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 Node method = AstUtilities.findMethod(root, methodName, Arity.getCallArity(callNode));
                 if (method == null && methodName.equals(callNode.getName())) {
                     // seems to be self.inst_var, so highlight it
-                    OffsetRange range = AstUtilities.getRange(callNode);
-                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                    highlights.put(AstUtilities.getRange(callNode), ColoringAttributes.MARK_OCCURRENCES);
                 }
             }
         }
@@ -804,26 +777,18 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof ClassVarNode) {
             if (((ClassVarNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
-        } else if (node instanceof ClassVarDeclNode) {
+        } else if (node instanceof ClassVarDeclNode || node instanceof ClassVarAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getLValueRange((ClassVarDeclNode)node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof ClassVarAsgnNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getLValueRange((ClassVarAsgnNode)node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.offsetRangeFor(((AssignableNode)node).getLeftHandSidePosition()),
+                        ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
             handleAliasNode((AliasNode) node, name, highlights);
         } else if (node instanceof SymbolNode) {
             if (("@@" + ((INameNode)node).getName()).equals(name)) { // NOI18N
-
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
 
             // TODO - are there attr writers for class vars?
@@ -855,34 +820,28 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         if (node instanceof GlobalVarNode) {
             //if (((INameNode)node).getName().equals(name)) { // GlobalVarNode does not implement INameNode
             if (((GlobalVarNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof BackRefNode) {
             //if (((INameNode)node).getName().equals(name)) { // BackRefNode does not implement INameNode
             if (("" + ((BackRefNode)node).getType() + "").equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof NthRefNode) {
             //if (((INameNode)node).getName().equals(name)) { // NthRefNode does not implement INameNode
             if (("" + ((NthRefNode)node).getMatchNumber()).equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof GlobalAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getLValueRange((GlobalAsgnNode)node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.offsetRangeFor(((AssignableNode)node).getLeftHandSidePosition()),
+                        ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            AliasNode an = (AliasNode)node;
-            handleAliasNode(an, name, highlights);
+            handleAliasNode((AliasNode) node, name, highlights);
         } else if (node instanceof SymbolNode) {
             if (("$" + ((INameNode)node).getName()).equals(name)) { // NOI18N
-
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         }
 
@@ -965,26 +924,22 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof ConstNode) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof ConstDeclNode) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getLValueRange((ConstDeclNode)node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.offsetRangeFor(((ConstDeclNode)node).getLeftHandSidePosition()),
+                        ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof Colon2Node) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            AliasNode an = (AliasNode)node;
-            handleAliasNode(an, name, highlights);
+            handleAliasNode((AliasNode) node, name, highlights);
         } else if (node instanceof SymbolNode) {
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         }
 

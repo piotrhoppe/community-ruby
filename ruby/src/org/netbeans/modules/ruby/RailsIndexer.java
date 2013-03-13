@@ -227,7 +227,7 @@ final class RailsIndexer {
 
             if (name.equals(REQUIRE)) { // XXX Load too?
 
-                Node argsNode = ((FCallNode) node).getArgsNode();
+                Node argsNode = ((FCallNode) node).getArgs();
 
                 if (argsNode instanceof ListNode) {
                     ListNode args = (ListNode) argsNode;
@@ -249,7 +249,7 @@ final class RailsIndexer {
                 }
             } else if (name.equals(INCLUDE) || name.equals(EXTEND)) {
                 final String key = name.equals(INCLUDE) ? INCLUDE : EXTEND;
-                Node argsNode = ((FCallNode) node).getArgsNode();
+                Node argsNode = ((FCallNode) node).getArgs();
                 if (argsNode instanceof ListNode) {
                     result.get(key).addAll(AstUtilities.getValuesAsFqn((ListNode) argsNode));
                 }
@@ -260,7 +260,7 @@ final class RailsIndexer {
             CallNode call = (CallNode) node;
 
             if (call.getName().equals("class_eval")) { // NOI18N
-                Node receiver = call.getReceiverNode();
+                Node receiver = call.getReceiver();
                 if ("Base".equals(AstUtilities.safeGetName(receiver))) {
                     found = true;
                 }

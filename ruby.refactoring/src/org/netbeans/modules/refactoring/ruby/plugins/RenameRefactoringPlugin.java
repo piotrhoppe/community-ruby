@@ -834,7 +834,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                         if (!skip) {
                             // Found a method match
                             // TODO - check arity - see OccurrencesFinder
-                            node = AstUtilities.getDefNameNode((MethodDefNode)node);
+                            node = ((MethodDefNode)node).getNameNode();
                             rename(node, name, null, getString("UpdateMethodDef"));
                         }
                     }

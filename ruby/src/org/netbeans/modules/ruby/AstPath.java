@@ -157,7 +157,7 @@ public class AstPath implements Iterable<Node> {
                 }
                 Node found = find(child, offset);
 
-                if (found != null) {
+                if (found != null && !found.getPosition().isEmpty()) {
                     path.add(child);
 
                     return found;
