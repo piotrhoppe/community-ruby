@@ -1807,7 +1807,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
                 //  foo.bar.snark
                 // there's no AST node for the "bar" part - only a CallNode for "foo.bar",
                 // so add in an extra range for this case
-                Node receiver = ((CallNode)node).getReceiverNode();
+                Node receiver = ((CallNode)node).getReceiver();
                 OffsetRange receiverRange = AstUtilities.getRange(receiver);
                 if (receiver != null && astOffset > receiverRange.getEnd() && receiverRange.getEnd()+1 < range.getEnd()) {
                    ranges.add(new OffsetRange(receiverRange.getEnd()+1, range.getEnd()));

@@ -1,4 +1,3 @@
 class Foo
    def 
 end
-

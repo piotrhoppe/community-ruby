@@ -151,22 +151,19 @@ final class MigrationIndexer {
             String name = AstUtilities.getCallName(node);
             if ("create_table".equals(name)) { // NOI18N
                 // Compute the call name, and any column names
-                List childNodes = node.childNodes();
+                List<Node> childNodes = node.childNodes();
                 if (childNodes.size() > 0) {
-                    Node child = (Node) childNodes.get(0);
+                    Node child = childNodes.get(0);
                     if (child.getNodeType() == NodeType.ARRAYNODE) {
-                        List grandChildren = child.childNodes();
+                        List<Node> grandChildren = child.childNodes();
                         if (grandChildren.size() > 0) {
-                            Node grandChild = (Node) grandChildren.get(0);
-                            if (grandChild.getNodeType() == NodeType.SYMBOLNODE
-                                    || grandChild.getNodeType() == NodeType.STRNODE) {
+                            Node grandChild = grandChildren.get(0);
+                            if (grandChild.getNodeType() == NodeType.SYMBOLNODE || grandChild.getNodeType() == NodeType.STRNODE) {
                                 String tableName = getString(grandChild);
                                 items.put(tableName, new ArrayList<String>());
                                 if (childNodes.size() > 1) {
-                                    Node n = (Node) childNodes.get(1);
-                                    if (n.getNodeType() == NodeType.ITERNODE) {
-                                        scanMigration(n, items, tableName);
-                                    }
+                                    Node n = childNodes.get(1);
+                                    if (n.getNodeType() == NodeType.ITERNODE) scanMigration(n, items, tableName);
                                 }
 
                                 return;
@@ -235,9 +232,9 @@ final class MigrationIndexer {
             // t.column, applying to an outer table
             String name = AstUtilities.getCallName(node);
             if ("column".equals(name)) {  // NOI18N
-                List childNodes = node.childNodes();
+                List<Node> childNodes = node.childNodes();
                 if (childNodes.size() >= 2) {
-                    Node child = (Node) childNodes.get(0);
+                    Node child = childNodes.get(0);
                     if (child.getNodeType() != NodeType.DVARNODE) {
                         // Not a call on the block var corresponding to the table
                         // Later, validate more closely that we're making a call
@@ -245,7 +242,7 @@ final class MigrationIndexer {
                         return;
                     }
 
-                    child = (Node) childNodes.get(1);
+                    child = childNodes.get(1);
                     List<Node> symbols = new ArrayList<Node>();
                     AstUtilities.addNodesByType(child, new NodeType[]{NodeType.SYMBOLNODE, NodeType.STRNODE}, symbols);
                     if (symbols.size() >= 2) {
@@ -268,9 +265,9 @@ final class MigrationIndexer {
 
                 return;
             } else if ("timestamps".equals(name)) { // NOI18N
-                List childNodes = node.childNodes();
+                List<Node> childNodes = node.childNodes();
                 if (childNodes.size() >= 1) {
-                    Node child = (Node) childNodes.get(0);
+                    Node child = childNodes.get(0);
                     if (child.getNodeType() != NodeType.DVARNODE) {
                         // Not a call on the block var corresponding to the table
                         // Later, validate more closely that we're making a call
@@ -294,9 +291,9 @@ final class MigrationIndexer {
                 int columnTypeIndex = Arrays.binarySearch(RubyIndexer.FIXED_COLUMN_TYPES, name);
                 if (columnTypeIndex >= 0 && columnTypeIndex < RubyIndexer.FIXED_COLUMN_TYPES.length) {
                     String columnType = RubyIndexer.FIXED_COLUMN_TYPES[columnTypeIndex];
-                    List childNodes = node.childNodes();
+                    List<Node> childNodes = node.childNodes();
                     if (childNodes.size() >= 2) {
-                        Node child = (Node) childNodes.get(0);
+                        Node child = childNodes.get(0);
                         if (child.getNodeType() != NodeType.DVARNODE) {
                             // Not a call on the block var corresponding to the table
                             // Later, validate more closely that we're making a call
@@ -304,7 +301,7 @@ final class MigrationIndexer {
                             return;
                         }
 
-                        child = (Node) childNodes.get(1);
+                        child = childNodes.get(1);
                         List<Node> args = child.childNodes();
                         for (Node n : args) {
                             if (n.getNodeType() == NodeType.SYMBOLNODE || n.getNodeType() == NodeType.STRNODE) {

@@ -129,7 +129,7 @@ public final class Arity {
     
     private void initializeFromCall(Node node) {
         if (node instanceof FCallNode) {
-            Node argsNode = ((FCallNode)node).getArgsNode();
+            Node argsNode = ((FCallNode)node).getArgs();
             if (argsNode == null) {
                 return;
             }
@@ -141,7 +141,7 @@ public final class Arity {
             }
         } else if (node instanceof ArgsCatNode) {
             ArgsCatNode args = (ArgsCatNode)node;
-            initializeFromCall(args.getFirstNode());
+            initializeFromCall(args.getFirst());
             // ArgsCatNode seems to be used only to append splats
             // but I don't get a splat node. So just pretend I did.
             //initializeFromCall(args.getSecondNode());
@@ -164,7 +164,7 @@ public final class Arity {
             // Flexible number of arguments
             max = Integer.MAX_VALUE;
         } else if (node instanceof CallNode) {
-            Node argsNode = ((CallNode)node).getArgsNode();
+            Node argsNode = ((CallNode)node).getArgs();
             if (argsNode == null) {
                 return;
             }
