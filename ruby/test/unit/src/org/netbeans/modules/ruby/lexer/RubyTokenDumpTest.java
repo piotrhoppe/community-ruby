@@ -45,10 +45,8 @@
 package org.netbeans.modules.ruby.lexer;
 
 import java.util.concurrent.Callable;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.ruby.RubyTestBase;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 /**
  * Test tokens dump of Ruby code input. Based on Java one by Mila Metelka.

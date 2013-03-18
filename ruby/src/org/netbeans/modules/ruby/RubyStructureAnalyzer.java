@@ -630,6 +630,15 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
+            
+        case CLASSVARASGNNODE: {
+            AstFieldElement co = new AstFieldElement(result, node);
+            co.setIn(in);
+
+            addToParent(parent, co);
+            
+            break;
+        }
 
         case GLOBALASGNNODE: {
             // We don't have unique declarations, only assignments (possibly many)

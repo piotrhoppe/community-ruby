@@ -224,13 +224,13 @@ class Resolv
   end
 
   def |>METHOD:getaddress<|(|>PARAMETER:name<|)
-    |>METHOD:each_address<|(|>PARAMETER:name<|) {|address| return address}
+    |>METHOD:each_address<|(|>PARAMETER:name<|) {||>PARAMETER:address<|| return address}
     |>METHOD:raise<| ResolvError.new("no address for #{|>PARAMETER:name<|}")
   end
 
   def |>METHOD:getaddresses<|(|>PARAMETER:name<|)
     ret = []
-    |>METHOD:each_address<|(|>PARAMETER:name<|) {|address| ret << address}
+    |>METHOD:each_address<|(|>PARAMETER:name<|) {||>PARAMETER:address<|| ret << address}
     return ret
   end
 
@@ -240,8 +240,8 @@ class Resolv
       return
     end
     yielded = false
-    @resolvers.each {|r|
-      r.each_address(|>PARAMETER:name<|) {|address|
+    @resolvers.each {||>PARAMETER:r<||
+      r.each_address(|>PARAMETER:name<|) {||>PARAMETER:address<||
         yield address.to_s
         yielded = true
       }
@@ -250,20 +250,20 @@ class Resolv
   end
 
   def |>METHOD:getname<|(|>PARAMETER:address<|)
-    |>METHOD:each_name<|(|>PARAMETER:address<|) {|name| return name}
+    |>METHOD:each_name<|(|>PARAMETER:address<|) {||>PARAMETER:name<|| return name}
     |>METHOD:raise<| ResolvError.new("no name for #{|>PARAMETER:address<|}")
   end
 
   def |>METHOD:getnames<|(|>PARAMETER:address<|)
     ret = []
-    |>METHOD:each_name<|(|>PARAMETER:address<|) {|name| ret << name}
+    |>METHOD:each_name<|(|>PARAMETER:address<|) {||>PARAMETER:name<|| ret << name}
     return ret
   end
 
   def |>METHOD:each_name<|(|>PARAMETER:address<|)
     yielded = false
-    @resolvers.each {|r|
-      r.each_name(|>PARAMETER:address<|) {|name|
+    @resolvers.each {||>PARAMETER:r<||
+      r.each_name(|>PARAMETER:address<|) {||>PARAMETER:name<||
         yield name.to_s
         yielded = true
       }
@@ -296,8 +296,8 @@ class Resolv
         unless @initialized
           @name2addr = {}
           @addr2name = {}
-          |>METHOD:open<|(@filename) {|f|
-            f.each {|line|
+          |>METHOD:open<|(@filename) {||>PARAMETER:f<||
+            f.each {||>PARAMETER:line<||
               line.sub!(/#.*/, '')
               addr, hostname, *aliases = line.split(/\s+/)
               next unless addr
@@ -308,7 +308,7 @@ class Resolv
               @addr2name[addr] += aliases
               @name2addr[hostname] = [] unless @name2addr.include? hostname
               @name2addr[hostname] << addr
-              aliases.each {|n|
+              aliases.each {||>PARAMETER:n<||
                 n.untaint
                 @name2addr[n] = [] unless @name2addr.include? n
                 @name2addr[n] << addr
@@ -323,13 +323,13 @@ class Resolv
     end
 
     def |>METHOD:getaddress<|(|>PARAMETER:name<|)
-      |>METHOD:each_address<|(|>PARAMETER:name<|) {|address| return address}
+      |>METHOD:each_address<|(|>PARAMETER:name<|) {||>PARAMETER:address<|| return address}
       |>METHOD:raise<| ResolvError.new("#{@filename} has no name: #{|>PARAMETER:name<|}")
     end
 
     def |>METHOD:getaddresses<|(|>PARAMETER:name<|)
       ret = []
-      |>METHOD:each_address<|(|>PARAMETER:name<|) {|address| ret << address}
+      |>METHOD:each_address<|(|>PARAMETER:name<|) {||>PARAMETER:address<|| ret << address}
       return ret
     end
 
@@ -341,13 +341,13 @@ class Resolv
     end
 
     def |>METHOD:getname<|(|>PARAMETER:address<|)
-      |>METHOD:each_name<|(|>PARAMETER:address<|) {|name| return name}
+      |>METHOD:each_name<|(|>PARAMETER:address<|) {||>PARAMETER:name<|| return name}
       |>METHOD:raise<| ResolvError.new("#{@filename} has no address: #{|>PARAMETER:address<|}")
     end
 
     def |>METHOD:getnames<|(|>PARAMETER:address<|)
       ret = []
-      |>METHOD:each_name<|(|>PARAMETER:address<|) {|name| ret << name}
+      |>METHOD:each_name<|(|>PARAMETER:address<|) {||>PARAMETER:name<|| ret << name}
       return ret
     end
 
@@ -412,13 +412,13 @@ class Resolv
     end
 
     def |>METHOD:getaddress<|(|>PARAMETER:name<|)
-      |>METHOD:each_address<|(|>PARAMETER:name<|) {|address| return address}
+      |>METHOD:each_address<|(|>PARAMETER:name<|) {||>PARAMETER:address<|| return address}
       |>METHOD:raise<| ResolvError.new("DNS result has no information for #{|>PARAMETER:name<|}")
     end
 
     def |>METHOD:getaddresses<|(|>PARAMETER:name<|)
       ret = []
-      |>METHOD:each_address<|(|>PARAMETER:name<|) {|address| ret << address}
+      |>METHOD:each_address<|(|>PARAMETER:name<|) {||>PARAMETER:address<|| ret << address}
       return ret
     end
 
@@ -427,13 +427,13 @@ class Resolv
     end
 
     def |>METHOD:getname<|(|>PARAMETER:address<|)
-      |>METHOD:each_name<|(|>PARAMETER:address<|) {|name| return name}
+      |>METHOD:each_name<|(|>PARAMETER:address<|) {||>PARAMETER:name<|| return name}
       |>METHOD:raise<| ResolvError.new("DNS result has no information for #{|>PARAMETER:address<|}")
     end
 
     def |>METHOD:getnames<|(|>PARAMETER:address<|)
       ret = []
-      |>METHOD:each_name<|(|>PARAMETER:address<|) {|name| ret << name}
+      |>METHOD:each_name<|(|>PARAMETER:address<|) {||>PARAMETER:name<|| ret << name}
       return ret
     end
 
@@ -496,13 +496,13 @@ class Resolv
     def |>METHOD:extract_resources<|(|>PARAMETER:msg<|, |>PARAMETER:name<|, |>PARAMETER:typeclass<|)
       if |>PARAMETER:typeclass<| < Resource::ANY
         n0 = Name.create(|>PARAMETER:name<|)
-        |>PARAMETER:msg<|.each_answer {|n, |>UNUSED:ttl<|, data|
+        |>PARAMETER:msg<|.each_answer {||>PARAMETER:n<|, |>UNUSED:ttl<|, |>PARAMETER:data<||
           yield data if n0 == n
         }
       end
       yielded = false
       n0 = Name.create(|>PARAMETER:name<|)
-      |>PARAMETER:msg<|.each_answer {|n, |>UNUSED:ttl<|, data|
+      |>PARAMETER:msg<|.each_answer {||>PARAMETER:n<|, |>UNUSED:ttl<|, |>PARAMETER:data<||
         if n0 == n
           case data
           when |>PARAMETER:typeclass<|
@@ -514,7 +514,7 @@ class Resolv
         end
       }
       return if yielded
-      |>PARAMETER:msg<|.each_answer {|n, |>UNUSED:ttl<|, data|
+      |>PARAMETER:msg<|.each_answer {||>PARAMETER:n<|, |>UNUSED:ttl<|, |>PARAMETER:data<||
         if n0 == n
           case data
           when |>PARAMETER:typeclass<|
@@ -544,9 +544,9 @@ class Resolv
       def |>METHOD:delete<|(|>PARAMETER:arg<|)
         case |>PARAMETER:arg<|
         when Sender
-          @senders.delete_if {||>UNUSED:k<|, s| s == |>PARAMETER:arg<| }
+          @senders.delete_if {||>UNUSED:k<|, |>PARAMETER:s<|| s == |>PARAMETER:arg<| }
         when Queue
-          @senders.delete_if {||>UNUSED:k<|, s| s.queue == |>PARAMETER:arg<| }
+          @senders.delete_if {||>UNUSED:k<|, |>PARAMETER:s<|| s.queue == |>PARAMETER:arg<| }
         else
           |>METHOD:raise<| ArgumentError.new("neither Sender or Queue: #{|>PARAMETER:arg<|}")
         end
@@ -724,11 +724,11 @@ class Resolv
         nameserver = []
         search = nil
         ndots = 1
-        |>METHOD:open<|(|>PARAMETER:filename<|) {|f|
-          f.each {|line|
+        |>METHOD:open<|(|>PARAMETER:filename<|) {||>PARAMETER:f<||
+          f.each {||>PARAMETER:line<||
             line.sub!(/[#;].*/, '')
             keyword, *args = line.split(/\s+/)
-            args.each { |arg|
+            args.each { ||>PARAMETER:arg<||
               arg.untaint
             }
             next unless keyword
@@ -742,7 +742,7 @@ class Resolv
               next if args.empty?
               search = args
             when 'options'
-              args.each {|arg|
+              args.each {||>PARAMETER:arg<||
                 case arg
                 when /\Andots:(\d+)\z/
                   ndots = $1.to_i
@@ -796,7 +796,7 @@ class Resolv
 
             @nameserver = ['0.0.0.0'] if @nameserver.empty?
             if @search
-              @search = @search.map {|arg| Label.split(arg) }
+              @search = @search.map {||>PARAMETER:arg<|| Label.split(arg) }
             else
               hostname = Socket.gethostname
               if /\./ =~ hostname
@@ -807,12 +807,12 @@ class Resolv
             end
 
             if !@nameserver.kind_of?(Array) ||
-                !@nameserver.all? {|ns| String === ns }
+                !@nameserver.all? {||>PARAMETER:ns<|| String === ns }
               |>METHOD:raise<| ArgumentError.new("invalid nameserver config: #{@nameserver.inspect}")
             end
 
             if !@search.kind_of?(Array) ||
-                !@search.all? {|ls| ls.all? {|l| Label::Str === l } }
+                !@search.all? {||>PARAMETER:ls<|| ls.all? {||>PARAMETER:l<|| Label::Str === l } }
               |>METHOD:raise<| ArgumentError.new("invalid search config: #{@search.inspect}")
             end
 
@@ -846,7 +846,7 @@ class Resolv
           else
             candidates = []
           end
-          candidates.concat(@search.map {|domain| Name.new(|>PARAMETER:name<|.to_a + domain)})
+          candidates.concat(@search.map {||>PARAMETER:domain<|| Name.new(|>PARAMETER:name<|.to_a + domain)})
         end
         return candidates
       end
@@ -865,10 +865,10 @@ class Resolv
         candidates = |>METHOD:generate_candidates<|(|>PARAMETER:name<|)
         timeouts = |>METHOD:generate_timeouts<|
         begin
-          candidates.each {|candidate|
+          candidates.each {||>PARAMETER:candidate<||
             begin
-              timeouts.each {|tout|
-                @nameserver.each {|nameserver|
+              timeouts.each {||>PARAMETER:tout<||
+                @nameserver.each {||>PARAMETER:nameserver<||
                   begin
                     yield candidate, tout, nameserver
                   rescue ResolvTimeout
@@ -1080,7 +1080,7 @@ class Resolv
       end
 
       def |>METHOD:each_question<|
-        @question.each {|name, typeclass|
+        @question.each {||>PARAMETER:name<|, |>PARAMETER:typeclass<||
           yield name, typeclass
         }
       end
@@ -1090,7 +1090,7 @@ class Resolv
       end
 
       def |>METHOD:each_answer<|
-        @answer.each {|name, ttl, data|
+        @answer.each {||>PARAMETER:name<|, |>PARAMETER:ttl<|, |>PARAMETER:data<||
           yield name, ttl, data
         }
       end
@@ -1100,7 +1100,7 @@ class Resolv
       end
 
       def |>METHOD:each_authority<|
-        @authority.each {|name, ttl, data|
+        @authority.each {||>PARAMETER:name<|, |>PARAMETER:ttl<|, |>PARAMETER:data<||
           yield name, ttl, data
         }
       end
@@ -1110,19 +1110,19 @@ class Resolv
       end
 
       def |>METHOD:each_additional<|
-        @additional.each {|name, ttl, data|
+        @additional.each {||>PARAMETER:name<|, |>PARAMETER:ttl<|, |>PARAMETER:data<||
           yield name, ttl, data
         }
       end
 
       def |>METHOD:each_resource<|
-        |>METHOD:each_answer<| {|name, ttl, data| yield name, ttl, data}
-        |>METHOD:each_authority<| {|name, ttl, data| yield name, ttl, data}
-        |>METHOD:each_additional<| {|name, ttl, data| yield name, ttl, data}
+        |>METHOD:each_answer<| {||>PARAMETER:name<|, |>PARAMETER:ttl<|, |>PARAMETER:data<|| yield name, ttl, data}
+        |>METHOD:each_authority<| {||>PARAMETER:name<|, |>PARAMETER:ttl<|, |>PARAMETER:data<|| yield name, ttl, data}
+        |>METHOD:each_additional<| {||>PARAMETER:name<|, |>PARAMETER:ttl<|, |>PARAMETER:data<|| yield name, ttl, data}
       end
 
       def |>METHOD:encode<|
-        return MessageEncoder.new {|msg|
+        return MessageEncoder.new {||>PARAMETER:msg<||
           msg.put_pack('nnnnnn',
             @id,
             (@qr & 1) << 15 |
@@ -1141,7 +1141,7 @@ class Resolv
             msg.put_name(name)
             msg.put_pack('nn', typeclass::TypeValue, typeclass::ClassValue)
           }
-          [@answer, @authority, @additional].each {|rr|
+          [@answer, @authority, @additional].each {||>PARAMETER:rr<||
             rr.each {|r|
               name, ttl, data = r
               msg.put_name(name)
@@ -1186,7 +1186,7 @@ class Resolv
         end
 
         def |>METHOD:put_string_list<|(|>PARAMETER:ds<|)
-          |>PARAMETER:ds<|.each {|d|
+          |>PARAMETER:ds<|.each {||>PARAMETER:d<||
             self.put_string(d)
           }
         end
@@ -1196,7 +1196,7 @@ class Resolv
         end
 
         def |>METHOD:put_labels<|(|>PARAMETER:d<|)
-          |>PARAMETER:d<|.each_index {|i|
+          |>PARAMETER:d<|.each_index {||>PARAMETER:i<||
             domain = |>PARAMETER:d<|[i..-1]
             if idx = @names[domain]
               self.put_pack("n", 0xc000 | idx)
@@ -1216,7 +1216,7 @@ class Resolv
 
       def Message.|>METHOD:decode<|(|>PARAMETER:m<|)
         o = Message.new(0)
-        MessageDecoder.new(|>PARAMETER:m<|) {|msg|
+        MessageDecoder.new(|>PARAMETER:m<|) {||>PARAMETER:msg<||
           id, flag, qdcount, ancount, nscount, arcount =
             msg.get_unpack('nnnnnn')
           o.id = id
@@ -1277,7 +1277,7 @@ class Resolv
 
         def |>METHOD:get_unpack<|(|>PARAMETER:template<|)
           len = 0
-          |>PARAMETER:template<|.each_byte {|byte|
+          |>PARAMETER:template<|.each_byte {||>PARAMETER:byte<||
             case byte
             when ?c, ?C
               len += 1
@@ -1383,8 +1383,8 @@ class Resolv
       def |>METHOD:==<|(|>PARAMETER:other<|)
         return self.class == |>PARAMETER:other<|.class &&
           self.instance_variables == |>PARAMETER:other<|.instance_variables &&
-          self.instance_variables.collect {|name| self.instance_eval name} ==
-          |>PARAMETER:other<|.instance_variables.collect {|name| |>PARAMETER:other<|.instance_eval name}
+          self.instance_variables.collect {||>PARAMETER:name<|| self.instance_eval name} ==
+          |>PARAMETER:other<|.instance_variables.collect {||>PARAMETER:name<|| |>PARAMETER:other<|.instance_eval name}
       end
 
       def |>METHOD:eql?<|(|>PARAMETER:other<|)
@@ -1393,7 +1393,7 @@ class Resolv
 
       def |>METHOD:hash<|
         h = 0
-        self.instance_variables.each {|name|
+        self.instance_variables.each {||>PARAMETER:name<||
           h ^= self.instance_eval("#{name}.hash")
         }
         return h
@@ -1801,20 +1801,20 @@ class Resolv
       when String
         address = ''
         if Regex_8Hex =~ |>PARAMETER:arg<|
-          |>PARAMETER:arg<|.scan(/[0-9A-Fa-f]+/) {|hex| address << [hex.hex].pack('n')}
+          |>PARAMETER:arg<|.scan(/[0-9A-Fa-f]+/) {||>PARAMETER:hex<|| address << [hex.hex].pack('n')}
         elsif Regex_CompressedHex =~ |>PARAMETER:arg<|
           prefix = $1
           suffix = $2
           a1 = ''
           a2 = ''
-          prefix.scan(/[0-9A-Fa-f]+/) {|hex| a1 << [hex.hex].pack('n')}
-          suffix.scan(/[0-9A-Fa-f]+/) {|hex| a2 << [hex.hex].pack('n')}
+          prefix.scan(/[0-9A-Fa-f]+/) {||>PARAMETER:hex<|| a1 << [hex.hex].pack('n')}
+          suffix.scan(/[0-9A-Fa-f]+/) {||>PARAMETER:hex<|| a2 << [hex.hex].pack('n')}
           omitlen = 16 - a1.length - a2.length
           address << a1 << "\0" * omitlen << a2
         elsif Regex_6Hex4Dec =~ |>PARAMETER:arg<|
           prefix, a, b, c, d = $1, $2.to_i, $3.to_i, $4.to_i, $5.to_i
           if (0..255) === a && (0..255) === b && (0..255) === c && (0..255) === d
-            prefix.scan(/[0-9A-Fa-f]+/) {|hex| address << [hex.hex].pack('n')}
+            prefix.scan(/[0-9A-Fa-f]+/) {||>PARAMETER:hex<|| address << [hex.hex].pack('n')}
             address << [a, b, c, d].pack('CCCC')
           else
             |>METHOD:raise<| ArgumentError.new("not numeric IPv6 address: " + |>PARAMETER:arg<|)
@@ -1824,8 +1824,8 @@ class Resolv
           if (0..255) === a && (0..255) === b && (0..255) === c && (0..255) === d
             a1 = ''
             a2 = ''
-            prefix.scan(/[0-9A-Fa-f]+/) {|hex| a1 << [hex.hex].pack('n')}
-            suffix.scan(/[0-9A-Fa-f]+/) {|hex| a2 << [hex.hex].pack('n')}
+            prefix.scan(/[0-9A-Fa-f]+/) {||>PARAMETER:hex<|| a1 << [hex.hex].pack('n')}
+            suffix.scan(/[0-9A-Fa-f]+/) {||>PARAMETER:hex<|| a2 << [hex.hex].pack('n')}
             omitlen = 12 - a1.length - a2.length
             address << a1 << "\0" * omitlen << a2 << [a, b, c, d].pack('CCCC')
           else

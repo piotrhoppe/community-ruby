@@ -8,7 +8,7 @@ METHOD     allocate                                   Class
 METHOD     ancestors                                  Module
 METHOD     append_features(mod)                       Module
 METHOD     at_exit { }                                Kernel
-METHOD     attr(symbol)                               Module
+METHOD     attr(symbol, writable)                     Module
 METHOD     attr_accessor(symbol)                      Module
 METHOD     attr_reader(symbol)                        Module
 METHOD     attr_writer(symbol)                        Module
@@ -18,7 +18,7 @@ METHOD     autoload?(name)                            Module
 METHOD     binding                                    Kernel
 METHOD     block_given?                               Kernel
 METHOD     callcc { }                                 Kernel
-METHOD     caller                                     Kernel
+METHOD     caller(start)                              Kernel
 METHOD     catch(symbol) { }                          Kernel
 METHOD     chomp!(string)                             Kernel
 METHOD     chomp(string)                              Kernel
@@ -40,17 +40,17 @@ METHOD     constants                       [STATIC]   Module
 METHOD     constants                                  Module
 METHOD     define_method(symbol)                      Module
 METHOD     define_method(symbol, method)              Module
-METHOD     display                                    Object
+METHOD     display(port)                              Object
 METHOD     dup                                        Object
-METHOD     enum_for(*args)                            Object
+METHOD     enum_for(method, *args)                    Object
 METHOD     eql?(other)                                Module
 METHOD     eql?(other)                                Object
 METHOD     equal?(other)                              Module
 METHOD     equal?(other)                              Object
 METHOD     eval(string, binding, filename             Kernel
 METHOD     exec(command, arg)                         Kernel
-METHOD     exit                                       Kernel
-METHOD     exit!                                      Kernel
+METHOD     exit!(fixnum)                              Kernel
+METHOD     exit(integer)                              Kernel
 METHOD     extend(module_)                            Object
 METHOD     extend_object(obj)                         Module
 METHOD     extended(p1)                               Module
@@ -62,7 +62,7 @@ METHOD     freeze                                     Module
 METHOD     freeze                                     Object
 METHOD     frozen?                                    Object
 METHOD     getc                                       Kernel
-METHOD     gets                                       Kernel
+METHOD     gets(separator)                            Kernel
 METHOD     global_variables                           Kernel
 METHOD     gsub!(pattern)                             Kernel
 METHOD     gsub!(pattern, replacement)                Kernel
@@ -79,7 +79,7 @@ METHOD     inspect                                    Object
 METHOD     instance_eval(string, filename             Object
 METHOD     instance_exec(arg) { }                     Object
 METHOD     instance_method(symbol)                    Module
-METHOD     instance_methods                           Module
+METHOD     instance_methods(include_super             Module
 METHOD     instance_of?(class_name)                   Object
 METHOD     instance_variable_defined?(sym             Object
 METHOD     instance_variable_get(symbol)              Object
@@ -89,7 +89,7 @@ METHOD     is_a?(class_name)                          Object
 METHOD     iterator?                                  Kernel
 METHOD     kind_of?(class_name)                       Object
 METHOD     lambda { }                                 Kernel
-METHOD     load(filename)                             Kernel
+METHOD     load(filename, wrap)                       Kernel
 METHOD     local_variables                            Kernel
 METHOD     loop { }                                   Kernel
 METHOD     method(sym)                                Object
@@ -103,10 +103,10 @@ METHOD     module_exec(arg) { }                       Module
 METHOD     module_function(symbol)                    Module
 METHOD     name                                       Module
 METHOD     nesting                         [STATIC]   Module
-METHOD     new                             [STATIC]   Class
 METHOD     new                             [STATIC]   Module
 METHOD     new                             [STATIC]   Object
 METHOD     new(args)                                  Class
+METHOD     new(super_class)                [STATIC]   Class
 METHOD     nil?                                       Object
 METHOD     object_id                                  Object
 METHOD     open(path, mode, perm)                     Kernel
@@ -116,32 +116,32 @@ METHOD     printf(io, string, obj)                    Kernel
 METHOD     printf(string, obj)                        Kernel
 METHOD     private(symbol)                            Module
 METHOD     private_class_method(symbol)               Module
-METHOD     private_instance_methods                   Module
+METHOD     private_instance_methods(inclu             Module
 METHOD     private_method_defined?(symbol             Module
-METHOD     private_methods                            Object
+METHOD     private_methods(all)                       Object
 METHOD     proc { }                                   Kernel
 METHOD     protected(symbol)                          Module
-METHOD     protected_instance_methods                 Module
+METHOD     protected_instance_methods(inc             Module
 METHOD     protected_method_defined?(symb             Module
-METHOD     protected_methods                          Object
+METHOD     protected_methods(all)                     Object
 METHOD     public(symbol)                             Module
 METHOD     public_class_method(symbol)                Module
-METHOD     public_instance_methods                    Module
+METHOD     public_instance_methods(includ             Module
 METHOD     public_method_defined?(symbol)             Module
-METHOD     public_methods                             Object
+METHOD     public_methods(all)                        Object
 METHOD     putc(int)                                  Kernel
 METHOD     puts(obj)                                  Kernel
 METHOD     raise(exception, string, array             Kernel
 METHOD     raise(string)                              Kernel
-METHOD     rand                                       Kernel
-METHOD     readline                                   Kernel
-METHOD     readlines                                  Kernel
+METHOD     rand(max)                                  Kernel
+METHOD     readline(separator)                        Kernel
+METHOD     readlines(separator)                       Kernel
 METHOD     remove_class_variable(sym)                 Module
 METHOD     remove_const(sym)                          Module
 METHOD     remove_instance_variable(symbo             Object
 METHOD     remove_method(symbol)                      Module
 METHOD     require(string)                            Kernel
-METHOD     respond_to?(symbol)                        Object
+METHOD     respond_to?(symbol, include_pr             Object
 METHOD     scan(pattern)                              Kernel
 METHOD     select                                     Kernel
 METHOD     send(symbol, args)                         Object
@@ -149,11 +149,11 @@ METHOD     set_trace_func(proc)                       Kernel
 METHOD     singleton_method_added(symbol)             Object
 METHOD     singleton_method_removed(symbo             Object
 METHOD     singleton_method_undefined(sym             Object
-METHOD     singleton_methods                          Object
+METHOD     singleton_methods(all)                     Object
 METHOD     sleep(duration)                            Kernel
 METHOD     split(pattern, limit)                      Kernel
 METHOD     sprintf(format_string, argumen             Kernel
-METHOD     srand                                      Kernel
+METHOD     srand(number)                              Kernel
 METHOD     sub!(pattern)                              Kernel
 METHOD     sub!(pattern, replacement)                 Kernel
 METHOD     sub(pattern)                               Kernel
@@ -167,7 +167,7 @@ METHOD     tap { }                                    Object
 METHOD     test(int_cmd, file1, file2)                Kernel
 METHOD     throw(symbol, obj)                         Kernel
 METHOD     to_a                                       Object
-METHOD     to_enum(*args)                             Object
+METHOD     to_enum(method, *args)                     Object
 METHOD     to_s                                       Module
 METHOD     to_s                                       Object
 METHOD     trace_var(symbol)                          Kernel

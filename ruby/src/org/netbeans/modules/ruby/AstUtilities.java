@@ -82,6 +82,7 @@ import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
 import org.jrubyparser.ast.AndNode;
+import org.jrubyparser.ast.AttrAssignNode;
 import org.jrubyparser.ast.CaseNode;
 import org.jrubyparser.ast.DSymbolNode;
 import org.jrubyparser.ast.DefinedNode;
@@ -541,23 +542,21 @@ public class AstUtilities {
 
     public static Node findLocalScope(Node node, AstPath path) {
         Node method = findMethod(path);
+        if (method != null) return method;
 
-        if (method == null) {
-            for (Node n: path) {
-                if (n instanceof ILocalScope) return n;
-            }
+        for (Node n: path) {
+            if (n instanceof ILocalScope) return n;
+        }
             
-            if (path.root() != null) return path.root();
+        if (path.root() != null) return path.root();
 
-            method = findBlock(path);
-        }
+        method = findBlock(path);
+        if (method != null) return method;
 
-        if (method == null) {
-            method = path.leafParent();
+        method = path.leafParent();
 
-            if (method.getNodeType() == NodeType.NEWLINENODE) method = path.leafGrandParent();
-            if (method == null) method = node;
-        }
+        if (method.getNodeType() == NodeType.NEWLINENODE) method = path.leafGrandParent();
+        if (method == null) method = node;
 
         return method;
     }
@@ -1396,15 +1395,9 @@ public class AstUtilities {
      * @return the name or value of the given node or <code>null</code>.
      */
     public static String getNameOrValue(Node node) {
-        if (node instanceof SymbolNode) {
-            return ((SymbolNode) node).getName();
-        }
-        if (node instanceof StrNode) {
-            return ((StrNode) node).getValue();
-        }
-        if (node instanceof INameNode) {
-            return getName(node);
-        }
+        if (node instanceof StrNode) return ((StrNode) node).getValue();
+        if (node instanceof INameNode) return getName(node);
+
         if (node instanceof DSymbolNode) {
             if (!node.childNodes().isEmpty()) {
                 Node child = node.childNodes().get(0);
@@ -2037,13 +2030,16 @@ public class AstUtilities {
             result.add(node);
             return;
         }
-        for (Node child : children) {
-            if (child instanceof ArgsNode || child instanceof ArgumentNode) {
-                // Done - no valid statement
-                result.add(node);
-                return;
+        // AttrAssgn does not put arguments into an ArgsNode unfortunately.
+        if (!(node instanceof AttrAssignNode)) {
+            for (Node child : children) {
+                if (child instanceof ArgsNode || child instanceof ArgumentNode) {
+                    // Done - no valid statement
+                    result.add(node);
+                    return;
+                }
+                findLastNodes(child, result);
             }
-            findLastNodes(child, result);
         }
     }
 

@@ -1,5 +1,4 @@
 
-
 Document 0
 Searchable Keys:
   attribute : aa;;Fixnum;
@@ -20,6 +19,7 @@ Searchable Keys:
   field : additional|PRIVATE;;Array;
   field : answer|PRIVATE;;Array;
   field : authority|PRIVATE;;Array;
+  field : identifier|STATIC
   field : identifier|STATIC
   field : id|PRIVATE
   field : opcode|PRIVATE;;Fixnum;
@@ -655,7 +655,7 @@ Searchable Keys:
   method : put_bytes(d)
   method : put_label(d)
   method : put_labels(d)
-  method : put_length16;;Array;
+  method : put_length16
   method : put_name(d)
   method : put_pack(template,*d)
   method : put_string(d)

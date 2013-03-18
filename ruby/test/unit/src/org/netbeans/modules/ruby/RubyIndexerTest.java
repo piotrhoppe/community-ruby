@@ -108,8 +108,12 @@ public class RubyIndexerTest extends RubyTestBase {
         return value;
     }
 
-    public void testAnalysis2() throws Exception {
-        checkIndexer("testfiles/ape.rb");
+//    public void testAnalysis2() throws Exception {
+//        checkIndexer("testfiles/ape.rb");
+//    }
+    
+    public void testMethod1() throws Exception {
+        checkIndexer("testfiles/sender.rb");
     }
 
     public void testAnalysis() throws Exception {
@@ -120,9 +124,9 @@ public class RubyIndexerTest extends RubyTestBase {
         checkIndexer("testfiles/date.rb");
     }
 
-    public void testAnalysis4() throws Exception {
-        checkIndexer("testfiles/resolv.rb");
-    }
+//    public void testAnalysis4() throws Exception {
+//        checkIndexer("testfiles/resolv.rb");
+//    }
 
     public void testUnused() throws Exception {
         checkIndexer("testfiles/unused.rb");

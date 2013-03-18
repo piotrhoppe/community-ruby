@@ -41,6 +41,7 @@ import org.jrubyparser.ast.IterNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.MethodDefNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.EditRegions;
@@ -77,10 +78,12 @@ public class BlockVarReuse extends RubyAstRule {
     public BlockVarReuse() {
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
+    @Override
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.ITERNODE);
     }
@@ -89,18 +92,22 @@ public class BlockVarReuse extends RubyAstRule {
         // Does nothing
     }
 
+    @Override
     public String getId() {
         return "Block_Var_Reuse"; // NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(BlockVarReuse.class, "UnintentionalSideEffect");
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(BlockVarReuse.class, "UnintentionalSideEffectDesc");
     }
 
+    @Override
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         ParserResult info = context.parserResult;
@@ -142,14 +149,14 @@ public class BlockVarReuse extends RubyAstRule {
             this.renameLocal = renameLocal;
         }
 
+        @Override
         public String getDescription() {
-            if (renameLocal) {
-                return NbBundle.getMessage(BlockVarReuse.class, "ChangeLocalVarName");
-            } else {
-                return NbBundle.getMessage(BlockVarReuse.class, "ChangeBlockVarName");
-            }
+            if (renameLocal) return NbBundle.getMessage(BlockVarReuse.class, "ChangeLocalVarName");
+
+            return NbBundle.getMessage(BlockVarReuse.class, "ChangeBlockVarName");
         }
 
+        @Override
         public void implement() throws Exception {
             // Refactoring isn't necessary here since local variables and block
             // variables are limited to the local scope, so we can accurately just
@@ -159,9 +166,7 @@ public class BlockVarReuse extends RubyAstRule {
             // Pick the first range as the caret offset
             int caretOffset = Integer.MAX_VALUE;
             for (OffsetRange range : ranges) {
-                if (range.getStart() < caretOffset) {
-                    caretOffset = range.getStart();
-                }
+                if (range.getStart() < caretOffset) caretOffset = range.getStart();
             }
 
             // Initiate synchronous editing:
@@ -170,48 +175,27 @@ public class BlockVarReuse extends RubyAstRule {
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
             if ((node.getNodeType() == NodeType.LOCALASGNNODE || node.getNodeType() == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
-                OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(context.parserResult, range);
-                if (range != OffsetRange.NONE) {
-                    ranges.add(range);
-                }
+                OffsetRange range = LexUtilities.getLexerOffsets(context.parserResult, AstUtilities.getNameRange(node));
+                if (range != OffsetRange.NONE) ranges.add(range);
             } else if (isParameter && (node.getNodeType() == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
-                OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(context.parserResult, range);
-                if (range != OffsetRange.NONE) {
-                    ranges.add(range);
-                }
+                OffsetRange range = LexUtilities.getLexerOffsets(context.parserResult, AstUtilities.getNameRange(node));
+                if (range != OffsetRange.NONE) ranges.add(range);
             } else if (node.getNodeType() == NodeType.ARGSNODE) {
                 isParameter = true;
             }
 
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-
-                // Skip inline method defs
-                if (child.getNodeType() == NodeType.DEFNNODE || child.getNodeType() == NodeType.DEFSNODE) {
-                    continue;
-                }
-
-                // Skip SOME blocks:
-                if (child.getNodeType() == NodeType.ITERNODE) {
-                    // Skip only the block which the fix is applying to;
-                    // the local variable could be aliased in other blocks as well
-                    // and we need to keep the program correct!
-                    if (child == path.leafParent()) {
-
-                        continue;
-                    }
-                }
+            for (Node child : node.childNodes()) {
+                if (child.isInvisible() || child instanceof MethodDefNode) continue; // Ignore stuff in nested methods
+                if (isThisBlock(child)) continue; // Skip the block the fix is applying to.
 
                 addNonBlockRefs(child, name, ranges, isParameter);
             }
         }
 
+        private boolean isThisBlock(Node child) {
+            return child.getNodeType() == NodeType.ITERNODE && child == path.leafParent();
+        }
+        
         private Set<OffsetRange> findRegionsToEdit() {
             Set<OffsetRange> ranges = new HashSet<OffsetRange>();
 
@@ -230,14 +214,17 @@ public class BlockVarReuse extends RubyAstRule {
             return ranges;
         }
 
+        @Override
         public boolean isSafe() {
             return false;
         }
 
+        @Override
         public boolean isInteractive() {
             return true;
         }
 
+        @Override
         public EditList getEditList() throws Exception {
             BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
@@ -251,23 +238,28 @@ public class BlockVarReuse extends RubyAstRule {
             return edits;
         }
 
+        @Override
         public boolean canPreview() {
             return true;
         }
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
 
+    @Override
     public boolean showInTasklist() {
         return true;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }

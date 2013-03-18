@@ -115,9 +115,7 @@ public class AstPath implements Iterable<Node> {
      */
     public boolean contains(NodeType nodeType) {
         for (int i = 0, n = path.size(); i < n; i++) {
-            if (path.get(i).getNodeType() == nodeType) {
-                return true;
-            }
+            if (path.get(i).getNodeType() == nodeType) return true;
         }
         
         return false;
@@ -141,9 +139,8 @@ public class AstPath implements Iterable<Node> {
     }
 
     private Node find(Node node, int offset) {
-        if (node.isInvisible()) {
-            return null;
-        }
+        if (node.isInvisible()) return null;
+
         SourcePosition pos = node.getPosition();
         int begin = pos.getStartOffset();
         int end = pos.getEndOffset();
@@ -152,9 +149,8 @@ public class AstPath implements Iterable<Node> {
             List<Node> children = node.childNodes();
 
             for (Node child : children) {
-                if (child.isInvisible()) {
-                    continue;
-                }
+                if (child.isInvisible()) continue;
+
                 Node found = find(child, offset);
 
                 if (found != null && !found.getPosition().isEmpty()) {
@@ -169,18 +165,16 @@ public class AstPath implements Iterable<Node> {
             List<Node> children = node.childNodes();
             if (children == null) {
                 Logger logger = Logger.getLogger(AstPath.class.getName());
-                logger.log(Level.WARNING, "JRuby AST node " + node + " of type " + node.getClass().getName() + " has null as children");
+                logger.log(Level.WARNING, "JRuby AST node {0} of type {1} has null as children", new Object[]{node, node.getClass().getName()});
             }
 
             for (Node child : children) {
                 if (child == null) {
                     Logger logger = Logger.getLogger(AstPath.class.getName());
-                    logger.log(Level.WARNING, "JRuby AST node " + node + " of type " + node.getClass().getName() + " has a null child");
+                    logger.log(Level.WARNING, "JRuby AST node {0} of type {1} has a null child", new Object[]{node, node.getClass().getName()});
                     continue;
                 }
-                if (child.isInvisible()) {
-                    continue;
-                }
+                if (child.isInvisible()) continue;
 
                 Node found = find(child, offset);
 
@@ -199,22 +193,17 @@ public class AstPath implements Iterable<Node> {
      * Find the path to the given node in the AST
      */
     public boolean find(Node node, Node target) {
-        if (node == target) {
-            return true;
-        }
+        if (node == target) return true;
 
         List<Node> children = node.childNodes();
 
         for (Node child : children) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            boolean found = find(child, target);
+            if (child.isInvisible()) continue;
 
-            if (found) {
+            if (find(child, target)) {
                 path.add(child);
 
-                return found;
+                return true;
             }
         }
 
@@ -224,15 +213,12 @@ public class AstPath implements Iterable<Node> {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Path(");
-        sb.append(path.size());
-        sb.append(")=[");
+        sb.append("Path(").append(path.size()).append(")=[");
 
         for (Node n : path) {
             String name = n.getClass().getName();
             name = name.substring(name.lastIndexOf('.') + 1);
-            sb.append(name);
-            sb.append(":");
+            sb.append(name).append(":");
         }
 
         sb.append("]");
@@ -242,38 +228,37 @@ public class AstPath implements Iterable<Node> {
 
     @CheckForNull
     public Node leaf() {
-        if (path.size() == 0) {
-            return null;
-        } else {
-            return path.get(path.size() - 1);
-        }
+        return path.isEmpty() ? null : path.get(path.size() - 1);
     }
 
     public Node leafParent() {
-        if (path.size() < 2) {
-            return null;
-        } else {
-            return path.get(path.size() - 2);
-        }
+        return nthLeafParent(1);
     }
 
     public Node leafGrandParent() {
-        if (path.size() < 3) {
-            return null;
-        } else {
-            return path.get(path.size() - 3);
-        }
+        return nthLeafParent(2);
+    }
+
+    /**
+     * Get nth parent from the leaf: n of 1 is parent, n of 2 is grandparent, ...
+     */
+    public Node nthLeafParent(int n) {
+        n += 1;
+        return path.size() < n ? null : path.get(path.size() - n);
+    }
+    
+    public boolean nthLeafParentIs(int n, NodeType type) {
+        Node parent = nthLeafParent(n);
+        
+        return parent != null && parent.getNodeType() == type;
     }
 
     public Node root() {
-        if (path.size() == 0) {
-            return null;
-        } else {
-            return path.get(0);
-        }
+        return path.isEmpty() ? null : path.get(0);
     }
 
     /** Return an iterator that returns the elements from the leaf back up to the root */
+    @Override
     public Iterator<Node> iterator() {
         return new LeafToRootIterator(path);
     }
@@ -295,38 +280,47 @@ public class AstPath implements Iterable<Node> {
             it = path.listIterator(path.size());
         }
 
+        @Override
         public boolean hasNext() {
             return it.hasPrevious();
         }
 
+        @Override
         public Node next() {
             return it.previous();
         }
 
+        @Override
         public boolean hasPrevious() {
             return it.hasNext();
         }
 
+        @Override
         public Node previous() {
             return it.next();
         }
 
+        @Override
         public int nextIndex() {
             return it.previousIndex();
         }
 
+        @Override
         public int previousIndex() {
             return it.nextIndex();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void set(Node arg0) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void add(Node arg0) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
