@@ -3,6 +3,7 @@ package org.netbeans.modules.ruby.elements;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import org.jrubyparser.ast.ClassVarAsgnNode;
 
 import org.jrubyparser.ast.ClassVarDeclNode;
 import org.jrubyparser.ast.ClassVarNode;
@@ -21,15 +22,9 @@ public class AstFieldElement extends AstElement {
     @Override
     public String getName() {
         if (name == null) {
-            if (node instanceof INameNode) { // InstVarNode, ClassDeclVarNode, ConstNode, etc.
-                name = ((INameNode)node).getName();
-            } else if (node instanceof ClassVarNode) { // should be INameNode)
-                name = ((ClassVarNode)node).getName();
-            }
-
-            if (name == null) {
-                name = node.toString();
-            }
+            // InstVarNode, ClassDeclVarNode, ConstNode, etc.
+            if (node instanceof INameNode) name = ((INameNode)node).getName();
+            if (name == null) name = node.toString();
 
             // Chop off "@" and "@@"
             if (name.startsWith("@@")) {
@@ -46,7 +41,7 @@ public class AstFieldElement extends AstElement {
     public Set<Modifier> getModifiers() {
         if (modifiers == null) {
             // TODO - find access level!
-            if (node instanceof ClassVarNode || node instanceof ClassVarDeclNode) {
+            if (node instanceof ClassVarNode || node instanceof ClassVarDeclNode || node instanceof ClassVarAsgnNode) {
                 modifiers = EnumSet.of(Modifier.STATIC);
             } else {
                 // instance variables are always private

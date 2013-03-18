@@ -53,7 +53,7 @@ import java.util.Map;
 import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.ArgsNode;
 import org.jrubyparser.ast.DAsgnNode;
-import org.jrubyparser.ast.ForNode;
+import org.jrubyparser.ast.DVarNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.LocalVarNode;
@@ -61,6 +61,7 @@ import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.IterNode;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -203,30 +204,52 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
             
             break;
         }
-        
+            
         case DEFNNODE: case DEFSNODE: {
             MethodDefNode def = (MethodDefNode) node;
             parameters = def.getArgs().getNormativeParameterNameList(true);
 
             if (!parameters.isEmpty()) {
                 List<String> unused = new ArrayList<String>();
-
                 for (String parameter : parameters) {
-                    if (!isUsedInMethod(node, parameter, true)) unused.add(parameter);
+                    if (!def.isParameterUsed(parameter)) unused.add(parameter);
                 }
 
                 if (!unused.isEmpty()) {
-                    annotateUnusedParameters(def, highlights, unused);
+                    annotateUnusedParameters(def.getArgs(), highlights, unused);
                     parameters.removeAll(unused);
                 }
 
-                if (!parameters.isEmpty()) annotateParameters(def, highlights, parameters);
-            }
+                if (!parameters.isEmpty()) annotateParameters(def.getArgs(), highlights, parameters);
 
+            }
             if (!SKIP_HIGHLIGHTNING.contains(def.getName())) highlightMethodName(def, highlights);
             break;
         }
-        
+        case ITERNODE: {
+            IterNode iter = (IterNode) node;
+            
+            if (iter.getVar() instanceof ArgsNode) {
+                ArgsNode args = (ArgsNode) iter.getVar();
+                parameters = args.getNormativeParameterNameList(true);
+                
+                if (!parameters.isEmpty()) {
+                    List<String> unused = new ArrayList<String>();
+                    for (String parameter : parameters) {
+                        if (!iter.isParameterUsed(parameter)) unused.add(parameter);
+                    }
+
+                    if (!unused.isEmpty()) {
+                        annotateUnusedParameters(args, highlights, unused);
+                        parameters.removeAll(unused);
+                    }
+
+                    if (!parameters.isEmpty()) annotateParameters(args, highlights, parameters);
+                }
+            }
+            break;
+        }
+            
         case LOCALVARNODE: {
             if (parameters != null) {
                 if (parameters.contains(((LocalVarNode)node).getName())) {
@@ -261,53 +284,43 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         }
     }
 
-    private void annotateParameters(MethodDefNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights,
+    private void annotateParameters(ArgsNode an, Map<OffsetRange, Set<ColoringAttributes>> highlights,
             List<String> names, EnumSet<ColoringAttributes> coloringAttribute) {
-        for (Node c : node.childNodes()) {
-            if (c.getNodeType() == NodeType.ARGSNODE) {
-                ArgsNode an = (ArgsNode)c;
-
-                if (an.getRequiredCount() > 0) {
-                    for (Node arg : an.childNodes()) {
-                        if (arg instanceof ListNode) { // Many specific types
-                            for (Node arg2 : arg.childNodes()) {
-                                if ((arg2.getNodeType() == NodeType.ARGUMENTNODE || arg2.getNodeType() == NodeType.LOCALASGNNODE) &&
-                                        names.contains(((INameNode) arg2).getName())) {
-                                    highlights.put(AstUtilities.offsetRangeFor(arg2.getPosition()), coloringAttribute);
-                                }
-                            }
+        // FIXME: Make this a pre/opt/post/rest/block rewrite
+        if (an.getRequiredCount() > 0) {
+            for (Node arg : an.childNodes()) {
+                if (arg instanceof ListNode) { // Many specific types
+                    for (Node arg2 : arg.childNodes()) {
+                        if ((arg2.getNodeType() == NodeType.ARGUMENTNODE || arg2.getNodeType() == NodeType.LOCALASGNNODE) &&
+                                names.contains(((INameNode) arg2).getName())) {
+                            highlights.put(AstUtilities.offsetRangeFor(arg2.getPosition()), coloringAttribute);
                         }
                     }
                 }
-
-                if (an.getRest() != null && names.contains(an.getRest().getName())) {
-                    highlights.put(AstUtilities.offsetRangeFor(an.getRest().getPosition()), coloringAttribute);
-                }
-
-                if (an.getBlock() != null && names.contains(an.getBlock().getName())) {
-                    highlights.put(AstUtilities.offsetRangeFor(an.getBlock().getPosition()), coloringAttribute);
-                }
             }
+        }
+
+        if (an.getRest() != null && names.contains(an.getRest().getName())) {
+            highlights.put(AstUtilities.offsetRangeFor(an.getRest().getPosition()), coloringAttribute);
+        }
+
+        if (an.getBlock() != null && names.contains(an.getBlock().getName())) {
+            highlights.put(AstUtilities.offsetRangeFor(an.getBlock().getPosition()), coloringAttribute);
         }
     }
     
-    private void annotateParameters(MethodDefNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
+    private void annotateParameters(ArgsNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
         annotateParameters(node, highlights, names, ColoringAttributes.PARAMETER_SET);
     }    
 
-    private void annotateUnusedParameters(MethodDefNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
+    private void annotateUnusedParameters(ArgsNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
         annotateParameters(node, highlights, names, ColoringAttributes.UNUSED_SET);
     }
 
+    
     private boolean isUsedInMethod(Node node, String targetName, boolean isParameter) {
         switch (node.getNodeType()) {
-            case FORNODE: {
-                // XXX This is no longer necessary, right? Workaround for the fact that ForNode's childNodes implementation
-                // is wrong - Tom is committing a fix; this is until we pick that fix (SVN #3561)  up
-                Node iterNode = ((ForNode)node).getIter();
-                return iterNode instanceof INameNode && targetName.equals(((INameNode) iterNode).getName());
-            }
-            case ARGUMENTNODE: case DVARNODE: case LOCALVARNODE:
+            /*case ARGUMENTNODE:*/ case DVARNODE: case LOCALVARNODE:
                 return targetName.equals(((INameNode) node).getName());
             case ALIASNODE:
                 return targetName.equals(AstUtilities.getNameOrValue(((AliasNode) node).getOldName()));

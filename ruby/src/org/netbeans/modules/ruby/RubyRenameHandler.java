@@ -59,6 +59,8 @@ import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.AssignableNode;
+import org.jrubyparser.ast.ILocalScope;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -106,8 +108,9 @@ public class RubyRenameHandler implements InstantRenamer {
     public RubyRenameHandler() {
     }
 
-    public boolean isRenameAllowed(ParserResult info, int caretOffset,
-        String[] explanationRetValue) {
+    // FIXME: Some of these semantics are strictly for 1.8 mode...DASGN in a block
+    @Override
+    public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         Node root = AstUtilities.getRoot(info);
 
         if (root == null) {
@@ -117,15 +120,11 @@ public class RubyRenameHandler implements InstantRenamer {
         }
         
         int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-        if (astOffset == -1) {
-            return false;
-        }
+        if (astOffset == -1) return false;
 
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
-        if (closest == null) {
-            return false;
-        }
+        if (closest == null) return false;
 
         if (closest.getNodeType() == NodeType.LOCALVARNODE || closest.getNodeType() == NodeType.LOCALASGNNODE ||
                 closest.getNodeType() == NodeType.DVARNODE || closest.getNodeType() == NodeType.DASGNNODE ||
@@ -136,12 +135,7 @@ public class RubyRenameHandler implements InstantRenamer {
         if (closest.getNodeType() == NodeType.ARGUMENTNODE) {
             Node parent = path.leafParent();
 
-            if (parent != null) {
-                // Make sure it's not a method name
-                if (!(parent instanceof MethodDefNode)) {
-                    return true;
-                }
-            }
+            if (parent != null && !(parent instanceof MethodDefNode)) return true;
         }
 
         //explanationRetValue[0] = NbBundle.getMessage(RubyRenameHandler.class, "NoRename");
@@ -173,27 +167,29 @@ public class RubyRenameHandler implements InstantRenamer {
         return false;
     }
 
+    @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         Node root = AstUtilities.getRoot(info);
-
-        if (root == null) {
-            return Collections.emptySet();
-        }
+        if (root == null) return Collections.emptySet();
 
         Set<OffsetRange> regions = new HashSet<OffsetRange>();
 
         int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-        if (astOffset == -1) {
-            return Collections.emptySet();
-        }
+        if (astOffset == -1) return Collections.emptySet();
 
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
-        if (closest == null) {
-            return Collections.emptySet();
-        }
-
-        if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
+        if (closest == null) return Collections.emptySet();
+        
+        
+        // 1.9-style block declaration: iter { args { argument } } 
+        if (closest.getNodeType() == NodeType.ARGUMENTNODE && path.nthLeafParentIs(3, NodeType.ITERNODE)) {
+            String name = ((INameNode)closest).getName();
+            
+            for (Node block : AstUtilities.getApplicableBlocks(path, true)) {
+                addDynamicVars(info, block, name, regions);
+            }            
+        } else if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
             // A local variable read or a parameter read, or an assignment to one of these
             String name = ((INameNode)closest).getName();
             Node localScope = AstUtilities.findLocalScope(closest, path);
@@ -202,21 +198,16 @@ public class RubyRenameHandler implements InstantRenamer {
                 // Use parent, possibly Grand Parent if we have a newline node in the way
                 localScope = path.leafParent();
 
-                if (localScope.getNodeType() == NodeType.NEWLINENODE) {
-                    localScope = path.leafGrandParent();
-                }
-
-                if (localScope == null) {
-                    localScope = closest;
-                }
+                if (localScope.getNodeType() == NodeType.NEWLINENODE) localScope = path.leafGrandParent();
+                if (localScope == null) localScope = closest;
             }
 
             addLocals(info, localScope, name, regions);
         } else if (closest.getNodeType() == NodeType.DVARNODE || closest.getNodeType() == NodeType.DASGNNODE) {
-            // A dynamic variable read or assignment
+            // 1.8-style block declaration: iter { dasgn }
             String name = ((INameNode)closest).getName();
-            List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
-            for (Node block : applicableBlocks) {
+            
+            for (Node block : AstUtilities.getApplicableBlocks(path, true)) {
                 addDynamicVars(info, block, name, regions);
             }
         } else if (closest.getNodeType() == NodeType.ARGUMENTNODE || closest.getNodeType() == NodeType.BLOCKARGNODE) {
@@ -231,21 +222,14 @@ public class RubyRenameHandler implements InstantRenamer {
                     // Parameter (check to see if its under ArgumentNode)
                     Node method = AstUtilities.findMethod(path);
 
-                    if (method == null) {
-                        method = AstUtilities.findBlock(path);
-                    }
+                    if (method == null) method = AstUtilities.findBlock(path);
 
                     if (method == null) {
                         // Use parent, possibly Grand Parent if we have a newline node in the way
                         method = path.leafParent();
 
-                        if (method.getNodeType() == NodeType.NEWLINENODE) {
-                            method = path.leafGrandParent();
-                        }
-
-                        if (method == null) {
-                            method = closest;
-                        }
+                        if (method.getNodeType() == NodeType.NEWLINENODE) method = path.leafGrandParent();
+                        if (method == null) method = closest;
                     }
 
                     addLocals(info, method, name, regions);
@@ -261,9 +245,7 @@ public class RubyRenameHandler implements InstantRenamer {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) {
-                    ranges.add(range);
-                }
+                if (range != OffsetRange.NONE) ranges.add(range);
             }
         } else if (node.getNodeType() == NodeType.LOCALASGNNODE) {
             if (((INameNode)node).getName().equals(name)) {
@@ -271,85 +253,17 @@ public class RubyRenameHandler implements InstantRenamer {
                 // Adjust end offset to only include the left hand size
                 range = new OffsetRange(range.getStart(), range.getStart() + name.length());
                 range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) {
-                    ranges.add(range);
-                }
+                if (range != OffsetRange.NONE) ranges.add(range);
             }
         } else if (node.getNodeType() == NodeType.ARGSNODE) {
-            ArgsNode an = (ArgsNode)node;
-
-            if (an.getRequiredCount() > 0) {
-                List<Node> args = an.childNodes();
-
-                for (Node arg : args) {
-                    if (arg instanceof ListNode) {
-                        List<Node> args2 = arg.childNodes();
-
-                        for (Node arg2 : args2) {
-                            if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
-                                if (((ArgumentNode)arg2).getName().equals(name)) {
-                                    OffsetRange range = AstUtilities.getRange(arg2);
-                                    range = LexUtilities.getLexerOffsets(info, range);
-                                    if (range != OffsetRange.NONE) {
-                                        ranges.add(range);
-                                    }
-                                }
-                            } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
-                                if (((LocalAsgnNode)arg2).getName().equals(name)) {
-                                    OffsetRange range = AstUtilities.getRange(arg2);
-                                    // Adjust end offset to only include the left hand size
-                                    range = new OffsetRange(range.getStart(), range.getStart() + name.length());
-                                    range = LexUtilities.getLexerOffsets(info, range);
-                                    if (range != OffsetRange.NONE) {
-                                        ranges.add(range);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Rest args
-            if (an.getRest() != null) {
-                ArgumentNode bn = an.getRest();
-
-                if (bn.getName().equals(name)) {
-                    SourcePosition pos = bn.getPosition();
-
-                    // +1: Skip "*" and "&" prefix
-                    OffsetRange range =
-                        new OffsetRange(pos.getStartOffset() + 1, pos.getEndOffset());
-                    range = LexUtilities.getLexerOffsets(info, range);
-                    if (range != OffsetRange.NONE) {
-                        ranges.add(range);
-                    }
-                }
-            }
-
-            if (an.getBlock() != null) {
-                BlockArgNode bn = an.getBlock();
-
-                if (bn.getName().equals(name)) {
-                    SourcePosition pos = bn.getPosition();
-
-                    // +1: Skip "*" and "&" prefix
-                    OffsetRange range =
-                        new OffsetRange(pos.getStartOffset() + 1, pos.getEndOffset());
-                    range = LexUtilities.getLexerOffsets(info, range);
-                    if (range != OffsetRange.NONE) {
-                        ranges.add(range);
-                    }
-                }
-            }
+            addArgsNode(node, name, info, ranges);
         }
 
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+            if (child.isInvisible()) continue;
+
             addLocals(info, child, name, ranges);
         }
     }
@@ -371,43 +285,81 @@ public class RubyRenameHandler implements InstantRenamer {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) {
-                    ranges.add(range);
-                }
+                if (range != OffsetRange.NONE) ranges.add(range);
             }
             break;
         case DASGNNODE:
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                // TODO - AstUtility for this
-                // Adjust end offset to only include the left hand size
-                range = new OffsetRange(range.getStart(), range.getStart() + name.length());
+                OffsetRange range = AstUtilities.offsetRangeFor(((AssignableNode) node).getLeftHandSidePosition());
                 range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) {
-                    ranges.add(range);
-                }
+                if (range != OffsetRange.NONE) ranges.add(range);
             }
             break;
+        case ARGSNODE:
+            addArgsNode(node, name, info, ranges);
         }
 
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            switch (child.getNodeType()) {
-            case ITERNODE:
-            //case BLOCKNODE:
-            case DEFNNODE:
-            case DEFSNODE:
-            case CLASSNODE:
-            case SCLASSNODE:
-            case MODULENODE:
-                continue;
-            }
+            if (child.isInvisible()) continue;
+            if (child instanceof ILocalScope || child.getNodeType() == NodeType.ITERNODE) continue;
 
             addDynamicVars(info, child, name, ranges);
+        }
+    }
+
+    private void addArgsNode(Node node, String name, ParserResult info, Set<OffsetRange> ranges) {
+        ArgsNode an = (ArgsNode)node;
+
+        if (an.getRequiredCount() > 0) {
+            for (Node arg : an.childNodes()) {
+                if (!(arg instanceof ListNode)) continue;
+                for (Node arg2 : arg.childNodes()) {
+                    if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
+                        if (((ArgumentNode)arg2).getName().equals(name)) {
+                            OffsetRange range = AstUtilities.getRange(arg2);
+                            range = LexUtilities.getLexerOffsets(info, range);
+                            if (range != OffsetRange.NONE) ranges.add(range);
+                        }
+                    } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
+                        if (((LocalAsgnNode)arg2).getName().equals(name)) {
+                            OffsetRange range = AstUtilities.getRange(arg2);
+                            // Adjust end offset to only include the left hand size
+                            range = new OffsetRange(range.getStart(), range.getStart() + name.length());
+                            range = LexUtilities.getLexerOffsets(info, range);
+                            if (range != OffsetRange.NONE) ranges.add(range);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Rest args
+        if (an.getRest() != null) {
+            ArgumentNode bn = an.getRest();
+
+            if (bn.getName().equals(name)) {
+                SourcePosition pos = bn.getPosition();
+
+                // +1: Skip "*" and "&" prefix
+                OffsetRange range = new OffsetRange(pos.getStartOffset() + 1, pos.getEndOffset());
+                range = LexUtilities.getLexerOffsets(info, range);
+                if (range != OffsetRange.NONE) ranges.add(range);
+            }
+        }
+
+        if (an.getBlock() != null) {
+            BlockArgNode bn = an.getBlock();
+
+            if (bn.getName().equals(name)) {
+                SourcePosition pos = bn.getPosition();
+
+                // +1: Skip "*" and "&" prefix
+                OffsetRange range = new OffsetRange(pos.getStartOffset() + 1, pos.getEndOffset());
+                range = LexUtilities.getLexerOffsets(info, range);
+                if (range != OffsetRange.NONE) ranges.add(range);
+            }
         }
     }
 }

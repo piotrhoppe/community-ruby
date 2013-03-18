@@ -611,11 +611,15 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
     private void highlightLocal(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof LocalVarNode || node instanceof LocalAsgnNode) {
+        if (node instanceof LocalAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.offsetRangeFor(((AssignableNode) node).getLeftHandSidePosition());
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
+        } else if (node instanceof LocalVarNode) {
+            if (((INameNode)node).getName().equals(name)) {
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
+            }            
         } else if (node instanceof ArgsNode) {
             ArgsNode an = (ArgsNode)node;
 
@@ -629,13 +633,11 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                         for (Node arg2 : args2) {
                             if (arg2 instanceof ArgumentNode) {
                                 if (((ArgumentNode)arg2).getName().equals(name)) {
-                                    OffsetRange range = AstUtilities.getRange(arg2);
-                                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                                    highlights.put(AstUtilities.getRange(arg2), ColoringAttributes.MARK_OCCURRENCES);
                                 }
                             } else if (arg2 instanceof LocalAsgnNode) {
                                 if (((LocalAsgnNode)arg2).getName().equals(name)) {
-                                    OffsetRange range = AstUtilities.getNameRange(arg2);
-                                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                                    highlights.put(AstUtilities.getNameRange(arg2), ColoringAttributes.MARK_OCCURRENCES);
                                 }
                             }
                         }

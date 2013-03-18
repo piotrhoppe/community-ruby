@@ -375,8 +375,8 @@ public abstract class TestBase extends RubyTestBase {
         } else {
             platform = RubyPlatformManager.getDefaultPlatform();
         }
-        assertTrue(platform + " has RubyGems installed", platform.hasRubyGemsInstalled());
-        assertTrue(platform + " has fast debugger installed", platform.hasFastDebuggerInstalled());
+        assertTrue(platform + " does not have RubyGems installed", platform.hasRubyGemsInstalled());
+        assertTrue(platform + " does not have fast debugger installed", platform.hasFastDebuggerInstalled());
         String problems = platform.getFastDebuggerProblemsInHTML();
         assertNull("fast debugger installed: " + problems, problems);
         return platform;

@@ -5,7 +5,7 @@ def |>METHOD:foo<|(|>UNUSED:unusedparam<|, |>UNUSED:unusedparam2<|, |>PARAMETER:
   usedlocal3 = "world"
   |>METHOD:puts<| |>PARAMETER:usedparam<|
   x = []
-  x.each { ||>UNUSED:unusedblockvar1<|, usedblockvar2|
+  x.each { ||>UNUSED:unusedblockvar1<|, |>PARAMETER:usedblockvar2<||
     |>METHOD:puts<| usedblockvar2
     |>METHOD:puts<| usedlocal2
   } 
