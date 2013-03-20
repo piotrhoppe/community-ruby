@@ -2322,9 +2322,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         AstPath path = new AstPath(root, caretOffset);
 
         if (variable.equals(KEY_METHOD)) {
-            Node node = AstUtilities.findMethod(path);
+            MethodDefNode method = path.leaf().getMethodFor();
 
-            if (node != null) return AstUtilities.getDefName(node);
+            if (method != null) method.getName();
         } else if (variable.equals(KEY_METHOD_FQN)) {
             MethodDefNode node = AstUtilities.findMethod(path);
 

@@ -1884,28 +1884,17 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     }
 
     private DeclarationLocation findDynamic(ParserResult info, Node node, String name) {
-        if (node instanceof DAsgnNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                return getLocation(info, node);
-            }
+        if (node instanceof DAsgnNode || node instanceof ArgumentNode && node.isBlockParameter()) {
+            if (((INameNode)node).getName().equals(name)) return getLocation(info, node);
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
-            if (name.equals(newName)) {
-                return getLocation(info, node);
-            }
+            if (name.equals(AstUtilities.getNameOrValue(((AliasNode)node).getNewName()))) return getLocation(info, node);
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findDynamic(info, child, name);
-
-            if (location != DeclarationLocation.NONE) {
-                return location;
-            }
+            if (location != DeclarationLocation.NONE) return location;
         }
 
         return DeclarationLocation.NONE;

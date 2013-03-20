@@ -92,6 +92,7 @@ import org.jrubyparser.ast.IArgumentNode;
 import org.jrubyparser.ast.ILiteralNode;
 import org.jrubyparser.ast.ILocalScope;
 import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.IterNode;
 import org.jrubyparser.ast.LiteralNode;
 import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.NilNode;
@@ -543,11 +544,6 @@ public class AstUtilities {
     public static Node findLocalScope(Node node, AstPath path) {
         Node method = findMethod(path);
         if (method != null) return method;
-
-        for (Node n: path) {
-            if (n instanceof ILocalScope) return n;
-        }
-            
         if (path.root() != null) return path.root();
 
         method = findBlock(path);
@@ -573,18 +569,12 @@ public class AstUtilities {
         return block;
     }
 
-    // Enebo: This method is not what the name or comment says it is?  findOuterMostScope?
+    // Enebo: This method is not what the name or comment says it is?  findOuterMostBlockScope?
     public static Node findBlock(AstPath path) {
-        // Find the most distant block node enclosing the given node (within the current method/class/module).
         Node candidate = null;
         for (Node curr : path) {
-            switch (curr.getNodeType()) {
-            case ITERNODE:
-                candidate = curr;
-                break;
-            case DEFNNODE: case DEFSNODE: case CLASSNODE: case SCLASSNODE: case MODULENODE:
-                return candidate;
-            }
+            if (curr instanceof IterNode) candidate = curr;
+            if (curr instanceof ILocalScope) return candidate;
         }
 
         return candidate;

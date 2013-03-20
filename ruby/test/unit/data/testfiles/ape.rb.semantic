@@ -89,7 +89,7 @@ class Ape
     entry_coll = media_coll = nil
     if collections.length > 0
       |>METHOD:start_list<| "Found these collections"
-      collections.each do |collection|
+      collections.each do ||>PARAMETER:collection<||
         |>METHOD:list_item<| "'#{collection.title}' " +
           "accepts #{collection.accept.join(', ')}"
         if (!entry_coll) && collection.accept.index(Names::AtomEntryMediaType)
@@ -104,8 +104,8 @@ class Ape
 
         if !media_coll
           image_jpeg_ok = false
-          collection.accept.each do |types|
-            types.split(/, */).each do |type|
+          collection.accept.each do ||>PARAMETER:types<||
+            types.split(/, */).each do ||>PARAMETER:type<||
 
               if type == '*/*' || type == 'image/*' || type == 'image/jpeg'
                 image_jpeg_ok = true
@@ -187,7 +187,7 @@ class Ape
     # now the order should have changed
     wanted = [ ids[2], ids[0], ids[1] ]
     entries = Feed.read(|>PARAMETER:coll<|.href, 'MLEs post-update', self, true)
-    entries.each do |from_feed|
+    entries.each do ||>PARAMETER:from_feed<||
       want = wanted.pop
       unless from_feed.child_content('id').eql?(want)
         |>METHOD:error<| "Updating bits failed to re-order link entries in media collection."
@@ -211,7 +211,7 @@ class Ape
     # We'll post three mini entries to the collection
     mini = Samples.mini_entry
     poster = Poster.new(|>PARAMETER:coll<|.href, @authent)
-    ['One', 'Two', 'Three'].each do |num|
+    ['One', 'Two', 'Three'].each do ||>PARAMETER:num<||
       text = mini.gsub('Mini-1', "Mini #{num}")
       name = "Posting Mini #{num}"
       worked = poster.post(Names::AtomMediaType, text)
@@ -227,7 +227,7 @@ class Ape
     wanted = ['Mini One', 'Mini Two', 'Mini Three']
     two = nil
     entries = Feed.read(|>PARAMETER:coll<|.href, 'Entries with multi-post', self, true)
-    entries.each do |from_feed|
+    entries.each do ||>PARAMETER:from_feed<||
       want = wanted.pop
       unless from_feed.child_content('title').index(want)
         |>METHOD:error<| "Entries feed out of order after multi-post."
@@ -256,7 +256,7 @@ class Ape
     # now the order should have changed
     wanted = ['Mini One', 'Mini Three', 'Mini-4']
     entries = Feed.read(|>PARAMETER:coll<|.href, 'Entries post-update', self, true)
-    entries.each do |from_feed|
+    entries.each do ||>PARAMETER:from_feed<||
       want = wanted.pop
       unless from_feed.child_content('title').index(want)
         |>METHOD:error<| "Entries feed out of order after update of multi-post."
@@ -350,7 +350,7 @@ class Ape
 
     # * See if the slug was used
     slug_used = false
-    new_entry.alt_links.each do |a|
+    new_entry.alt_links.each do ||>PARAMETER:a<||
       href = a.attributes['href']
       if href && href.index(slug_re)
         slug_used = true
@@ -594,7 +594,7 @@ class Ape
   # Fetch a feed and look up an entry by ID in it
   def |>METHOD:find_entry<|(|>PARAMETER:feed_uri<|, |>PARAMETER:name<|, |>PARAMETER:id<|, |>PARAMETER:report<|=false)
     entries = Feed.read(|>PARAMETER:feed_uri<|, |>PARAMETER:name<|, self, |>PARAMETER:report<|)
-    entries.each do |from_feed|
+    entries.each do ||>PARAMETER:from_feed<||
       return from_feed if |>PARAMETER:id<| == from_feed.child_content('id')
     end
 
@@ -646,7 +646,7 @@ class Ape
   end
 
   def |>METHOD:show_crumbs<| |>PARAMETER:key<|
-    @dialogs[|>PARAMETER:key<|].each do |d|
+    @dialogs[|>PARAMETER:key<|].each do ||>PARAMETER:d<||
       |>METHOD:puts<| "D: #{d}"
     end
   end
@@ -737,7 +737,7 @@ class Ape
         end
         @w.ol do
           @w.text! "\n"
-          @steps.each do |step|
+          @steps.each do ||>PARAMETER:step<||
             if step.kind_of? Array
               # it's a list; no dialog applies
               @w.li do
@@ -746,7 +746,7 @@ class Ape
                   @w.text! " #{step[0]}\n"
                 end
                 @w.ul do
-                  step[1 .. -1].each { |li| |>METHOD:report_li<|(nil, nil, li) }
+                  step[1 .. -1].each { ||>PARAMETER:li<|| |>METHOD:report_li<|(nil, nil, li) }
                 end
                 @w.text! "\n"
               end
@@ -778,7 +778,7 @@ class Ape
         if @dialogs
           @w.h2 { @w.text! 'Recorded client/server dialogs' }
           @w.text! "\n"
-          @diarefs.each do |k, v|
+          @diarefs.each do ||>PARAMETER:k<|, |>PARAMETER:v<||
             dialog = @dialogs[k]
             @w.h3(:id => "dia-#{v}") do
               @w.text! k
@@ -787,11 +787,11 @@ class Ape
 
               @w.div(:class => 'dialab') do
                 @w.text! "\nTo server:\n"
-                dialog.grep(/^>/).each { |crumb| |>METHOD:show_message<|(crumb, :to) }
+                dialog.grep(/^>/).each { ||>PARAMETER:crumb<|| |>METHOD:show_message<|(crumb, :to) }
               end
               @w.div( :class => 'dialab' ) do
                 @w.text! "\nFrom Server:\n"
-                dialog.grep(/^</).each { |crumb| |>METHOD:show_message<|(crumb, :from) }
+                dialog.grep(/^</).each { ||>PARAMETER:crumb<|| |>METHOD:show_message<|(crumb, :from) }
               end
             end
           end
@@ -809,7 +809,7 @@ class Ape
         end
         # preserve line-breaks in output
         lines = |>PARAMETER:text<|.split("\n")
-        lines[0 .. -2].each do |line|
+        lines[0 .. -2].each do ||>PARAMETER:line<||
           @w.text! line
           @w.br
         end
@@ -843,7 +843,7 @@ class Ape
     @steps.each do |step|
       if step.class == Crumbs
         |>METHOD:puts<| "   Dialog:"
-        step.each { |crumb| |>METHOD:puts<| "     #{crumb}" }
+        step.each { ||>PARAMETER:crumb<|| |>METHOD:puts<| "     #{crumb}" }
       else
         body = step[1 .. -1]
         case step[0,1]
@@ -876,8 +876,8 @@ class Ape
 
   def |>METHOD:compare_entries<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|)
     problems = 0
-    [ 'title', 'summary', 'content' ].each do |field|
-      problems += 1 if |>METHOD:compare1<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|, field)
+    [ 'title', 'summary', 'content' ].each do ||>PARAMETER:field<||
+      problems += 1 if |>METHOD:compare1<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|, |>PARAMETER:field<|)
     end
     return problems == 0
   end

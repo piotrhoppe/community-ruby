@@ -6,6 +6,7 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   check_resource:METHOD:[PUBLIC]:ESCAPED{check_resource}(PARAMETERS{ESCAPED{uri}, ESCAPED{name}, ESCAPED{content_type}, ESCAPED{report}})<font color='#777777'> : ESCAPED{NilClass, Getter}</font>:
   compare1:METHOD:[PUBLIC]:ESCAPED{compare1}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}, ESCAPED{field}})<font color='#777777'> : ESCAPED{TrueClass}</font>:
   compare_entries:METHOD:[PUBLIC]:ESCAPED{compare_entries}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
+  debugging:FIELD:[STATIC]:ESCAPED{debugging}:
   dialogs:FIELD:[PRIVATE]:ESCAPED{dialogs}:
   dianum:FIELD:[PRIVATE]:ESCAPED{dianum}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   diarefs:FIELD:[PRIVATE]:ESCAPED{diarefs}<font color='#777777'> : ESCAPED{Hash}</font>:
@@ -28,7 +29,7 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   report_html:METHOD:[PUBLIC]:ESCAPED{report_html}(PARAMETERS{ESCAPED{output}}):
   report_li:METHOD:[PUBLIC]:ESCAPED{report_li}(PARAMETERS{ESCAPED{dialog}, ESCAPED{marker}, ESCAPED{text}}):
   report_text:METHOD:[PUBLIC]:ESCAPED{report_text}<font color='#777777'> : ESCAPED{Array}</font>:
-  save_dialog:METHOD:[PUBLIC]:ESCAPED{save_dialog}(PARAMETERS{ESCAPED{name}, ESCAPED{actor}})<font color='#777777'> : ESCAPED{Array}</font>:
+  save_dialog:METHOD:[PUBLIC]:ESCAPED{save_dialog}(PARAMETERS{ESCAPED{name}, ESCAPED{actor}}):
   show_crumbs:METHOD:[PUBLIC]:ESCAPED{show_crumbs}(PARAMETERS{ESCAPED{key}}):
   show_message:METHOD:[PUBLIC]:ESCAPED{show_message}(PARAMETERS{ESCAPED{crumb}, ESCAPED{tf}}):
   start_list:METHOD:[PUBLIC]:ESCAPED{start_list}(PARAMETERS{ESCAPED{message}})<font color='#777777'> : ESCAPED{Array}</font>:
