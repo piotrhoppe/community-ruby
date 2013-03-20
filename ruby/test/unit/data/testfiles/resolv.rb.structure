@@ -57,7 +57,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         put_bytes:METHOD:[PUBLIC]:ESCAPED{put_bytes}(PARAMETERS{ESCAPED{d}}):
         put_label:METHOD:[PUBLIC]:ESCAPED{put_label}(PARAMETERS{ESCAPED{d}}):
         put_labels:METHOD:[PUBLIC]:ESCAPED{put_labels}(PARAMETERS{ESCAPED{d}}):
-        put_length16:METHOD:[PUBLIC]:ESCAPED{put_length16}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+        put_length16:METHOD:[PUBLIC]:ESCAPED{put_length16}:
         put_name:METHOD:[PUBLIC]:ESCAPED{put_name}(PARAMETERS{ESCAPED{d}}):
         put_pack:METHOD:[PUBLIC]:ESCAPED{put_pack}(PARAMETERS{ESCAPED{template}, ESCAPED{*d}}):
         put_string:METHOD:[PUBLIC]:ESCAPED{put_string}(PARAMETERS{ESCAPED{d}}):
@@ -79,6 +79,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       each_resource:METHOD:[PUBLIC]:ESCAPED{each_resource}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       encode:METHOD:[PUBLIC]:ESCAPED{encode}<font color='#777777'> : ESCAPED{String}</font>:
       id:ATTRIBUTE:[PUBLIC]:ESCAPED{id}:
+      identifier:FIELD:[STATIC]:ESCAPED{identifier}:
       identifier:FIELD:[STATIC]:ESCAPED{identifier}:
       initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{id}})<font color='#777777'> : ESCAPED{Array}</font>:
       opcode:ATTRIBUTE:[PUBLIC]:ESCAPED{opcode}<font color='#777777'> : ESCAPED{Fixnum}</font>:
@@ -176,8 +177,6 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       delete:METHOD:[PUBLIC]:ESCAPED{delete}(PARAMETERS{ESCAPED{arg}})<font color='#777777'> : ESCAPED{Hash}</font>:
       initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}<font color='#777777'> : ESCAPED{Hash}</font>:
       senders:FIELD:[PRIVATE]:ESCAPED{senders}<font color='#777777'> : ESCAPED{Hash}</font>:
-      sock:FIELD:[PRIVATE]:ESCAPED{sock}<font color='#777777'> : ESCAPED{TCPSocket}</font>:
-      thread:FIELD:[PRIVATE]:ESCAPED{thread}<font color='#777777'> : ESCAPED{Thread}</font>:
     Resource:CLASS:[]:ESCAPED{Resource}:
       ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
       ANY:CLASS:[]:ESCAPED{ANY}:

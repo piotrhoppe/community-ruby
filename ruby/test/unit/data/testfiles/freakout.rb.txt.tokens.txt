@@ -1,12 +1,12 @@
 .t.e.s.t. Heredocs
-IDENTIFIER      "x", la=1, st=3
+IDENTIFIER      "x", la=1, st=EXPR_CMDARG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_CMDARG,null,null]
-NONUNARY_OP     "=", la=1, st=0
+NONUNARY_OP     "=", la=1, st=EXPR_BEG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-IDENTIFIER      "method_call", la=1, st=2
+IDENTIFIER      "method_call", la=1, st=EXPR_ARG
 LPAREN          "(", st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-INT_LITERAL     "50", la=1, st=1
-IDENTIFIER      ",", st=0
+INT_LITERAL     "50", la=1, st=EXPR_END
+IDENTIFIER      ",", st=EXPR_BEG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
 STRING_BEGIN    "<<TOKEN1", la=1, st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
 IDENTIFIER      ",", st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]

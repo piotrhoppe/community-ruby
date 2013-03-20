@@ -270,7 +270,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 Node method = AstUtilities.findLocalScope(closest, path);
 
                 highlightLocal(method, name, highlights);
-            } else if (closest instanceof DAsgnNode) {
+            } else if (closest instanceof DAsgnNode || closest instanceof ArgumentNode && closest.isBlockParameter()) {
                 // A dynamic variable read or assignment
                 String name = ((INameNode)closest).getName();
                 List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
@@ -689,6 +689,11 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         switch (node.getNodeType()) {
         case DVARNODE:
             if (((INameNode)node).getName().equals(name)) {
+                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
+            }
+            break;
+        case ARGUMENTNODE:
+            if (((INameNode)node).getName().equals(name) && node.isBlockParameter()) {
                 highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
             break;

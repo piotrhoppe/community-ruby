@@ -61,6 +61,7 @@ import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
 import org.jrubyparser.ast.AssignableNode;
 import org.jrubyparser.ast.ILocalScope;
+import org.jrubyparser.ast.ILocalVariable;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -108,59 +109,24 @@ public class RubyRenameHandler implements InstantRenamer {
     public RubyRenameHandler() {
     }
 
-    // FIXME: Some of these semantics are strictly for 1.8 mode...DASGN in a block
     @Override
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         Node root = AstUtilities.getRoot(info);
 
         if (root == null) {
             explanationRetValue[0] = NbBundle.getMessage(RubyRenameHandler.class, "NoRenameWithErrors");
-
             return false;
         }
-        
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-        if (astOffset == -1) return false;
 
-        AstPath path = new AstPath(root, astOffset);
-        Node closest = path.leaf();
+        Node closest = root.getNodeAt(AstUtilities.getAstOffset(info, caretOffset));
         if (closest == null) return false;
+        if (closest instanceof ILocalVariable) return true;  // All local block/method vars can be renamed
 
-        if (closest.getNodeType() == NodeType.LOCALVARNODE || closest.getNodeType() == NodeType.LOCALASGNNODE ||
-                closest.getNodeType() == NodeType.DVARNODE || closest.getNodeType() == NodeType.DASGNNODE ||
-                closest.getNodeType() == NodeType.BLOCKARGNODE) {
-            return true;
-        }
-
-        if (closest.getNodeType() == NodeType.ARGUMENTNODE) {
-            Node parent = path.leafParent();
-
-            if (parent != null && !(parent instanceof MethodDefNode)) return true;
-        }
-
-        //explanationRetValue[0] = NbBundle.getMessage(RubyRenameHandler.class, "NoRename");
-        //return false;
         switch (closest.getNodeType()) {
-        case INSTASGNNODE:
-        case INSTVARNODE:
-        case CLASSVARDECLNODE:
-        case CLASSVARNODE:
-        case CLASSVARASGNNODE:
-        case GLOBALASGNNODE:
-        case GLOBALVARNODE:
-        case CONSTDECLNODE:
-        case CONSTNODE:
-        case DEFNNODE:
-        case DEFSNODE:
-        case FCALLNODE:
-        case CALLNODE:
-        case VCALLNODE:
-        case ARGUMENTNODE:
-        case COLON2NODE:
-        case COLON3NODE:
-        case ALIASNODE:
-        case SYMBOLNODE:
-            // TODO - what about the string arguments in an alias node? Gotta check those
+        case INSTASGNNODE: case INSTVARNODE: case CLASSVARDECLNODE: case CLASSVARNODE: case CLASSVARASGNNODE:
+        case GLOBALASGNNODE: case GLOBALVARNODE: case CONSTDECLNODE: case CONSTNODE: case DEFNNODE: case DEFSNODE:
+        case FCALLNODE: case CALLNODE: case VCALLNODE: case COLON2NODE: case COLON3NODE: case ALIASNODE:
+        case SYMBOLNODE: // TODO - what about the string arguments in an alias node? Gotta check those
             return true;
         }
 
@@ -180,11 +146,9 @@ public class RubyRenameHandler implements InstantRenamer {
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
         if (closest == null) return Collections.emptySet();
-        
-        
-        // 1.9-style block declaration: iter { args { argument } } 
-        if (closest.getNodeType() == NodeType.ARGUMENTNODE && path.nthLeafParentIs(3, NodeType.ITERNODE)) {
-            String name = ((INameNode)closest).getName();
+
+        if (closest.isBlockParameter()) {
+            String name = ((INameNode) closest).getName();
             
             for (Node block : AstUtilities.getApplicableBlocks(path, true)) {
                 addDynamicVars(info, block, name, regions);
@@ -283,8 +247,7 @@ public class RubyRenameHandler implements InstantRenamer {
         switch (node.getNodeType()) {
         case DVARNODE:
             if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                range = LexUtilities.getLexerOffsets(info, range);
+                OffsetRange range = LexUtilities.getLexerOffsets(info, AstUtilities.getRange(node));
                 if (range != OffsetRange.NONE) ranges.add(range);
             }
             break;

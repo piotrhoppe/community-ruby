@@ -1,32 +1,32 @@
 .t.e.s.t. heredoc
-LINE_COMMENT    "# Boiled down code snippet from postgresql_adapter.rb which trips up the\n", st=0
-LINE_COMMENT    "# lexer; the query call is not properly lexed\n", st=0
-MODULE          "module", la=1, st=0
+LINE_COMMENT    "# Boiled down code snippet from postgresql_adapter.rb which trips up the\n", st=EXPR_BEG
+LINE_COMMENT    "# lexer; the query call is not properly lexed\n", st=EXPR_BEG
+MODULE          "module", la=1, st=EXPR_BEG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-CONSTANT        "ActiveRecord", la=1, st=2
+CONSTANT        "ActiveRecord", la=1, st=EXPR_ARG
 WHITESPACE      "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
 WHITESPACE      "  ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-DEF             "def", la=1, st=6
+DEF             "def", la=1, st=EXPR_FNAME
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_FNAME,null,null]
-IDENTIFIER      "indexes", la=1, st=1
+IDENTIFIER      "indexes", la=1, st=EXPR_END
 LPAREN          "(", st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-IDENTIFIER      "table_name", la=1, st=3
-IDENTIFIER      ",", st=0
+IDENTIFIER      "table_name", la=1, st=EXPR_CMDARG
+IDENTIFIER      ",", st=EXPR_BEG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-IDENTIFIER      "name", la=1, st=2
+IDENTIFIER      "name", la=1, st=EXPR_ARG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_ARG,null,null]
-NONUNARY_OP     "=", la=1, st=0
+NONUNARY_OP     "=", la=1, st=EXPR_BEG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-ANY_KEYWORD     "nil", la=1, st=1
-RPAREN          ")", st=1
+ANY_KEYWORD     "nil", la=1, st=EXPR_END
+RPAREN          ")", st=EXPR_END
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_END,null,null]
 LINE_COMMENT    "#:nodoc:\n", st=RubyLexerState[commandstart|spaceseen,null,EXPR_BEG,null,null]
 WHITESPACE      "    ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-IDENTIFIER      "result", la=1, st=2
+IDENTIFIER      "result", la=1, st=EXPR_ARG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_ARG,null,null]
-NONUNARY_OP     "=", la=1, st=0
+NONUNARY_OP     "=", la=1, st=EXPR_BEG
 WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-IDENTIFIER      "query", la=1, st=2
+IDENTIFIER      "query", la=1, st=EXPR_ARG
 LPAREN          "(", st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
 STRING_BEGIN    "<<-SQL", la=1, st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[34,SQL,null,0],end:true,term:HeredocTerm[34,SQL,null,0]]
 IDENTIFIER      ",", st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[34,SQL,null,0],end:true,term:HeredocTerm[34,SQL,null,0]]
