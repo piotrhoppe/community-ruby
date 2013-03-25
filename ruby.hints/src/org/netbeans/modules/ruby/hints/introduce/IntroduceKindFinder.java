@@ -44,8 +44,9 @@ package org.netbeans.modules.ruby.hints.introduce;
 import org.netbeans.modules.ruby.ParseTreeVisitor;
 import java.util.ArrayList;
 import java.util.List;
+import org.jrubyparser.ast.IterNode;
 import org.jrubyparser.ast.Node;
-import org.jrubyparser.ast.NodeType;
+import static org.jrubyparser.ast.NodeType.ARGSNODE;
 
 /**
  * Finder which determines if the given range in the AST represents a valid range for
@@ -60,6 +61,7 @@ class IntroduceKindFinder implements ParseTreeVisitor {
     private boolean invalid;
     private boolean simple = true;
 
+    @Override
     public boolean visit(Node node) {
         switch (node.getNodeType()) {
         // I can't handle these kinds of flow control yet:
@@ -101,13 +103,15 @@ class IntroduceKindFinder implements ParseTreeVisitor {
             seenMethod = true;
             break;
 
+        case ARGSNODE:
+            if (node.getPosition().isEmpty()) break; // Empty arg lists do not affect this
+            if (node.getParent() instanceof IterNode) break; // 1.9 blocks are args nodes and not masgn like 1.8
         case DEFNNODE:
         case DEFSNODE:
         case MODULENODE:
         case CLASSNODE:
         case SCLASSNODE:
         case ARGSCATNODE:
-        case ARGSNODE:
         case ARGSPUSHNODE:
             invalid = true;
             break;
@@ -169,9 +173,7 @@ class IntroduceKindFinder implements ParseTreeVisitor {
     }
 
     public List<IntroduceKind> getKinds() {
-        if (invalid) {
-            return null;
-        }
+        if (invalid) return null;
 
         List<IntroduceKind> kinds = new ArrayList<IntroduceKind>();
 

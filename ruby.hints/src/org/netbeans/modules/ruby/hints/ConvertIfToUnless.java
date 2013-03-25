@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
+import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.IfNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
@@ -84,118 +85,125 @@ import org.openide.util.NbBundle;
  */
 public class ConvertIfToUnless extends RubyAstRule {
 
+    @Override
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.IFNODE);
     }
+    
+    private boolean isConvertible(RubyRuleContext context, IfNode ifNode) {
+        Node condition = ifNode.getCondition();
 
+        // Can happen for this code: if (); end (typically while editing)
+        if (condition == null) return false;
+        
+        // Can't convert if !x/elseif blocks
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().getNodeType() == NodeType.IFNODE) return false;
+        
+        return isConditionANot(condition);
+    }
+    
+    public static Node getNotNodeFrom(Node condition) {
+        // If's like to wrap conditions in a top-level newline node.
+        if (condition.getNodeType() == NodeType.NEWLINENODE) condition = condition.childNodes().get(0);
+        if (condition.getNodeType() == NodeType.NOTNODE) return condition; // 1.8 as keywork
+        if (condition.getNodeType() == NodeType.CALLNODE) {  // 1.9 as method(s)
+            CallNode call = (CallNode) condition;
+            
+            if ("not".equals(call.getName())) return call;
+            if ("!".equals(call.getName())) return call;
+            if ("!=".equals(call.getName())) return call;
+        }
+        
+        return null;
+    }
+    
+    private boolean isConditionANot(Node condition) {
+        return getNotNodeFrom(condition) != null;
+    }
+
+    @Override
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         ParserResult info = context.parserResult;
 
         IfNode ifNode = (IfNode) node;
-
-        // Convert unless blocks?
-        Node condition = ifNode.getCondition();
-        if (condition == null) {
-            // Can happen for this code:
-            //   if ()
-            //   end
-            // (typically while editing)
-            return;
-        }
         
-        // Can't convert if !x/elseif blocks
-        if (ifNode.getElseBody() != null && ifNode.getElseBody().getNodeType() == NodeType.IFNODE) {
-            return;
-        }
-        
-        if (condition.getNodeType() == NodeType.NOTNODE ||
-                (condition.getNodeType() == NodeType.NEWLINENODE &&
-                condition.childNodes().size() == 1 &&
-                condition.childNodes().get(0).getNodeType() == NodeType.NOTNODE)) {
-            try {
-                BaseDocument doc = context.doc;
-                int keywordOffset = findKeywordOffset(context, ifNode);
-                if (keywordOffset == -1 || keywordOffset > doc.getLength() - 1) {
-                    return;
+        if (!isConvertible(context, ifNode)) return;
+
+        try {
+            BaseDocument doc = context.doc;
+            int keywordOffset = findKeywordOffset(context, ifNode);
+            if (keywordOffset == -1 || keywordOffset > doc.getLength() - 1) return;
+
+            OffsetRange range = AstUtilities.getRange(node);
+
+            if (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) {
+                // Make sure that we're in a single contiguous Ruby section; if not, this won't work
+                range = LexUtilities.getLexerOffsets(info, range);
+                if (range == OffsetRange.NONE) return;
+
+                try {
+                    doc.readLock();
+                    TokenHierarchy th = TokenHierarchy.get(doc);
+                    TokenSequence ts = th.tokenSequence();
+                    ts.move(range.getStart());
+                    if (!ts.moveNext() && !ts.movePrevious()) return;
+
+                    if (ts.offset() + ts.token().length() < range.getEnd()) return;
+                } finally {
+                    doc.readUnlock();
                 }
-
-                OffsetRange range = AstUtilities.getRange(node);
-
-                if (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) {
-                    // Make sure that we're in a single contiguous Ruby section; if not, this won't work
-                    range = LexUtilities.getLexerOffsets(info, range);
-                    if (range == OffsetRange.NONE) {
-                        return;
-                    }
-
-                    try {
-                        doc.readLock();
-                        TokenHierarchy th = TokenHierarchy.get(doc);
-                        TokenSequence ts = th.tokenSequence();
-                        ts.move(range.getStart());
-                        if (!ts.moveNext() && !ts.movePrevious()) {
-                            return;
-                        }
-
-                        if (ts.offset()+ts.token().length() < range.getEnd()) {
-                            return;
-                        }
-                    } finally {
-                        if (doc != null) {
-                            doc.readUnlock();
-                        }
-                    }
-                }
-
-                ConvertToUnlessFix fix = new ConvertToUnlessFix(context, ifNode);
-                
-                // Make sure we can actually perform the edit
-                if (fix.getEditList() == null) {
-                    return;
-                }
-                
-                List<HintFix> fixes = Collections.<HintFix>singletonList(fix);
-
-                String displayName = NbBundle.getMessage(ConvertIfToUnless.class,
-                        "ConvertIfToUnless");
-                Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range,
-                        fixes, 500);
-                result.add(desc);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
             }
+
+            ConvertToUnlessFix fix = new ConvertToUnlessFix(context, ifNode);
+            if (fix.getEditList() == null) return;  // Make sure we can actually perform the edit
+
+            List<HintFix> fixes = Collections.<HintFix>singletonList(fix);
+
+            String displayName = NbBundle.getMessage(ConvertIfToUnless.class, "ConvertIfToUnless");
+            result.add(new Hint(this, displayName, RubyUtils.getFileObject(info), range, fixes, 500));
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
     }
 
+    @Override
     public String getId() {
         return "ConvertIfToUnless"; // NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(ConvertIfToUnless.class, "ConvertIfToUnlessDesc");
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ConvertIfToUnless.class, "ConvertIfToUnless");
     }
 
+    @Override
     public boolean showInTasklist() {
         return false;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
@@ -215,9 +223,7 @@ public class ConvertIfToUnless extends RubyAstRule {
             // Make sure it's not "elsif"
             if (lexIfOffset > 3) {
                 statement = doc.getText(lexIfOffset-3, 5);
-                if ("elsif".equals(statement)) {
-                    return -1;
-                }
+                if ("elsif".equals(statement)) return -1;
             }
             return lexIfOffset;
         } else if (statement.equals("un")) {
@@ -252,6 +258,7 @@ public class ConvertIfToUnless extends RubyAstRule {
             this.ifNode = ifNode;
         }
 
+        @Override
         public String getDescription() {
             String lif = "if"; // NOI18N
             String lunless = "unless"; // NOI18N
@@ -267,30 +274,21 @@ public class ConvertIfToUnless extends RubyAstRule {
             return NbBundle.getMessage(ConvertIfToUnless.class, "ConvertIfToUnlessFix", from, to);
         }
 
+        @Override
         public void implement() throws Exception {
             EditList edits = getEditList();
-            if (edits != null) {
-                edits.apply();
-            }
+            if (edits != null) edits.apply();
         }
-
+        
+        @Override
         public EditList getEditList() {
             BaseDocument doc = context.doc;
 
             try {
-                Node notNode = ifNode.getCondition();
-                if (notNode.getNodeType() != NodeType.NOTNODE) {
-                    assert notNode.getNodeType() == NodeType.NEWLINENODE;
-                    Node firstChild = notNode.childNodes().size() == 1 ?
-                        notNode.childNodes().get(0) : null;
-                    if (firstChild != null && firstChild.getNodeType() == NodeType.NOTNODE) {
-                        notNode = firstChild;
-                    } else {
-                        // Unexpected!
-                        assert false : firstChild;
-                        return null;
-                    }
-
+                Node notNode = getNotNodeFrom(ifNode.getCondition());
+                if (notNode == null) {
+                    assert false: ifNode.getCondition(); // SHOULD NEVER HAPPEN
+                    return null;
                 }
 
                 int deleteSize = 1;
@@ -298,15 +296,11 @@ public class ConvertIfToUnless extends RubyAstRule {
                 ParserResult info = context.parserResult;
                 int astNotOffset = AstUtilities.getRange(notNode).getStart();
                 int lexNotOffset = LexUtilities.getLexerOffset(info, astNotOffset);
-                if (lexNotOffset == -1 || lexNotOffset > doc.getLength()-1) {
-                    return null;
-                }
+                if (lexNotOffset == -1 || lexNotOffset > doc.getLength()-1) return null;
 
                 int astIfOffset = ifNode.getPosition().getStartOffset();
                 int lexIfOffset = LexUtilities.getLexerOffset(info, astIfOffset);
-                if (lexIfOffset == -1 || lexIfOffset > doc.getLength()) {
-                    return null;
-                }
+                if (lexIfOffset == -1 || lexIfOffset > doc.getLength()) return null;
 
                 boolean isEqualComparison = false;
                 char c = doc.getText(lexNotOffset, 1).charAt(0);
@@ -378,14 +372,17 @@ public class ConvertIfToUnless extends RubyAstRule {
             }
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
 
+        @Override
         public boolean canPreview() {
             return true;
         }

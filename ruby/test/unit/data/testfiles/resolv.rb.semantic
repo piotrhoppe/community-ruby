@@ -315,7 +315,7 @@ class Resolv
               }
             }
           }
-          @name2addr.each {||>UNUSED:name<|, arr| arr.reverse!}
+          @name2addr.each {||>UNUSED:name<|, |>PARAMETER:arr<|| arr.reverse!}
           @initialized = true
         end
       }
@@ -423,7 +423,7 @@ class Resolv
     end
 
     def |>METHOD:each_address<|(|>PARAMETER:name<|)
-      |>METHOD:each_resource<|(|>PARAMETER:name<|, Resource::IN::A) {|resource| yield resource.address}
+      |>METHOD:each_resource<|(|>PARAMETER:name<|, Resource::IN::A) {||>PARAMETER:resource<|| yield resource.address}
     end
 
     def |>METHOD:getname<|(|>PARAMETER:address<|)
@@ -448,17 +448,17 @@ class Resolv
       else
         |>METHOD:raise<| ResolvError.new("cannot interpret as address: #{|>PARAMETER:address<|}")
       end
-      |>METHOD:each_resource<|(ptr, Resource::IN::PTR) {|resource| yield resource.name}
+      |>METHOD:each_resource<|(ptr, Resource::IN::PTR) {||>PARAMETER:resource<|| yield resource.name}
     end
 
     def |>METHOD:getresource<|(|>PARAMETER:name<|, |>PARAMETER:typeclass<|)
-      |>METHOD:each_resource<|(|>PARAMETER:name<|, |>PARAMETER:typeclass<|) {|resource| return resource}
+      |>METHOD:each_resource<|(|>PARAMETER:name<|, |>PARAMETER:typeclass<|) {||>PARAMETER:resource<|| return resource}
       |>METHOD:raise<| ResolvError.new("DNS result has no information for #{|>PARAMETER:name<|}")
     end
 
     def |>METHOD:getresources<|(|>PARAMETER:name<|, |>PARAMETER:typeclass<|)
       ret = []
-      |>METHOD:each_resource<|(|>PARAMETER:name<|, |>PARAMETER:typeclass<|) {|resource| ret << resource}
+      |>METHOD:each_resource<|(|>PARAMETER:name<|, |>PARAMETER:typeclass<|) {||>PARAMETER:resource<|| ret << resource}
       return ret
     end
 
@@ -467,7 +467,7 @@ class Resolv
       q = Queue.new
       senders = {}
       begin
-        @config.resolv(|>PARAMETER:name<|) {|candidate, tout, nameserver|
+        @config.resolv(|>PARAMETER:name<|) {||>PARAMETER:candidate<|, |>PARAMETER:tout<|, |>PARAMETER:nameserver<||
           msg = Message.new
           msg.rd = 1
           msg.add_question(candidate, |>PARAMETER:typeclass<|)
@@ -1136,13 +1136,13 @@ class Resolv
             @answer.length,
             @authority.length,
             @additional.length)
-          @question.each {|q|
+          @question.each {||>PARAMETER:q<||
             name, typeclass = q
             msg.put_name(name)
             msg.put_pack('nn', typeclass::TypeValue, typeclass::ClassValue)
           }
           [@answer, @authority, @additional].each {||>PARAMETER:rr<||
-            rr.each {|r|
+            rr.each {||>PARAMETER:r<||
               name, ttl, data = r
               msg.put_name(name)
               msg.put_pack('nnN', data.class::TypeValue, data.class::ClassValue, ttl)
@@ -1584,7 +1584,7 @@ class Resolv
       module IN
         ClassValue = 1
 
-        ClassInsensitiveTypes.each {|s|
+        ClassInsensitiveTypes.each {||>PARAMETER:s<||
           c = Class.new(s)
           c.const_set(:TypeValue, s::TypeValue)
           c.const_set(:ClassValue, ClassValue)

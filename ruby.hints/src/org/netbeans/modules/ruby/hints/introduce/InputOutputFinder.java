@@ -56,6 +56,9 @@ import org.jrubyparser.ast.MultipleAsgnNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.IterNode;
+import org.jrubyparser.ast.MultipleAsgn19Node;
+import static org.jrubyparser.ast.NodeType.MULTIPLEASGNNODE;
 
 /** 
  * This visitor computes the set of input and output variables required by
@@ -94,9 +97,8 @@ class InputOutputVarFinder implements ParseTreeVisitor {
     public Set<String> getInputVars() {
         UsageScope scope = methodScope;
         for (UsageScope s : blockScopes.values()) {
-            if (s.block != null && !applicableBlocks.contains(s.block)) {
-                continue;
-            }
+            if (s.block != null && !applicableBlocks.contains(s.block)) continue;
+
             scope.merge(s);
         }
         
@@ -119,9 +121,8 @@ class InputOutputVarFinder implements ParseTreeVisitor {
     public Set<String> getOutputVars() {
         UsageScope scope = methodScope;
         for (UsageScope s : blockScopes.values()) {
-            if (s.block != null && !applicableBlocks.contains(s.block)) {
-                continue;
-            }
+            if (s.block != null && !applicableBlocks.contains(s.block)) continue;
+
             scope.merge(s);
         }
         
@@ -131,12 +132,13 @@ class InputOutputVarFinder implements ParseTreeVisitor {
         return outputs;
     }
 
+    @Override
     public boolean visit(Node node) {
-        if (node == startNode) {
-            when = WHEN_DURING;
-        } 
+        if (node == startNode) when = WHEN_DURING;
+
         switch (node.getNodeType()) {
         case ARGSNODE: {
+            if (node.getPosition().isEmpty() || node.getParent() instanceof IterNode) return true;
             assert when == WHEN_BEFORE; // Is this true when I extract a whole method? I can't do that, right?
 
             // TODO - use AstUtilities.getDefArgs here - but avoid hitting them twice!
@@ -184,30 +186,18 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             blockScope = new UsageScope(currentBlock);
             blockScopes.put(currentBlock, blockScope);
             
-            if (when == WHEN_DURING) {
-                applicableBlocks.add(node);
-            }
+            if (when == WHEN_DURING) applicableBlocks.add(node);
             break;
         }
-        case DEFNNODE:
-        case DEFSNODE:
-        case CLASSNODE:
-        case SCLASSNODE:
-        case MODULENODE:
-            // We're probably extracting from within the top level of a file or class;
-            // don't look into methods
+        case DEFNNODE: case DEFSNODE: case CLASSNODE: case SCLASSNODE: case MODULENODE:
+            // We're probably extracting from within the top level of a file or class; don't look into methods
             return when != WHEN_BEFORE;
-                
-        case DVARNODE: {
-            String name = ((INameNode)node).getName();
-            blockScope.read(name);
+        case DVARNODE:
+            blockScope.read(((INameNode)node).getName());
             break;
-        }
-        case LOCALVARNODE: {
-            String name = ((INameNode)node).getName();
-            methodScope.read(name);
+        case LOCALVARNODE:
+            methodScope.read(((INameNode)node).getName());
             break;
-        }
         case MULTIPLEASGNNODE: {
             // I need to visit the right-hand-side children nodes of this assignment first to ensure that
             // in this:
@@ -217,15 +207,20 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             if (multiple.getValue() != null) new ParseTreeWalker(this).walk(multiple.getValue());
             break;
         }
+        case MULTIPLEASGN19NODE: {
+            MultipleAsgn19Node multiple = (MultipleAsgn19Node)node;
+            if (multiple.getValue() != null) new ParseTreeWalker(this).walk(multiple.getValue());
+            break;
+        }            
         case WHENNODE:
-        case IFNODE: {
+        case IFNODE:
             ifs++;
-        }
         }
 
         return false;
     }
 
+    @Override
     public boolean unvisit(Node node) {
         switch (node.getNodeType()) {
         case ITERNODE: {

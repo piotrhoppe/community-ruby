@@ -384,7 +384,7 @@ class Date
       (|>PARAMETER:d<| - 1)
   end
 
-  %w(self.clfloor clfloor).each do |name|
+  %w(self.clfloor clfloor).each do ||>PARAMETER:name<||
     |>METHOD:module_eval<| <<-"end;"
       def #{name}(x, y=1)
 	q, r = x.divmod(y)
@@ -1283,7 +1283,7 @@ class Date
     %w(new2	ordinal),
     %w(new3	new),
     %w(neww	commercial)
-  ].each do |old, new|
+  ].each do ||>PARAMETER:old<|, |>PARAMETER:new<||
     |>METHOD:module_eval<| <<-"end;"
       def self.#{old}(*args, &block)
 	if $VERBOSE
@@ -1300,7 +1300,7 @@ class Date
     %w(newsg	new_start),
     %w(of	offset),
     %w(newof	new_offset)
-  ].each do |old, new|
+  ].each do ||>PARAMETER:old<|, |>PARAMETER:new<||
     |>METHOD:module_eval<| <<-"end;"
       def #{old}(*args, &block)
 	if $VERBOSE

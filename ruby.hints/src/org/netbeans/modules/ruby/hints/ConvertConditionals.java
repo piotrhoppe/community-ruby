@@ -79,67 +79,53 @@ import org.openide.util.NbBundle;
  */
 public class ConvertConditionals extends RubyAstRule {
 
+    @Override
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.IFNODE);
     }
+    
+    private boolean isConvertible(RubyRuleContext context, IfNode ifNode) {
+        // Can happen for this code: 'if (); end' (typically while editing)
+        if (ifNode.getCondition() == null) return false;
 
-    public void run(RubyRuleContext context, List<Hint> result) {
-        Node node = context.node;
-        ParserResult info = context.parserResult;
-
-        IfNode ifNode = (IfNode) node;
-        if (ifNode.getCondition() == null) {
-            // Can happen for this code:
-            //   if ()
-            //   end
-            // (typically while editing)
-            return;
-        }
         Node body = ifNode.getThenBody();
         Node elseNode = ifNode.getElseBody();
 
-        if (body != null && elseNode != null) {
-            // Can't convert if-then-else conditionals
-            return;
-        }
-
-        if (body == null && elseNode == null) {
-            // Can't convert empty conditions
-            return;
-        }
+        // Can't convert if-then-else conditionals or empty ones
+        if (body != null && elseNode != null || body == null && elseNode == null) return false;
 
         // Can't convert if !x/elseif blocks
-        if (ifNode.getElseBody() != null && ifNode.getElseBody().getNodeType() == NodeType.IFNODE) {
-            return;
-        }
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().getNodeType() == NodeType.IFNODE) return false;
         
         int start = ifNode.getPosition().getStartOffset();
-        if (!RubyHints.isNullOrInvisible(body) && (
-                // Can't convert blocks with multiple statements
-                body.getNodeType() == NodeType.BLOCKNODE ||
-                // Already a statement modifier?
-                body.getPosition().getStartOffset() <= start)) {
-            return;
-        } else if (!RubyHints.isNullOrInvisible(elseNode) && (
-                elseNode.getNodeType() == NodeType.BLOCKNODE ||
-                elseNode.getPosition().getStartOffset() <= start)) {
-            return;
+        // Can't convert blocks with multiple statements or already a statement modifier?
+        if (!RubyHints.isNullOrInvisible(body) && (body.getNodeType() == NodeType.BLOCKNODE || body.getPosition().getStartOffset() <= start)) {
+            return false;
+        } else if (!RubyHints.isNullOrInvisible(elseNode) && (elseNode.getNodeType() == NodeType.BLOCKNODE || elseNode.getPosition().getStartOffset() <= start)) {
+            return false;
         }
         
-        BaseDocument doc = context.doc;
+        
         try {
             int keywordOffset = ConvertIfToUnless.findKeywordOffset(context, ifNode);
-            if (keywordOffset == -1 || keywordOffset > doc.getLength() - 1) {
-                return;
-            }
+            if (keywordOffset == -1 || keywordOffset > context.doc.getLength() - 1) return false;
 
-            char k = doc.getText(keywordOffset, 1).charAt(0);
-            if (!(k == 'i' || k == 'u')) {
-                return; // Probably ternary operator, ?:
-            }
+            char k = context.doc.getText(keywordOffset, 1).charAt(0);
+            if (k != 'i' && k != 'u') return false; // Probably ternary operator, ?:
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
+        
+        return true;
+    }
+
+    @Override
+    public void run(RubyRuleContext context, List<Hint> result) {
+        Node node = context.node;
+        ParserResult info = context.parserResult;
+        BaseDocument doc = context.doc;
+        
+        if (!isConvertible(context, (IfNode) node)) return;
 
         // If statement that is not already a statement modifier
         OffsetRange range = AstUtilities.getRange(node);
@@ -147,70 +133,67 @@ public class ConvertConditionals extends RubyAstRule {
         if (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) {
             // Make sure that we're in a single contiguous Ruby section; if not, this won't work
             range = LexUtilities.getLexerOffsets(info, range);
-            if (range == OffsetRange.NONE) {
-                return;
-            }
+            if (range == OffsetRange.NONE) return;
 
             try {
                 doc.readLock();
-                TokenHierarchy th = TokenHierarchy.get(doc);
-                TokenSequence ts = th.tokenSequence();
+                TokenSequence ts = TokenHierarchy.get(doc).tokenSequence();
                 ts.move(range.getStart());
-                if (!ts.moveNext() && !ts.movePrevious()) {
-                    return;
-                }
-                
-                if (ts.offset()+ts.token().length() < range.getEnd()) {
-                    return;
-                }
+                if (!ts.moveNext() && !ts.movePrevious()) return;
+
+                if (ts.offset()+ts.token().length() < range.getEnd()) return;
             } finally {
                 doc.readUnlock();
             }
         }
         
         
-        ConvertToModifier fix = new ConvertToModifier(context, ifNode);
-        
-        if (fix.getEditList() == null) {
-            return;
-        }
+        ConvertToModifier fix = new ConvertToModifier(context, (IfNode) node);
+        if (fix.getEditList() == null) return;
 
         List<HintFix> fixes = Collections.<HintFix>singletonList(fix);
 
         String displayName = NbBundle.getMessage(ConvertConditionals.class, "ConvertConditionals");
-        Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range,
-                fixes, 500);
+        Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, fixes, 500);
         result.add(desc);
     }
 
+    @Override
     public String getId() {
         return "ConvertConditionals"; // NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(ConvertConditionals.class, "ConvertConditionalsDesc");
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ConvertConditionals.class, "ConvertConditionals");
     }
 
+    @Override
     public boolean showInTasklist() {
         return false;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
@@ -224,70 +207,61 @@ public class ConvertConditionals extends RubyAstRule {
             this.ifNode = ifNode;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(ConvertConditionals.class, "ConvertConditionalsFix");
         }
 
+        @Override
         public void implement() throws Exception {
             EditList edits = getEditList();
-            if (edits != null) {
-                edits.apply();
-            }
+            if (edits != null) edits.apply();
         }
         
+        @Override
         public EditList getEditList() {
             try {
                 BaseDocument doc = context.doc;
 
                 Node bodyNode = ifNode.getThenBody();
                 boolean isIf = bodyNode != null;
-                if (bodyNode == null) {
-                    bodyNode = ifNode.getElseBody();
-                }
+                if (!isIf) bodyNode = ifNode.getElseBody();
+
                 ParserResult info = context.parserResult;
                 OffsetRange bodyRange = AstUtilities.getRange(bodyNode);
                 bodyRange = LexUtilities.getLexerOffsets(info, bodyRange);
-                if (bodyRange == OffsetRange.NONE) {
-                    return null;
-                }
+                if (bodyRange == OffsetRange.NONE) return null;
 
                 String body = doc.getText(bodyRange.getStart(), bodyRange.getLength()).trim();
-                if (body.endsWith(";")) {
-                    body = body.substring(0, body.length()-1);
-                }
-                StringBuilder sb = new StringBuilder();
-                sb.append(body);
-                sb.append(" ");
-                sb.append(isIf ? "if" : "unless"); // NOI18N
-                sb.append(" ");
-                OffsetRange range = AstUtilities.getRange(ifNode.getCondition());
-                range = LexUtilities.getLexerOffsets(info, range);
-                if (range == OffsetRange.NONE) {
-                    return null;
-                }
-                sb.append(doc.getText(range.getStart(), range.getLength()));
+                if (body.endsWith(";")) body = body.substring(0, body.length()-1);
+
+                OffsetRange range = LexUtilities.getLexerOffsets(info, AstUtilities.getRange(ifNode.getCondition()));
+                if (range == OffsetRange.NONE) return null;
+                
+                String s = body + " " + (isIf ? "if" : "unless") + " " + doc.getText(range.getStart(), range.getLength()); // NOI18N
 
                 OffsetRange ifRange = AstUtilities.getRange(ifNode);
                 ifRange = LexUtilities.getLexerOffsets(info, ifRange);
-                if (ifRange == OffsetRange.NONE) {
-                    return null;
-                }
+                if (ifRange == OffsetRange.NONE) return null;
 
-                return new EditList(doc).replace(ifRange.getStart(), ifRange.getLength(), sb.toString(), false, 0);
+                return new EditList(doc).replace(ifRange.getStart(), ifRange.getLength(), s, false, 0);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
                 return null;
             }
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
 
+        @Override
         public boolean canPreview() {
             return true;
         }

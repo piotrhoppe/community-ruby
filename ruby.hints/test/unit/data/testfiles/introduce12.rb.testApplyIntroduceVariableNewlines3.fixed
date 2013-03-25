@@ -1,7 +1,7 @@
 x = 1
 y = 2
 case (x)
-when 1:
+when 1 then
   puts "hello"
 end
 def call(*foo)
