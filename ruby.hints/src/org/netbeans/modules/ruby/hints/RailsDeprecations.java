@@ -147,9 +147,7 @@ public class RailsDeprecations extends RubyAstRule {
         ParserResult info = context.parserResult;
         AstPath path = context.path;
 
-        if (root == null) {
-            return;
-        }
+        if (root == null) return;
         
         // This rule should only be called on the root node itself
         assert path.leaf() == root;
@@ -203,7 +201,7 @@ public class RailsDeprecations extends RubyAstRule {
                 // but that's costly and much less likely to be a problem
                 if (name.startsWith("find_")) { // NOI18N
                     if (node.getNodeType() == NodeType.CALLNODE) {    
-                        Node receiver = ((CallNode)node).getReceiverNode();
+                        Node receiver = ((CallNode)node).getReceiver();
                         if (receiver.getNodeType() != NodeType.CONSTNODE && 
                                 receiver.getNodeType() != NodeType.COLON2NODE) {
                             return;
@@ -218,12 +216,9 @@ public class RailsDeprecations extends RubyAstRule {
             }
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             scan(info, child, result);
         }
     }
@@ -258,35 +253,26 @@ public class RailsDeprecations extends RubyAstRule {
 
     private static boolean isChildOf(ParserResult info, Node node, RubyAstRule rule, String... superClassNames) {
         Node root = AstUtilities.getRoot(info);
-        if (root == null) {
-            return false;
-        }
+        if (root == null) return false;
+
         AstPath path = new AstPath(root, node);
         IScopingNode clazz = AstUtilities.findClassOrModule(path);
-        if (clazz == null) {
-            return false;
-        }
+        if (clazz == null) return false;
+
         // try the closest parent first
         if (clazz instanceof ClassNode){
             String superClass = AstUtilities.getSuperclass((ClassNode) clazz);
-            if (superClass == null) {
-                return false;
-            }
+            if (superClass == null) return false;
+
             for (String each : superClassNames) {
-                if (each.equals(superClass)) {
-                    return true;
-                }
+                if (each.equals(superClass)) return true;
             }
         }
         // check index for super classes
         String className = AstUtilities.getClassOrModuleName(clazz);
-        RubyIndex index = rule.getIndex(info);
-        List<IndexedClass> superClasses = index.getSuperClasses(className);
-        for (IndexedClass superClass : superClasses) {
+        for (IndexedClass superClass : rule.getIndex(info).getSuperClasses(className)) {
             for (String each : superClassNames) {
-                if (each.equals(superClass.getName())) {
-                    return true;
-                }
+                if (each.equals(superClass.getName())) return true;
             }
         }
         return false;

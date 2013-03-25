@@ -207,23 +207,34 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
             
         case DEFNNODE: case DEFSNODE: {
             MethodDefNode def = (MethodDefNode) node;
-            parameters = def.getArgs().getNormativeParameterNameList(true);
+            // FIXME: Replacing parameters here and in iter this seems wrong (should make local list and add to parameters so nested with iters won't replace it
+//            parameters = def.getArgs().getNormativeParameterNameList(true);
+            List<String> defParameters = def.getArgs().getNormativeParameterNameList(true);
 
-            if (!parameters.isEmpty()) {
+            if (!defParameters.isEmpty()) {
                 List<String> unused = new ArrayList<String>();
-                for (String parameter : parameters) {
+                for (String parameter : defParameters) {
                     if (!def.isParameterUsed(parameter)) unused.add(parameter);
                 }
 
                 if (!unused.isEmpty()) {
                     annotateUnusedParameters(def.getArgs(), highlights, unused);
-                    parameters.removeAll(unused);
+                    defParameters.removeAll(unused);
                 }
 
-                if (!parameters.isEmpty()) annotateParameters(def.getArgs(), highlights, parameters);
+                if (!defParameters.isEmpty()) {
+                    annotateParameters(def.getArgs(), highlights, defParameters);
+                    if (parameters == null) {
+                        parameters = defParameters;
+                    } else {
+                        parameters.addAll(defParameters);
+                    }
+                }
 
             }
             if (!SKIP_HIGHLIGHTNING.contains(def.getName())) highlightMethodName(def, highlights);
+            
+// FIXME: What is interface            if (def.getBody() != null) node = def.getBody();
             break;
         }
         case ITERNODE: {
@@ -231,21 +242,31 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
             
             if (iter.getVar() instanceof ArgsNode) {
                 ArgsNode args = (ArgsNode) iter.getVar();
-                parameters = args.getNormativeParameterNameList(true);
+//                parameters = args.getNormativeParameterNameList(true);
+                List <String> iterParameters = args.getNormativeParameterNameList(true);
                 
-                if (!parameters.isEmpty()) {
+                if (!iterParameters.isEmpty()) {
                     List<String> unused = new ArrayList<String>();
-                    for (String parameter : parameters) {
+                    for (String parameter : iterParameters) {
                         if (!iter.isParameterUsed(parameter)) unused.add(parameter);
                     }
 
                     if (!unused.isEmpty()) {
                         annotateUnusedParameters(args, highlights, unused);
-                        parameters.removeAll(unused);
+                        iterParameters.removeAll(unused);
                     }
 
-                    if (!parameters.isEmpty()) annotateParameters(args, highlights, parameters);
+                    if (!iterParameters.isEmpty()) {
+                        annotateParameters(args, highlights, iterParameters);
+                        if (parameters == null) {
+                            parameters = iterParameters;
+                        } else {
+                            parameters.addAll(iterParameters);
+                        }
+                    }
                 }
+                
+// FIXME: HMMM what is interface                if (iter.getBody() != null) node = iter.getBody();
             }
             break;
         }

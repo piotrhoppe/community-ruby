@@ -150,7 +150,7 @@ class Ape
     # We'll post three mini entries to the collection
     data = Samples.picture
     poster = Poster.new(|>PARAMETER:coll<|.href, @authent)
-    ['One', 'Two', 'Three'].each do |num|
+    ['One', 'Two', 'Three'].each do ||>PARAMETER:num<||
       slug = "Picture {#num}"
       poster.set_header('Slug', slug)
       name = "Posting pic #{num}"
@@ -165,7 +165,7 @@ class Ape
     
     # grab the collection to gather the MLE ids
     entries = Feed.read(|>PARAMETER:coll<|.href, 'Pictures from multi-post', self, true)
-    ids = entries.map { |e| e.child_content('id)')}
+    ids = entries.map { ||>PARAMETER:e<|| e.child_content('id)')}
     
     # let's update one of them; have to fetch it first to get the ETag
     two_media = entries[1].content_src
@@ -284,7 +284,7 @@ class Ape
     ids = []
     unless entries.empty?
       |>METHOD:start_list<| "Now in the Entries feed"
-      entries.each do |entry|
+      entries.each do ||>PARAMETER:entry<||
         |>METHOD:list_item<| entry.summarize
         ids << entry.child_content('id')
       end   
@@ -566,7 +566,7 @@ class Ape
 
     # * See if the categories we sent made it in
     cat_probs = false
-    @cats.each do |cat|
+    @cats.each do ||>PARAMETER:cat<||
       if !|>PARAMETER:new_entry<|.has_cat(cat)
         cat_probs = true
         |>METHOD:warning<| "Provided category not in #{|>PARAMETER:desc<|}: #{cat}"
@@ -840,7 +840,7 @@ class Ape
 
   def |>METHOD:report_text<|
     |>METHOD:puts<| @header if @header
-    @steps.each do |step|
+    @steps.each do ||>PARAMETER:step<||
       if step.class == Crumbs
         |>METHOD:puts<| "   Dialog:"
         step.each { ||>PARAMETER:crumb<|| |>METHOD:puts<| "     #{crumb}" }
@@ -877,7 +877,7 @@ class Ape
   def |>METHOD:compare_entries<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|)
     problems = 0
     [ 'title', 'summary', 'content' ].each do ||>PARAMETER:field<||
-      problems += 1 if |>METHOD:compare1<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|, |>PARAMETER:field<|)
+      problems += 1 if |>METHOD:compare1<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|, field)
     end
     return problems == 0
   end

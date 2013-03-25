@@ -96,6 +96,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class IntroduceHint extends RubySelectionRule {
+    @Override
     public void run(RubyRuleContext context, List<Hint> result) {
         ParserResult info = context.parserResult;
         int start = context.selectionStart;
@@ -105,42 +106,28 @@ public class IntroduceHint extends RubySelectionRule {
 
         try {
             BaseDocument doc = context.doc;
-            if (end > doc.getLength()) {
-                return;
-            }
+            if (end > doc.getLength()) return;
 
-            if (end-start > 1000) {
-                // Avoid doing tons of work when the user does a Ctrl-A to select all in a really
-                // large buffer.
-                return;
-            }
-            
-            if (RubyFormatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) != 0) {
-                return;
-            }
+            // Avoid doing tons of work when the user does a Ctrl-A to select all in a really large buffer.
+            if (end-start > 1000) return;
+            if (RubyFormatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) != 0) return;
             
             Node root = AstUtilities.getRoot(info);
-            if (root == null) {
-                return;
-            }
+            if (root == null) return;
+
             OffsetRange lexOffsets = adjustOffsets(info, doc, start, end);
-            if (lexOffsets == OffsetRange.NONE) {
-                return;
-            }
+            if (lexOffsets == OffsetRange.NONE) return;
 
             OffsetRange astOffsets = AstUtilities.getAstOffsets(info, lexOffsets);
-            if (astOffsets == OffsetRange.NONE) {
-                return;
-            }
+            if (astOffsets == OffsetRange.NONE) return;
 
             int astStart = astOffsets.getStart();
             int astEnd = astOffsets.getEnd();
             Map<Integer,List<Node>> nodeDepthMap = new HashMap<Integer, List<Node>>();
             findApplicableNodes(root, astStart, astEnd, nodeDepthMap, 0);
-            if (nodeDepthMap.keySet().size() != 1) {
-                // Either nodes at multiple depths or no nodes at all
-                return;
-            }
+            
+            if (nodeDepthMap.keySet().size() != 1) return; // Either nodes at multiple depths or no nodes at all
+            
             List<Node> nodes = nodeDepthMap.values().iterator().next();
             assert nodes.size() > 0;
 
@@ -149,11 +136,9 @@ public class IntroduceHint extends RubySelectionRule {
             for (Node node : nodes) {
                 walker.walk(node);
             }
+
             List<IntroduceKind> kinds = typeChecker.getKinds();
-            
-            if (kinds == null || kinds.size() == 0) {
-                return;
-            }
+            if (kinds == null || kinds.isEmpty()) return;
 
             OffsetRange range = new OffsetRange(start, end);
             
@@ -177,9 +162,7 @@ public class IntroduceHint extends RubySelectionRule {
                 ClassNode clz = AstUtilities.findClassAtOffset(root, start);
                 if (clz == null) {
                     kinds.remove(IntroduceKind.CREATE_FIELD);
-                    if (kinds.size() == 0) {
-                        return;
-                    }
+                    if (kinds.isEmpty()) return;
                 }
             }
             
@@ -188,8 +171,7 @@ public class IntroduceHint extends RubySelectionRule {
                 List<HintFix> fixList = new ArrayList<HintFix>(1);
                 fixList.add(fix);
                 String displayName = fix.getDescription();
-                Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range,
-                        fixList, 292);
+                Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, fixList, 292);
                 result.add(desc);
             }
         } catch (BadLocationException ex) {
@@ -197,34 +179,42 @@ public class IntroduceHint extends RubySelectionRule {
         }
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(IntroduceHint.class, "IntroduceHint");
     }
 
+    @Override
     public String getId() {
         return "RubyIntroduceHint"; // NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDesc");
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }
 
+    @Override
     public boolean showInTasklist() {
         return false;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
@@ -288,9 +278,8 @@ public class IntroduceHint extends RubySelectionRule {
         List<Node> list = node.childNodes();
         
         for ( Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+            if (child.isInvisible()) continue;
+
             if (child.getNodeType() == NodeType.NEWLINENODE || child.getNodeType() == NodeType.HASHNODE) {
                 // Newlines and hasnodes have incorrect offsets, so always search their children
                 // instead of applying below search pruning logic
@@ -298,7 +287,7 @@ public class IntroduceHint extends RubySelectionRule {
             } else {
                 boolean add = false;
                 SourcePosition pos = child.getPosition();
-                if (pos.getStartOffset() >= start && pos.getEndOffset() <= end) {
+                if (pos.getStartOffset() >= start && pos.getEndOffset() <= end && !pos.isEmpty()) {
                     add = true;
                 } else 
                 // Prune search only to nodes that can possibly contain the children

@@ -31,7 +31,7 @@
 package org.netbeans.modules.ruby.hints.infrastructure;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,27 +62,24 @@ import org.netbeans.modules.ruby.RubyParser.RubyError;
  * @author Tor Norbye
  */
 public class RubyHintsProvider implements HintsProvider {
-    
     private boolean cancelled;
     
     public RubyHintsProvider() {
     }
 
+    @Override
     public RuleContext createRuleContext() {
         return new RubyRuleContext();
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> result, List<Error> unhandled) {
         ParserResult parserResult = context.parserResult;
-        if (parserResult == null) {
-            return;
-        }
+        if (parserResult == null) return;
 
         List<? extends Error> errors = parserResult.getDiagnostics();
-        if (errors == null || errors.size() == 0) {
-            return;
-        }
+        if (errors == null || errors.isEmpty()) return;
 
         cancelled = false;
         
@@ -108,35 +105,27 @@ public class RubyHintsProvider implements HintsProvider {
         }
     }
     
+    @Override
     public List<Rule> getBuiltinRules() {
         return null;
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> result, int start, int end) {
         cancelled = false;
         
         ParserResult parserResult = context.parserResult;
-        if (parserResult == null) {
-            return;
-        }
-        Node root = AstUtilities.getRoot(parserResult);
+        if (parserResult == null) return;
 
-        if (root == null) {
-            return;
-        }
+        Node root = AstUtilities.getRoot(parserResult);
+        if (root == null) return;
 
         @SuppressWarnings("unchecked")
         List<RubySelectionRule> hints = (List<RubySelectionRule>)manager.getSelectionHints();
 
-        if (hints.isEmpty()) {
-            return;
-        }
-        
-        if (isCancelled()) {
-            return;
-        }
-
+        if (hints.isEmpty()) return;
+        if (isCancelled()) return;
 
         try {
             context.doc.readLock();
@@ -146,29 +135,21 @@ public class RubyHintsProvider implements HintsProvider {
         }
     }
     
+    @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> result) {
         cancelled = false;
         
         ParserResult parserResult = context.parserResult;
-        if (parserResult == null) {
-            return;
-        }
-        Node root = AstUtilities.getRoot(parserResult);
+        if (parserResult == null) return;
 
-        if (root == null) {
-            return;
-        }
+        Node root = AstUtilities.getRoot(parserResult);
+        if (root == null) return;
         
         @SuppressWarnings("unchecked")
         Map<NodeType,List<RubyAstRule>> hints = (Map)manager.getHints(false, context);
 
-        if (hints.isEmpty()) {
-            return;
-        }
-        
-        if (isCancelled()) {
-            return;
-        }
+        if (hints.isEmpty()) return;
+        if (isCancelled()) return;
         
         AstPath path = new AstPath();
         path.descend(root);
@@ -185,20 +166,16 @@ public class RubyHintsProvider implements HintsProvider {
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> result, int caretOffset) {
         cancelled = false;
         ParserResult parserResult = context.parserResult;
-        if (parserResult == null) {
-            return;
-        }
+        if (parserResult == null) return;
         
         Node root = AstUtilities.getRoot(parserResult);
+        if (root == null) return;
 
-        if (root == null) {
-            return;
-        }
-
-        Map<NodeType, List<RubyAstRule>> suggestions = new HashMap<NodeType, List<RubyAstRule>>();
+        Map<NodeType, List<RubyAstRule>> suggestions = new EnumMap<NodeType, List<RubyAstRule>>(NodeType.class);
    
         Map<NodeType,List<RubyAstRule>> hintsMap = (Map)manager.getHints(true, context);
         suggestions.putAll(hintsMap);
@@ -219,14 +196,8 @@ public class RubyHintsProvider implements HintsProvider {
             }
         }
 
-        if (suggestions.isEmpty()) {
-            return;
-        }
-        
-
-        if (isCancelled()) {
-            return;
-        }
+        if (suggestions.isEmpty()) return;
+        if (isCancelled()) return;
         
         ParserResult info = context.parserResult;
         int astOffset = AstUtilities.getAstOffset(info, caretOffset);
@@ -235,11 +206,9 @@ public class RubyHintsProvider implements HintsProvider {
         
         try {
             context.doc.readLock();
-            Iterator<Node> it = path.leafToRoot();
-            while (it.hasNext()) {
-                if (isCancelled()) {
-                    return;
-                }
+            
+            for (Iterator<Node> it = path.leafToRoot(); it.hasNext();) {
+                if (isCancelled()) return;
 
                 Node node = it.next();
                 applyRules(manager, context, node.getNodeType(), node, path, suggestions, result);
@@ -254,17 +223,14 @@ public class RubyHintsProvider implements HintsProvider {
     private void applyRules(HintsManager manager, RuleContext context, NodeType nodeType, Node node, AstPath path, Map<NodeType,List<RubyAstRule>> hints,
             List<Hint> result) {
         List<RubyAstRule> rules = hints.get(nodeType);
-
-        if (rules != null) {
-            RubyRuleContext rubyContext = (RubyRuleContext)context;
-            rubyContext.node = node;
-            rubyContext.path = path;
+        if (rules == null) return;
+        
+        RubyRuleContext rubyContext = (RubyRuleContext)context;
+        rubyContext.node = node;
+        rubyContext.path = path;
             
-            for (RubyAstRule rule : rules) {
-                if (manager.isEnabled(rule)) {
-                    rule.run(rubyContext, result);
-                }
-            }
+        for (RubyAstRule rule : rules) {
+            if (manager.isEnabled(rule)) rule.run(rubyContext, result);
         }
     }
 
@@ -272,44 +238,27 @@ public class RubyHintsProvider implements HintsProvider {
     private boolean applyRules(HintsManager manager, RubyError error, RuleContext context, Map<ID,List<RubyErrorRule>> hints,
             List<Hint> result) {
         ID code = error.getId();
-        if (code != null) {
-            List<RubyErrorRule> rules = hints.get(code);
+        if (code == null) return false;
 
-            if (rules != null) {
-                int countBefore = result.size();
-                RubyRuleContext rubyContext = (RubyRuleContext)context;
+        List<RubyErrorRule> rules = hints.get(code);
+        if (rules == null) return false;
+
+        int countBefore = result.size();
                 
-                for (RubyErrorRule rule : rules) {
-                    if (!manager.isEnabled(rule)) {
-                        continue;
-                    }
-                    if (!rule.appliesTo(context)) {
-                        continue;
-                    }
-                    rule.run(rubyContext, error, result);
-                }
-                
-                return countBefore < result.size();
-            }
+        for (RubyErrorRule rule : rules) {
+            if (!rule.appliesTo(context) || !manager.isEnabled(rule)) continue;
+
+            rule.run((RubyRuleContext) context, error, result);
         }
-        
-        return false;
+                
+        return countBefore < result.size();
     }
 
     private void applyRules(HintsManager manager, RuleContext context, List<RubySelectionRule> rules, List<Hint> result) {
-
-        RubyRuleContext rubyContext = (RubyRuleContext)context;
-        
         for (RubySelectionRule rule : rules) {
-            if (!rule.appliesTo(context)) {
-                continue;
-            }
-            
-            if (!manager.isEnabled(rule)) {
-                continue;
-            }
+            if (!rule.appliesTo(context) || !manager.isEnabled(rule)) continue;
 
-            rule.run(rubyContext, result);
+            rule.run((RubyRuleContext) context, result);
         }
     }
     
@@ -317,15 +266,10 @@ public class RubyHintsProvider implements HintsProvider {
             List<Hint> result) {
         applyRules(manager, context, node.getNodeType(), node, path, hints, result);
         
-        List<Node> list = childNodes(node);
+        for (Node child : childNodes(node)) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            if (isCancelled()) {
-                return;
-            }
+            if (isCancelled()) return;
 
             path.descend(child);
             scan(manager, context, child, path, hints, result);
@@ -351,14 +295,15 @@ public class RubyHintsProvider implements HintsProvider {
 
     private List<Node> nodeList(Node... nodes) {
         List<Node> result = new ArrayList<Node>(nodes.length);
+        
         for (Node node : nodes) {
-            if (node != null) {
-                result.add(node);
-            }
+            if (node != null) result.add(node);
         }
+        
         return result;
     }
 
+    @Override
     public void cancel() {
         cancelled = true;
     }

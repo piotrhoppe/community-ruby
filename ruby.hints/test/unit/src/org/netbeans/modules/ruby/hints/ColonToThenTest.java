@@ -62,6 +62,8 @@ public class ColonToThenTest extends HintTestBase  {
         ensureRegistered(createRule());
     }
 
+    // FIXME: 19UPGRADE - This syntax is not valid for 1.9 so either make these only specific to 1.8 or just dump them
+    /*
     public void testHints1() throws Exception {
         checkHints(this, createRule(), "testfiles/colontothen.rb", null);
     }
@@ -95,6 +97,7 @@ public class ColonToThenTest extends HintTestBase  {
         applyHint(this, createRule(), "testfiles/colontothen.rb",
                 "when String^: puts 'a string'", ";");
     }
+    * */
     
 //    public void testNoPositives() throws Exception {
 //        try {

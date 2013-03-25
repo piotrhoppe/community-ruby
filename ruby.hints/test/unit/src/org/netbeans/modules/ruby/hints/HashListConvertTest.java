@@ -64,20 +64,6 @@ public class HashListConvertTest extends HintTestBase  {
         ensureRegistered(createRule());
     }
 
-    public void testHints1() throws Exception {
-        checkHints(this, createRule(), "testfiles/hashlist.rb", null);
-    }
-
-    public void testFix1() throws Exception {
-        applyHint(this, createRule(), "testfiles/hashlist.rb",
-                "x = { \"a\",^ ", "Convert hash");
-    }
-
-    public void testFix2() throws Exception {
-        applyHint(this, createRule(), "testfiles/httpstatus.rb",
-                "100,^ 'Continue',", "Convert hash");
-    }
-
     public void testNoPositives() throws Exception {
         try {
             parseErrorsOk = true;

@@ -42,6 +42,7 @@ import org.jrubyparser.ast.IArgumentNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.ListNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -75,16 +76,19 @@ public class ConvertBlockType extends RubyAstRule {
     public ConvertBlockType() {
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         ParserResult info = context.parserResult;
         // Skip for RHTML files for now - isn't implemented properly
         return RubyUtils.getFileObject(info).getMIMEType().equals("text/x-ruby");
     }
 
+    @Override
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.ITERNODE);
     }
 
+    @Override
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         ParserResult info = context.parserResult;
@@ -109,26 +113,18 @@ public class ConvertBlockType extends RubyAstRule {
                 // ...or the -ending- line of the block
                 int endAstOffset = node.getPosition().getEndOffset();
                 endLexOffset = LexUtilities.getLexerOffset(info, endAstOffset);
-                if (endLexOffset == -1) {
-                    return;
-                }
+                if (endLexOffset == -1) return;
+
                 int endRowEnd = endLexOffset;
-                if (endRowEnd < doc.getLength()) {
-                    endRowEnd = Utilities.getRowEnd(doc, endLexOffset);
-                }
+                if (endRowEnd < doc.getLength()) endRowEnd = Utilities.getRowEnd(doc, endLexOffset);
+
                 caretLine = endRowEnd == caretRowEnd;
-                if (!caretLine) {
-                    return;
-                }
-                if (endRowEnd != beginRowEnd) {
-                    caretOnStart = false;
-                }
+                if (!caretLine) return;
+                if (endRowEnd != beginRowEnd) caretOnStart = false;
             }
 
             Token<? extends RubyTokenId> token = LexUtilities.getToken(doc, lexOffset);
-            if (token == null) {
-                return;
-            }
+            if (token == null) return;
             
             TokenId id = token.id();
             if (id == RubyTokenId.LBRACE || id == RubyTokenId.DO) {
@@ -144,9 +140,7 @@ public class ConvertBlockType extends RubyAstRule {
                 boolean convertFromBrace = id == RubyTokenId.LBRACE;
 
                 int endOffset = node.getPosition().getEndOffset();
-                if (endOffset > doc.getLength()) {
-                    endOffset = doc.getLength();
-                }
+                if (endOffset > doc.getLength()) endOffset = doc.getLength();
 
                 // See if we should offer to collapse
                 String text = doc.getText(lexOffset, endOffset - lexOffset);
@@ -188,30 +182,37 @@ public class ConvertBlockType extends RubyAstRule {
         }
     }
 
+    @Override
     public String getId() {
         return "Convert_Blocktype"; // NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ConvertBlockType.class, "ConvertBlockType");
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(ConvertBlockType.class, "ConvertBlockTypeDesc");
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }
 
+    @Override
     public boolean showInTasklist() {
         return false;
     }
@@ -236,6 +237,7 @@ public class ConvertBlockType extends RubyAstRule {
             this.collapse = collapse;
         }
 
+        @Override
         public String getDescription() {
             String key;
             if (convertToDo) {
@@ -266,14 +268,17 @@ public class ConvertBlockType extends RubyAstRule {
         }
 
 
+        @Override
         public boolean canPreview() {
             return true;
         }
 
+        @Override
         public void implement() throws Exception {
             getEditList().apply();
         }
         
+        @Override
         public EditList getEditList() throws Exception {
             BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
@@ -641,6 +646,17 @@ public class ConvertBlockType extends RubyAstRule {
             }
             edits.setFormatAll(true);
         }
+        
+        private boolean isCallWithArguments(Node n) {
+            if (n != null && AstUtilities.isCall(n) && n instanceof IArgumentNode) {
+                Node args = ((IArgumentNode) n).getArgs();
+
+                if (args == null || (args instanceof ListNode && ((ListNode) args).size() == 0)) return false;
+
+                return true;
+            }
+            return false;
+        }
 
         /** Determine whether parentheses are necessary around the call
          * corresponding to a block call.
@@ -654,33 +670,29 @@ public class ConvertBlockType extends RubyAstRule {
             // Look at the surrounding CallNode and see if it has arguments.
             // If so, see if it has parens. If not, return true.
             assert path.leaf().getNodeType() == NodeType.ITERNODE;
-            Node n = path.leafParent();
-            if (n != null && AstUtilities.isCall(n) && n instanceof IArgumentNode && 
-                    ((IArgumentNode)n).getArgs() != null) {
+
+            if (isCallWithArguments(path.leafParent())) {
                 // Yes, call has args - check parens
                 int end = node.getPosition().getStartOffset(); // Start of do/{ - end of args
                 for (int i = end-1; i >= 0 && i < doc.getLength(); i--) {
-                    // XXX Use a more performant document content iterator!
-                    char c = doc.getText(i, 1).charAt(0);
-                    if (Character.isWhitespace(c)) {
-                        continue;
-                    }
-                    if (c == ')') {
-                        return false;
-                    } else {
-                        return true;
-                    }
+                    char c = doc.getText(i, 1).charAt(0);  // XXX Use a more performant document content iterator!
+                    
+                    if (Character.isWhitespace(c)) continue;
+
+                    return c != ')';
                 }
             }
             
             return false;
         }
 
+        @Override
         public boolean isSafe() {
             // Different precedence rules apply for do and {}
             return !convertToBrace && !convertToDo;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
