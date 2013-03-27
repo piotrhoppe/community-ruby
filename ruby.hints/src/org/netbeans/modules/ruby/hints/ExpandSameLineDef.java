@@ -128,9 +128,8 @@ public class ExpandSameLineDef extends RubyAstRule {
                     // Block is on a single line
                     // TODO - add a hint to turn off this hint?
                     // Should be a utility or infrastructure option!
-                    Node root = AstUtilities.getRoot(info);
                     if (path.leaf() != node) {
-                        path = new AstPath(root, node);
+                        path = new AstPath(AstUtilities.getRoot(info), node);
                     }
                     List<HintFix> fixList = Collections.<HintFix>singletonList(new ExpandLineFix(context, path));
 

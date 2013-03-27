@@ -1458,6 +1458,8 @@ public class AstUtilities {
      * @return the root node or <code>null</code>.
      */
     public static Node getRoot(Parser.Result parserResult) {
+        if (parserResult == null) return null;
+        
         if (!(parserResult instanceof RubyParseResult)) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 String msg = "Expected RubyParseResult, but got " + parserResult; //NOI18N

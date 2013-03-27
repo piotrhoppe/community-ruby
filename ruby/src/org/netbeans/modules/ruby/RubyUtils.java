@@ -33,10 +33,8 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -122,18 +120,17 @@ public class RubyUtils {
         boolean lastWasUnderline = false;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            boolean isCaps = Character.isUpperCase(c);
-            if (isCaps) {
-                if (i > 0 && !lastWasUnderline) {
-                    sb.append('_');
-                    lastWasUnderline = true;
-                }
+
+            if (Character.isUpperCase(c)) {
+                if (i > 0 && !lastWasUnderline) sb.append('_');
+
                 c = Character.toLowerCase(c);
             }
             sb.append(c);
             
             lastWasUnderline = (c == '_');
         }
+        
         return sb.toString();
     }
     
@@ -552,9 +549,8 @@ public class RubyUtils {
         final String filename = file.getNameExt();
         if (filename.endsWith(CONTROLLER_FILE_SUFFIX)) {
             String name = filename.substring(0, filename.length()-CONTROLLER_FILE_SUFFIX.length());
-            if (!lowercase) {
-                name = underlinedNameToCamel(name);
-            }
+            if (!lowercase) name = underlinedNameToCamel(name);
+
             names.add(name);
         }
 
@@ -566,24 +562,16 @@ public class RubyUtils {
     public static String getControllerName(FileObject file) {
         String fileSuffix = "_controller"; // NOI18N
         String parentAppDir = "controllers"; // NOI18N
-        String controllerName =
-            file.getName().substring(0, file.getName().length() - fileSuffix.length());
+        String controllerName = file.getName().substring(0, file.getName().length() - fileSuffix.length());
 
         String path = controllerName;
 
         // Find app dir, and build up a relative path to the view file in the process
-        FileObject app = file.getParent();
-
-        while (app != null) {
-            if (app.getName().equals(parentAppDir) && // NOI18N
-                    ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
-                app = app.getParent();
-
-                break;
-            }
+        for(FileObject app = file.getParent(); app != null; app = app.getParent()) {
+            if (app.getName().equals(parentAppDir) && 
+                    (app.getParent() == null || app.getParent().getName().equals("app"))) break; // NOI18N
 
             path = app.getNameExt() + "/" + path; // NOI18N
-            app = app.getParent();
         }
 
         return path;
@@ -634,15 +622,11 @@ public class RubyUtils {
                 app = app.getParent();
             }
 
-            if (app == null) {
-                return null;
-            }
+            if (app == null) return null;
 
             FileObject viewsFolder = app.getFileObject("views/" + path); // NOI18N
 
-            if (viewsFolder == null) {
-                return null;
-            }
+            if (viewsFolder == null) return null;
 
             if (methodName != null) {
                 List<String> viewExts = new ArrayList<String>();
@@ -650,14 +634,10 @@ public class RubyUtils {
                 viewExts.addAll(Arrays.asList(ACTIONMAILER_VIEW_EXTS));
                 for (String ext : viewExts) {
                     viewFile = viewsFolder.getFileObject(methodName, ext);
-                    if (viewFile != null) {
-                        break;
-                    }
+                    if (viewFile != null) break;
                 }
                 
-                if (viewFile == null && strict) {
-                    return null;
-                }
+                if (viewFile == null && strict) return null;
             }
 
             if (viewFile == null && fileSuffix.length() > 0) {
@@ -678,19 +658,10 @@ public class RubyUtils {
                     }
                 }
             }
-
-            if (viewFile == null) {
-                return null;
-            }
-
         } catch (Exception e) {
             return null;
         }
 
-        if (viewFile == null) {
-            return null;
-        }
-        
         return viewFile;
     }
     
@@ -708,18 +679,14 @@ public class RubyUtils {
         }
         // TODO - instead of relying on Path manipulation here, should I just
         // use the RubyIndex to locate the class and method?
-        FileObject result = null;
         
         file = file.getParent();
-
 
         String fileName = file.getName();
         String path = "";
 
-        if (!fileName.startsWith("_")) { // NOI18N
-            // For partials like "_foo", just use the surrounding view
-            path = fileName;
-        }
+        // For partials like "_foo", just use the surrounding view
+        if (!fileName.startsWith("_")) path = fileName; // NOI18N
 
         // Find app dir, and build up a relative path to the view file in the process
         FileObject app = file.getParent();
@@ -736,15 +703,12 @@ public class RubyUtils {
             app = app.getParent();
         }
 
-        if (app == null) {
-            return null;
-        }
+        if (app == null) return null;
 
-        result = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
-        if (result == null) {
-            // possibly a view for an action mailer model
-            result = app.getFileObject("models/" + path + ".rb"); // NOI18N
-        }
+        FileObject result = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
+
+        // possibly a view for an action mailer model
+        if (result == null) result = app.getFileObject("models/" + path + ".rb"); // NOI18N
 
         return result;
     }
@@ -759,19 +723,13 @@ public class RubyUtils {
 
     static String join(final Iterable<? extends String> iterable, final String separator, final String lastSeparator) {
         Iterator<? extends String> it = iterable.iterator();
-        if (!it.hasNext()) {
-            return "";
-        }
-        StringBuffer buf = new StringBuffer(60);
+        if (!it.hasNext()) return "";
+
+        StringBuilder buf = new StringBuilder(60);
         buf.append(it.next());
         while (it.hasNext()) {
             String next = it.next();
-            if (it.hasNext()) {
-                buf.append(separator);
-            } else {
-                buf.append(lastSeparator);
-            }
-            buf.append(next);
+            buf.append(it.hasNext() ? separator : lastSeparator).append(next);
         }
 
         return buf.toString();
@@ -801,12 +759,10 @@ public class RubyUtils {
      */
     static boolean isPlatformFile(FileObject fileObject) {
         Project owner = FileOwnerQuery.getOwner(fileObject);
-        if (owner == null) {
-            return true;
-        }
+        if (owner == null) return true;
+
         // needed for the dev ide since the bundled jruby is under nbbuild (a free form project)
-        RubyPlatformProvider platformProvider = owner.getLookup().lookup(RubyPlatformProvider.class);
-        return platformProvider == null;
+        return owner.getLookup().lookup(RubyPlatformProvider.class) == null;
     }
 
     private static final Pattern RAILS_VERSION_PATTERN = Pattern.compile(".*/(action|active){1}.+-(\\d+\\.\\d+\\.?\\d*).+"); //NOI18N
@@ -819,27 +775,23 @@ public class RubyUtils {
      */
     static boolean isRails23OrHigher(String path) {
         Matcher m = RAILS_VERSION_PATTERN.matcher(path);
-        if (!m.matches()) {
-            return false;
-        }
+        if (!m.matches()) return false;
+
         String[] version = m.group(2).split("\\.");
         int major = Integer.parseInt(version[0]);
         int minor = Integer.parseInt(version[1]);
-        if (major == 2) {
-            return minor >= 3;
-        }
+        if (major == 2) return minor >= 3;
+
         return major > 2 ? true : false;
     }
 
     // copied from org.netbeans.modules.parsing.impl.indexing.Util#getFileObject
     static FileObject getFileObject(Document doc) {
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof FileObject) {
-            return (FileObject) sdp;
-        }
-        if (sdp instanceof DataObject) {
-            return ((DataObject) sdp).getPrimaryFile();
-        }
+
+        if (sdp instanceof FileObject) return (FileObject) sdp;
+        if (sdp instanceof DataObject) return ((DataObject) sdp).getPrimaryFile();
+
         return null;
     }
 
@@ -853,14 +805,11 @@ public class RubyUtils {
     static boolean isRailsController(FileObject fo) {
         boolean endsWithController = fo.getName().endsWith("_controller");
         Project owner = FileOwnerQuery.getOwner(fo);
-        if (owner == null) {
-            // fallback 
-            return endsWithController;
-        }
+        if (owner == null) return endsWithController; // fallback 
+
         FileObject controllerDir = owner.getProjectDirectory().getFileObject("app/controllers"); //NOI18N
-        if (controllerDir == null) {
-            return endsWithController;
-        }
+        if (controllerDir == null) return endsWithController;
+
         return FileUtil.isParentOf(controllerDir, fo) && endsWithController;
     }
 
@@ -888,9 +837,7 @@ public class RubyUtils {
      */
     static FileObject getAppDir(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
-        if (project == null) {
-            return null;
-        }
+        if (project == null) return null;
 
         return project.getProjectDirectory().getFileObject("app/"); //NOI18N
     }
@@ -919,13 +866,12 @@ public class RubyUtils {
      * @return
      */
     static String[] addToArray(String[] array, String... toAdd) {
-        if (toAdd == null || toAdd.length == 0) {
-            return array;
-        }
+        if (toAdd == null || toAdd.length == 0) return array;
+
         String[] result = new String[array.length + toAdd.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
+        
+        System.arraycopy(array, 0, result, 0, array.length);
+        
         for (int i = array.length; i < array.length + toAdd.length; i++) {
             result[i] = toAdd[i - array.length];
         }

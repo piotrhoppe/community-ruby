@@ -107,8 +107,7 @@ public class CamelCaseNames extends RubyAstRule {
                 range = LexUtilities.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
                     List<HintFix> fixList = new ArrayList<HintFix>(2);
-                    Node root = AstUtilities.getRoot(info);
-                    AstPath childPath = new AstPath(root, node); // TODO - make a simple clone method to clone AstPath path
+                    AstPath childPath = new AstPath(AstUtilities.getRoot(info), node); // TODO - make a simple clone method to clone AstPath path
                     if (node.getNodeType() == NodeType.LOCALASGNNODE) {
                         fixList.add(new RenameFix(context, childPath, RubyUtils.camelToUnderlinedName(name)));
                     }

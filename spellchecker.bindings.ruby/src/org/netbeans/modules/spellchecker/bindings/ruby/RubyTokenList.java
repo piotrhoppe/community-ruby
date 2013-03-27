@@ -87,25 +87,21 @@ public class RubyTokenList extends AbstractRubyTokenList {
     /** Given a sequence of Ruby tokens, return the next span of eligible comments */
     @Override
     protected int[] findNextSpellSpan(TokenSequence<? extends TokenId> ts, int offset) throws BadLocationException {
-        if (ts == null || hidden) {
-            return new int[]{-1, -1};
-        }
+        if (ts == null || hidden) return new int[]{-1, -1};
 
-        int diff = ts.move(offset);
+        ts.move(offset);
 
         while (ts.moveNext()) {
             TokenId id = ts.token().id();
-            if ((id == RubyTokenId.LINE_COMMENT || id == RubyTokenId.DOCUMENTATION) && !isPreformatted(ts.offset(), id != RubyTokenId.DOCUMENTATION)) {
+            if (isDocumentationToken(id) && !isPreformatted(ts.offset(), id != RubyTokenId.DOCUMENTATION)) {
                 TokenSequence<? extends TokenId> t = ts.embedded(RubyCommentTokenId.language());
-                if (t == null) {
-                    return new int[]{ts.offset(), ts.offset() + ts.token().length()};
-                } else {
-                    t.move(offset);
-                    while (t.moveNext()) {
-                        id = t.token().id();
-                        if ((id == RubyCommentTokenId.COMMENT_TEXT || id == RubyCommentTokenId.COMMENT_BOLD || id == RubyCommentTokenId.COMMENT_ITALIC) && !isPreformatted(t.offset(), id != RubyTokenId.DOCUMENTATION)) {
-                            return new int[]{t.offset(), t.offset() + t.token().length()};
-                        }
+                if (t == null) return new int[]{ts.offset(), ts.offset() + ts.token().length()};
+
+                t.move(offset);
+                while (t.moveNext()) {
+                    id = t.token().id();
+                    if (isSpellCheckableWord(id) && !isPreformatted(t.offset(), id != RubyTokenId.DOCUMENTATION)) {
+                        return new int[]{t.offset(), t.offset() + t.token().length()};
                     }
                 }
             }
@@ -113,12 +109,18 @@ public class RubyTokenList extends AbstractRubyTokenList {
 
         return new int[]{-1, -1};
     }
+    
+    private boolean isDocumentationToken(TokenId id) {
+        return id == RubyTokenId.LINE_COMMENT || id == RubyTokenId.DOCUMENTATION;
+    }
+    
+    private boolean isSpellCheckableWord(TokenId id) {
+        return id == RubyCommentTokenId.COMMENT_TEXT || id == RubyCommentTokenId.COMMENT_BOLD || id == RubyCommentTokenId.COMMENT_ITALIC;
+    }
 
     private boolean isPreformatted(int offset, boolean isComment) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
-        if (lineBegin == -1) {
-            return false;
-        }
+        if (lineBegin == -1) return false;
 
         // See if this comment is indented more than two chars
         String line = doc.getText(lineBegin, Math.min(Utilities.getRowEnd(doc, offset), lineBegin + 5) - lineBegin);

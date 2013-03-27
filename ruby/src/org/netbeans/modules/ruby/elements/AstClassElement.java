@@ -28,7 +28,7 @@ public class AstClassElement extends AstElement implements ClassElement {
                 
                 name = n.getName();
             } else if (node instanceof SClassNode) {
-                Node n = ((SClassNode)node).getReceiverNode();
+                Node n = ((SClassNode)node).getReceiver();
 
                 // What if it's a selfnode?
                 if (n instanceof Colon3Node) {
@@ -80,6 +80,7 @@ public class AstClassElement extends AstElement implements ClassElement {
         return ElementKind.CLASS;
     }
 
+    @Override
     public boolean isVirtual() {
         return virtual;
     }

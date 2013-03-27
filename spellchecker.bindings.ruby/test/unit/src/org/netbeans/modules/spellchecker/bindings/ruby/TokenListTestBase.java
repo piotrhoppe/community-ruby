@@ -53,11 +53,9 @@ public abstract class TokenListTestBase extends NbTestCase {
     }
 
     protected void tokenListTest(String documentContent, String... golden) throws Exception {
-        BaseDocument doc = new BaseDocument(null, false);
+        BaseDocument doc = new BaseDocument(false, mimeType);
 
         doc.putProperty(Language.class, language);
-        doc.putProperty("mimeType", mimeType);
-
         doc.insertString(0, documentContent, null);
 
         List<String> words = new ArrayList<String>();
@@ -76,11 +74,9 @@ public abstract class TokenListTestBase extends NbTestCase {
     }
 
     protected void tokenListTestWithWriting(String documentContent, int offset, String text, int startOffset, String... golden) throws Exception {
-        BaseDocument doc = new BaseDocument(null, false);
+        BaseDocument doc = new BaseDocument(false, mimeType);
 
         doc.putProperty(Language.class, language);
-        doc.putProperty("mimeType", mimeType);
-
         doc.insertString(0, documentContent, null);
 
         List<String> words = new ArrayList<String>();
