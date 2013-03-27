@@ -190,4 +190,8 @@ public class RubyCoverageProviderTest extends RubyTestBase {
         checkCoverage("testfiles/CoveragePrj", "test/simple_number_test.rb");
     }*/
 
+    // FIXME: Remove once coverage has been added back in.  This only makes junit happy.
+    public void testCoverageDummy() throws Exception {
+        assertTrue(true);
+    }
 }
