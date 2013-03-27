@@ -77,10 +77,8 @@ public class ConvertBlockType extends RubyAstRule {
     }
 
     @Override
-    public boolean appliesTo(RuleContext context) {
-        ParserResult info = context.parserResult;
-        // Skip for RHTML files for now - isn't implemented properly
-        return RubyUtils.getFileObject(info).getMIMEType().equals("text/x-ruby");
+    public boolean appliesTo(RuleContext context) { // Skip for RHTML files for now - isn't implemented properly
+        return RubyUtils.getFileObject(context.parserResult).getMIMEType().equals("text/x-ruby");
     }
 
     @Override
@@ -99,9 +97,7 @@ public class ConvertBlockType extends RubyAstRule {
         try {
             int astOffset = node.getPosition().getStartOffset();
             int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-            if (lexOffset == -1 || lexOffset > doc.getLength() - 1) {
-                return;
-            }
+            if (lexOffset == -1 || lexOffset > doc.getLength() - 1) return;
 
             // Limit the hint to the -opening- line of the block
             boolean caretOnStart = true;

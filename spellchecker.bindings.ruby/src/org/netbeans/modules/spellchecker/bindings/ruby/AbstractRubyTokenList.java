@@ -135,7 +135,7 @@ public abstract class AbstractRubyTokenList implements TokenList {
                             currentWord = data.a;
                             return true;
                         }
-
+                        
                         switch (data.a.charAt(0)) {
                         case '<':
                             if (startsWith(data.a, "<a ")) {

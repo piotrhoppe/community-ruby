@@ -136,9 +136,6 @@ public final class RubyParser extends Parser {
         return lastResult;
     }
 
-    public @Override void cancel() {
-    }
-
     public @Override void addChangeListener(ChangeListener changeListener) {
         // no-op, we don't support state changes
     }
@@ -590,8 +587,7 @@ public final class RubyParser extends Parser {
             // Quick workaround for now to avoid NPEs all over when
             // code looks at RootNode, whose getPosition()==null.
             // Its bodynode is what used to be returned as the root!
-            RootNode realRoot = (RootNode)root;
-            root = realRoot.getBodyNode();
+            root = ((RootNode) root).getBody();
         }
 
         if (root != null) {

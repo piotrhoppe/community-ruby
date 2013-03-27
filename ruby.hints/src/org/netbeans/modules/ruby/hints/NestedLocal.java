@@ -118,8 +118,7 @@ public class NestedLocal extends RubyAstRule {
                     if (method != null && isUsed(method, name, child, new boolean[1])) {
                         OffsetRange range = AstUtilities.getNameRange(child);
                         List<HintFix> fixList = new ArrayList<HintFix>(2);
-                        Node root = AstUtilities.getRoot(info);
-                        AstPath childPath = new AstPath(root, child);
+                        AstPath childPath = new AstPath(AstUtilities.getRoot(info), child);
                         fixList.add(new RenameVarFix(context, childPath, node, false));
                         fixList.add(new RenameVarFix(context, childPath, node, true));
 

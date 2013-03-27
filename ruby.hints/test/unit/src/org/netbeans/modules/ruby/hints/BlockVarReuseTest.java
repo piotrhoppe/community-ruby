@@ -52,7 +52,9 @@ public class BlockVarReuseTest extends HintTestBase {
     public void testRegistered() throws Exception {
         ensureRegistered(createRule());
     }
-    
+
+    // FIXME: 19UPGRADE dubious that we are hinting on vars which in 1.9 no longer are really aliasing
+    /*
     public void testHint1() throws Exception {
         checkHints(this, createRule(), "testfiles/blockvars.rb", null);
     }
@@ -76,5 +78,5 @@ public class BlockVarReuseTest extends HintTestBase {
         for (FileObject f : files) {
             findHints(this, createRule(), f, null);
         }
-    }
+    }*/
 }

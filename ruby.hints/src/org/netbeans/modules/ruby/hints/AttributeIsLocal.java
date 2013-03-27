@@ -262,8 +262,7 @@ public class AttributeIsLocal extends RubyAstRule {
             } else {
                 // Initiate synchronous editing:
                 String name = ((INameNode)node).getName();
-                Node root = AstUtilities.getRoot(parserResult);
-                AstPath path = new AstPath(root, node);
+                AstPath path = new AstPath(AstUtilities.getRoot(parserResult), node);
                 Node scope = AstUtilities.findLocalScope(path.leaf(), path);
                 Set<OffsetRange> ranges = new HashSet<OffsetRange>();
                 addLocalRegions(scope, name, ranges);

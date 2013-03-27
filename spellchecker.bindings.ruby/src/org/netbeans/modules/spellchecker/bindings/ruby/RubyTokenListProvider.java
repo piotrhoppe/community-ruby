@@ -53,25 +53,16 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
  *
  * @author Jan Lahoda
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.spellchecker.spi.language.TokenListProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=TokenListProvider.class)
 public class RubyTokenListProvider implements TokenListProvider {
-    /** Creates a new instance of RubyTokenListProvider */
-    public RubyTokenListProvider() {
-    }
+    public RubyTokenListProvider() {}
 
     public TokenList findTokenList(Document doc) {
-        if (!(doc instanceof BaseDocument)) {
-            return null;
-        }
-        BaseDocument bdoc = (BaseDocument)doc;
-        if (RubyUtils.isRhtmlDocument(doc)) {
-            return new RhtmlTokenList(bdoc);
-        }
-        String mimeType = (String)doc.getProperty("mimeType");
-        if (RubyUtils.RUBY_MIME_TYPE.equals(mimeType)) {
-            return new RubyTokenList(bdoc);
-        }
+        if (!(doc instanceof BaseDocument)) return null;
 
-        return null;
+        BaseDocument bdoc = (BaseDocument)doc;
+        if (RubyUtils.isRhtmlDocument(doc)) return new RhtmlTokenList(bdoc);
+
+        return RubyUtils.RUBY_MIME_TYPE.equals((String) doc.getProperty("mimeType")) ? new RubyTokenList(bdoc) : null;
     }
 }

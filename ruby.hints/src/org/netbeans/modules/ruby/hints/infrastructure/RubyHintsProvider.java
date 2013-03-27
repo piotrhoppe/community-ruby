@@ -115,10 +115,7 @@ public class RubyHintsProvider implements HintsProvider {
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> result, int start, int end) {
         cancelled = false;
         
-        ParserResult parserResult = context.parserResult;
-        if (parserResult == null) return;
-
-        Node root = AstUtilities.getRoot(parserResult);
+        Node root = AstUtilities.getRoot(context.parserResult);
         if (root == null) return;
 
         @SuppressWarnings("unchecked")
@@ -138,11 +135,8 @@ public class RubyHintsProvider implements HintsProvider {
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> result) {
         cancelled = false;
-        
-        ParserResult parserResult = context.parserResult;
-        if (parserResult == null) return;
 
-        Node root = AstUtilities.getRoot(parserResult);
+        Node root = AstUtilities.getRoot(context.parserResult);
         if (root == null) return;
         
         @SuppressWarnings("unchecked")
@@ -169,10 +163,8 @@ public class RubyHintsProvider implements HintsProvider {
     @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> result, int caretOffset) {
         cancelled = false;
-        ParserResult parserResult = context.parserResult;
-        if (parserResult == null) return;
         
-        Node root = AstUtilities.getRoot(parserResult);
+        Node root = AstUtilities.getRoot(context.parserResult);
         if (root == null) return;
 
         Map<NodeType, List<RubyAstRule>> suggestions = new EnumMap<NodeType, List<RubyAstRule>>(NodeType.class);

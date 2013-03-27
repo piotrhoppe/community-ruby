@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jrubyparser.ast.IterNode;
+import org.jrubyparser.ast.ArgumentNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
@@ -112,18 +112,35 @@ public class BlockVarReuse extends RubyAstRule {
         Node node = context.node;
         ParserResult info = context.parserResult;
 
-        if (node.getNodeType() == NodeType.ITERNODE) {
-            // Check the children and see if we have a LocalAsgnNode; these are going
-            // to be local variable reuses
-            List<Node> list = node.childNodes();
+        if (node.getNodeType() != NodeType.ITERNODE) return;
+        
+        // Check the children and see if we have a LocalAsgnNode; these are going to be local variable reuses
+        for (Node child : node.childNodes()) {
+            if (child.getNodeType() == NodeType.LOCALASGNNODE) { // 1.8 block parameter and 1.8/1.9 reassignment in body of block
+                OffsetRange range = AstUtilities.getNameRange(child);
+                List<HintFix> fixList = new ArrayList<HintFix>(2);
+                AstPath childPath = new AstPath(AstUtilities.getRoot(info), child);
+                fixList.add(new RenameVarFix(context, childPath, false));
+                fixList.add(new RenameVarFix(context, childPath, true));
 
-            for (Node child : list) {
-                if (child.getNodeType() == NodeType.LOCALASGNNODE) {
+                range = LexUtilities.getLexerOffsets(info, range);
+                if (range != OffsetRange.NONE) {
+                    Hint desc = new Hint(this, getDisplayName(), RubyUtils.getFileObject(info), range, fixList, 100);
+                    result.add(desc);
+                }
+            }
+        }
+        
+        // FIXME: 1.9 blocks do not share parent scope variables but this basic hint can still be valid.  We should make a hint
+        // which allows renaming to get rid of shadowing.  Or make a hint which will ';foo|' the variable so it is explicitly masked.
 
-                    OffsetRange range = AstUtilities.getNameRange(child);
+/*            } else if (child.getNodeType() == NodeType.ARGSNODE) { // 1.9 method args
+                ArgsNode args = (ArgsNode) child;
+                    
+                for(Node parameter: args.getNormativeParameterList()) {
+                    OffsetRange range = AstUtilities.getNameRange(parameter);
                     List<HintFix> fixList = new ArrayList<HintFix>(2);
-                    Node root = AstUtilities.getRoot(info);
-                    AstPath childPath = new AstPath(root, child);
+                    AstPath childPath = new AstPath(AstUtilities.getRoot(info), parameter);
                     fixList.add(new RenameVarFix(context, childPath, false));
                     fixList.add(new RenameVarFix(context, childPath, true));
 
@@ -131,10 +148,10 @@ public class BlockVarReuse extends RubyAstRule {
                     if (range != OffsetRange.NONE) {
                         Hint desc = new Hint(this, getDisplayName(), RubyUtils.getFileObject(info), range, fixList, 100);
                         result.add(desc);
-                    }
+                    }                      
                 }
             }
-        }
+        }*/
     }
 
     private static class RenameVarFix implements PreviewableFix {
@@ -177,7 +194,7 @@ public class BlockVarReuse extends RubyAstRule {
             if ((node.getNodeType() == NodeType.LOCALASGNNODE || node.getNodeType() == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = LexUtilities.getLexerOffsets(context.parserResult, AstUtilities.getNameRange(node));
                 if (range != OffsetRange.NONE) ranges.add(range);
-            } else if (isParameter && (node.getNodeType() == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
+            } else if (isParameter && (node.getNodeType() == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()) && !((ArgumentNode) node).isBlockParameter())) {
                 OffsetRange range = LexUtilities.getLexerOffsets(context.parserResult, AstUtilities.getNameRange(node));
                 if (range != OffsetRange.NONE) ranges.add(range);
             } else if (node.getNodeType() == NodeType.ARGSNODE) {
@@ -191,6 +208,25 @@ public class BlockVarReuse extends RubyAstRule {
                 addNonBlockRefs(child, name, ranges, isParameter);
             }
         }
+        
+        private void addBlockRefs(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
+            if ((node.getNodeType() == NodeType.DASGNNODE || node.getNodeType() == NodeType.DVARNODE) && name.equals(((INameNode)node).getName())) {
+                OffsetRange range = LexUtilities.getLexerOffsets(context.parserResult, AstUtilities.getNameRange(node));
+                if (range != OffsetRange.NONE) ranges.add(range);
+            } else if (isParameter && (node.getNodeType() == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()) && ((ArgumentNode) node).isBlockParameter())) {
+                OffsetRange range = LexUtilities.getLexerOffsets(context.parserResult, AstUtilities.getNameRange(node));
+                if (range != OffsetRange.NONE) ranges.add(range);
+            } else if (node.getNodeType() == NodeType.ARGSNODE) {
+                isParameter = true;
+            }
+
+            for (Node child : node.childNodes()) {
+                if (child.isInvisible() || child instanceof MethodDefNode) continue; // Ignore stuff in nested methods
+                if (isThisBlock(child)) continue; // Skip the block the fix is applying to.
+
+                addBlockRefs(child, name, ranges, isParameter);
+            }
+        }        
 
         private boolean isThisBlock(Node child) {
             return child.getNodeType() == NodeType.ITERNODE && child == path.leafParent();
@@ -203,12 +239,9 @@ public class BlockVarReuse extends RubyAstRule {
             String name = ((INameNode)path.leaf()).getName();
 
             if (renameLocal) {
-                Node scope = AstUtilities.findLocalScope(path.leaf(), path);
-                addNonBlockRefs(scope, name, ranges, false);
+                addNonBlockRefs(path.leaf().getMethodFor(), name, ranges, false);
             } else {
-                Node parent = path.leafParent();
-                assert parent instanceof IterNode;
-                addNonBlockRefs(parent, name, ranges, false);
+                addBlockRefs(path.leaf().getInnermostIter(), name, ranges, false);
             }
 
             return ranges;
@@ -230,10 +263,10 @@ public class BlockVarReuse extends RubyAstRule {
             EditList edits = new EditList(doc);
             Set<OffsetRange> ranges = findRegionsToEdit();
             String oldName = ((INameNode)path.leaf()).getName();
-            int oldLen = oldName.length();
+            int oldNameLength = oldName.length();
             String newName = "new_name";
             for (OffsetRange range : ranges) {
-                edits.replace(range.getStart(), oldLen, newName, false, 0);
+                edits.replace(range.getStart(), oldNameLength, newName, false, 0);
             }
             return edits;
         }
