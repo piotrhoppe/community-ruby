@@ -281,9 +281,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     public static boolean hasValidRake(final Project project, final boolean warn) {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         if (platform == null) {
-            if (warn) {
-                showWarning(project);
-            }
+            if (warn) showWarning(project);
             return false;
         }
         return platform.hasValidRake(warn);
@@ -377,21 +375,16 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         if (home == null) {
             try {
                 String rp = getInterpreter(canonical);
-                if (rp == null) {
-                    return null;
-                }
+                if (rp == null) return null;
+
                 File r = new File(rp);
 
                 // Handle bogus paths like "/" which cannot possibly point to a valid ruby installation
                 File p = r.getParentFile();
-                if (p == null) {
-                    return null;
-                }
+                if (p == null) return null;
 
                 p = p.getParentFile();
-                if (p == null) {
-                    return null;
-                }
+                if (p == null) return null;
 
                 home = p.getCanonicalFile();
             } catch (IOException ioe) {
@@ -422,9 +415,8 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * #getVersionLibDir()}.
      */
     public String getLibDir() {
-        if (isRubinius()) {
-            return getRubiniusLibDir();
-        }
+        if (isRubinius()) return getRubiniusLibDir();
+
         String lib = info.getLibDir();
         if (lib == null) {
             LOGGER.log(Level.WARNING, "rubylibdir not found for {0}, was: {1}", new String[]{interpreter, lib});
@@ -437,13 +429,11 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         }
         // info.getVersionLibDir() return e.g. .../lib/ruby/1.8
         libDir = libDir.getParentFile();
-        if (libDir == null) {
-            return null;
-        }
+        if (libDir == null) return null;
+
         libDir = libDir.getParentFile();
-        if (libDir == null) {
-            return null;
-        }
+        if (libDir == null) return null;
+
         return libDir.getAbsolutePath();
     }
 
@@ -531,14 +521,10 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         boolean valid = new File(interpreter).isFile() && getLibDir() != null;
         if (valid) {
             String binDir = getBinDir();
-            if (binDir != null) {
-                valid = new File(binDir).isDirectory();
-            }
+            if (binDir != null) valid = new File(binDir).isDirectory();
         }
 
-        if (warn && !valid) {
-            showWarning(this);
-        }
+        if (warn && !valid) showWarning(this);
 
         return valid;
     }
@@ -757,23 +743,20 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      *         found.
      */
     public synchronized String getGemTool() {
-        if (gemTool == null) {
-            gemTool = findExecutable("gem", false, true); // NOI18N
-        }
+        if (gemTool == null) gemTool = findExecutable("gem", false, true); // NOI18N
+
         return gemTool;
     }
 
     public synchronized String getRDoc() {
-        if (rdoc == null) {
-            rdoc = findExecutable("rdoc", false, true); // NOI18N
-        }
+        if (rdoc == null) rdoc = findExecutable("rdoc", false, true); // NOI18N
+
         return rdoc;
     }
 
     public synchronized String getIRB() {
-        if (irb == null) {
-            irb = findExecutable(isJRuby() ? "jirb" : "irb", false, true); // NOI18N
-        }
+        if (irb == null) irb = findExecutable(isJRuby() ? "jirb" : "irb", false, true); // NOI18N
+
         return irb;
     }
 
@@ -846,6 +829,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     private boolean checkGem(final String gemName, final Pattern gemVersion) {
         VersionPredicate predicate = new VersionPredicate() {
+            @Override
             public boolean isRight(final String version) {
                 return gemVersion.matcher(version).matches();
             }
@@ -900,13 +884,11 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     private String getLatestAvailableValidRDebugIDEVersions(final String gemName) {
-        List<GemInfo> versions = getGemManager().getVersions(gemName);
-        for (GemInfo getInfo : versions) {
+        for (GemInfo getInfo : getGemManager().getVersions(gemName)) {
             String version = getInfo.getVersion();
-            if (getRequiredRDebugIDEVersionPattern().matcher(version).matches()) {
-                return version;
-            }
+            if (getRequiredRDebugIDEVersionPattern().matcher(version).matches()) return version;
         }
+        
         return null;
     }
 
@@ -919,6 +901,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     public boolean installFastDebugger() {
         assert getGemManager() != null : "has gemManager when trying to install fast debugger";
         Runnable installer = new Runnable() {
+            @Override
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
@@ -1092,6 +1075,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return hash;
     }
 
+    @Override
     public int compareTo(final RubyPlatform other) {
         return getInterpreter().compareTo(other.getInterpreter());
     }
