@@ -335,13 +335,6 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTested(getProjFile("app/controllers/lonely_controller.rb"), -1);
         assertSame(DeclarationLocation.NONE, loc);
     }
-
-    public void testNegative4() {
-        assertNotNull(project);
-        
-        DeclarationLocation loc = gotoTest.findTested(getProjFile("test/unit/lonesometest.rb"), -1);
-        assertSame(DeclarationLocation.NONE, loc);
-    }
     
     public void testGoto119106a() {
         assertNotNull(project);
