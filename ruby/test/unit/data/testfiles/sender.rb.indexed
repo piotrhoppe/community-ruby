@@ -1,0 +1,10 @@
+Document 0
+Searchable Keys:
+  class : TCP
+  class-ig : tcp
+  fqn : TCP
+  method : sender(msg)
+  require : sender
+
+Not Searchable Keys:
+  attrs : |CLASS|
