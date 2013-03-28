@@ -62,12 +62,18 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.openide.filesystems.MIMEResolver;
 
 /*
  * Language/lexing configuration for Ruby
  *
  * @author Tor Norbye
  */
+@MIMEResolver.Registration(displayName="#ruby-mime-resolver",
+        resource="ruby-mime-resolver.xml",
+        position=65
+)
+
 @LanguageRegistration(mimeType="text/x-ruby")
 @PathRecognizerRegistration(mimeTypes="text/x-ruby", sourcePathIds=RubyLanguage.SOURCE, libraryPathIds=RubyLanguage.BOOT, binaryLibraryPathIds={}) //NOI18N
 public class RubyLanguage extends DefaultLanguageConfig {
