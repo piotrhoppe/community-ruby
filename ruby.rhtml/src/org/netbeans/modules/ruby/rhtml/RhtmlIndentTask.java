@@ -66,6 +66,7 @@ public class RhtmlIndentTask implements IndentTask {
         this.context = context;
     }
 
+    @Override
     public void reindent() throws BadLocationException {
         BaseDocument doc = (BaseDocument) context.document();
         int start = context.startOffset();
