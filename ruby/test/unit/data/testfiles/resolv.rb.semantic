@@ -315,7 +315,7 @@ class Resolv
               }
             }
           }
-          @name2addr.each {||>UNUSED:name<|, |>PARAMETER:arr<|| arr.reverse!}
+          @name2addr.each {||>PARAMETER:name<|, |>PARAMETER:arr<|| arr.reverse!}
           @initialized = true
         end
       }
