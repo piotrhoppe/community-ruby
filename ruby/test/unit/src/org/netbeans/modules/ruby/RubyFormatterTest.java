@@ -136,6 +136,7 @@ public class RubyFormatterTest extends RubyTestBase {
             if (skip(fo, "httputils", "webrick")) continue; // Tested by RubyLexerTest#testDefRegexp
             if (skip(fo, "datadir", "rbconfig")) continue; // Unknown
             if (skip(fo, "optparse", "1.9")) continue; // Unknown
+            if (skip(fo, "core", "hooks")) continue; // Unknown
 
             // When erubis is installed:
             if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-erubis.rb")) {
