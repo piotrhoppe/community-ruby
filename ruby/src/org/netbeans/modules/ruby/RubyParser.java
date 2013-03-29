@@ -430,6 +430,7 @@ public final class RubyParser extends Parser {
     
     protected void notifyError(Context context, ID id,
         Severity severity, String description, int offset, Sanitize sanitizing, Object[] data) {
+        if (description == null) description = "";
         if (description.startsWith("syntax error, ")) description = description.substring(14);
 
         if (description.startsWith("unexpected k")) {

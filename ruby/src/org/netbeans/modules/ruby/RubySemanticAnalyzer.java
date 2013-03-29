@@ -248,7 +248,8 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                 if (!iterParameters.isEmpty()) {
                     List<String> unused = new ArrayList<String>();
                     for (String parameter : iterParameters) {
-                        if (!iter.isParameterUsed(parameter)) unused.add(parameter);
+                        // FIXME: normative parameter list is returning null on completing abbrev/all? (block completion) on a string
+                        if (parameters != null && !iter.isParameterUsed(parameter)) unused.add(parameter);
                     }
 
                     if (!unused.isEmpty()) {

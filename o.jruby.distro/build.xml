@@ -7,10 +7,9 @@
     <import file="nbproject/build-impl.xml"/>
 
     <target name="jruby.distro.init">
-        <uptodate property="jruby.distro.build.uptodate" targetfile="${cluster}/jruby">
-            <srcfiles dir="${src.dir}" includes="**/*"/>
-            <srcfiles dir="external" includes="**/*"/>
-        </uptodate>
+      <!-- This will not understand changes to jruby distro but it should detect
+           whether same distro has been unpacked or not -->
+      <available file="${cluster}/jruby/bin/jruby" property="jruby.distro.build.uptodate"/>
     </target>
 
     <target name="files-init" depends="projectized-common.files-init">
@@ -62,6 +61,7 @@
         <echo>Build JRuby binary distribution from source</echo>
 
         <!-- Uncompress and move jruby bin dist into plain 'jruby' dir -->
+        <echo message="unzipping external/jruby-bin-${jruby_src_version}.tar.gz to ${cluster}/jruby"/>
         <untar compression="gzip" dest="${cluster}" src="external/jruby-bin-${jruby_src_version}.tar.gz"/>
         <move file="${cluster}/jruby-${jruby_src_version}" tofile="${cluster}/jruby"/>
         <!-- Does the untar or move lose the execute bits from the file? -->
