@@ -239,107 +239,102 @@ public final class RubyPlatformManager {
     }
 
     private static synchronized Set<RubyPlatform> getPlatformsInternal() {
-        if (platforms == null) {
-            platforms = new HashSet<RubyPlatform>();
+        if (platforms != null) return platforms;
+        
+        platforms = new HashSet<RubyPlatform>();
 
-            // Currently used by $NB_SRC/o.jruby/UPDATE.zsh preindexing hook.
-            // Also see o.jruby/INDICES.txt.
-            String hardcodedRuby = System.getProperty("ruby.interpreter");
-            if (hardcodedRuby != null) {
-                Info info = new Info("User-specified Ruby", "0.1"); // NOI18N
+        // Currently used by $NB_SRC/o.jruby/UPDATE.zsh preindexing hook.
+        // Also see o.jruby/INDICES.txt.
+        String hardcodedRuby = System.getProperty("ruby.interpreter");
+        if (hardcodedRuby != null) {
+            Info info = new Info("User-specified Ruby", "0.1"); // NOI18N
 
-                FileObject gems = FileUtil.toFileObject(new File(hardcodedRuby)).getParent().getParent().getFileObject("lib/ruby/gems/1.8"); // NOI18N
-                if (gems != null) {
-                    Properties props = new Properties();
-                    props.setProperty(Info.RUBY_KIND, "User-specified Ruby"); // NOI18N
-                    props.setProperty(Info.RUBY_VERSION, "0.1"); // NOI18N
-                    String gemHome = FileUtil.toFile(gems).getAbsolutePath();
-                    props.setProperty(Info.GEM_HOME, gemHome);
-                    props.setProperty(Info.GEM_PATH, gemHome);
-                    props.setProperty(Info.GEM_VERSION, "1.0.1 (1.0.1)"); // NOI18N
-                    props.setProperty(Info.RUBY_LIB_DIR, new File(new File(hardcodedRuby).getParentFile().getParentFile(), "lib" + File.separator + "ruby" + File.separator + "1.8").getPath()); // NOI18N
-                    info = new Info(props);
+            FileObject gems = FileUtil.toFileObject(new File(hardcodedRuby)).getParent().getParent().getFileObject("lib/ruby/gems/1.8"); // NOI18N
+            if (gems != null) {
+                Properties props = new Properties();
+                props.setProperty(Info.RUBY_KIND, "User-specified Ruby"); // NOI18N
+                props.setProperty(Info.RUBY_VERSION, "0.1"); // NOI18N
+                String gemHome = FileUtil.toFile(gems).getAbsolutePath();
+                props.setProperty(Info.GEM_HOME, gemHome);
+                props.setProperty(Info.GEM_PATH, gemHome);
+                props.setProperty(Info.GEM_VERSION, "1.0.1 (1.0.1)"); // NOI18N
+                props.setProperty(Info.RUBY_LIB_DIR, new File(new File(hardcodedRuby).getParentFile().getParentFile(), "lib" + File.separator + "ruby" + File.separator + "1.8").getPath()); // NOI18N
+                info = new Info(props);
+            }
+
+            platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, hardcodedRuby, info));
+            return platforms;
+        }
+
+        Map<String, String> p = PropertyUtils.sequentialPropertyEvaluator(null,
+                PropertyUtils.globalPropertyProvider()).getProperties();
+        if (p == null) { // #115909
+            p = Collections.emptyMap();
+        }
+        boolean foundDefault = false;
+        final List<String> skipped = new ArrayList<String>();
+        for (Map.Entry<String, String> entry : p.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_INTEPRETER)) {
+                String id = key.substring(PLATFORM_PREFIX.length(),
+                        key.length() - PLATFORM_INTEPRETER.length());
+                String idDot = id + '.';
+                Properties props = new Properties();
+                String libDir = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR);
+                String kind = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_KIND);
+                String interpreterPath = entry.getValue();
+                if (kind == null) { // not supporting old 6.0 platform, skip
+                    skipped.add(interpreterPath);
+                    continue;
                 }
-
-                platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, hardcodedRuby, info));
-                return platforms;
-            }
-            
-            Map<String, String> p = PropertyUtils.sequentialPropertyEvaluator(null,
-                    PropertyUtils.globalPropertyProvider()).getProperties();
-            if (p == null) { // #115909
-                p = Collections.emptyMap();
-            }
-            boolean foundDefault = false;
-            final List<String> skipped = new ArrayList<String>();
-            for (Map.Entry<String, String> entry : p.entrySet()) {
-                String key = entry.getKey();
-                if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_INTEPRETER)) {
-                    String id = key.substring(PLATFORM_PREFIX.length(),
-                            key.length() - PLATFORM_INTEPRETER.length());
-                    String idDot = id + '.';
-                    Properties props = new Properties();
-                    String libDir = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR);
-                    String kind = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_KIND);
-                    String interpreterPath = entry.getValue();
-                    if (kind == null) { // not supporting old 6.0 platform, skip
+                if (libDir != null) { // NOI18N
+                    props.put(Info.RUBY_LIB_DIR, libDir);
+                } else {
+                    // Rubinius libDir is not detected by script
+                    if (!"Rubinius".equals(kind)) { // NOI18N
+                        LOGGER.log(Level.WARNING, "no libDir for platform: {0}", interpreterPath); // NOI18N
                         skipped.add(interpreterPath);
                         continue;
                     }
-                    if (libDir != null) { // NOI18N
-                        props.put(Info.RUBY_LIB_DIR, libDir);
-                    } else {
-                        // Rubinius libDir is not detected by script
-                        if (!"Rubinius".equals(kind)) { // NOI18N
-                            LOGGER.log(Level.WARNING, "no libDir for platform: {0}", interpreterPath); // NOI18N
-                            skipped.add(interpreterPath);
-                            continue;
-                        }
-                    }
-                    props.put(Info.RUBY_KIND, kind);
-                    props.put(Info.RUBY_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION));
-                    String jrubyVersion = p.get(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION);
-                    if (jrubyVersion != null) {
-                        props.put(Info.JRUBY_VERSION, jrubyVersion);
-                    }
-                    String patchLevel = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL);
-                    if (patchLevel != null){
-                        props.put(Info.RUBY_PATCHLEVEL, patchLevel);
-                    }
-                    props.put(Info.RUBY_RELEASE_DATE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE));
+                }
+                props.put(Info.RUBY_KIND, kind);
+                props.put(Info.RUBY_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION));
+                String jrubyVersion = p.get(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION);
+                if (jrubyVersion != null) props.put(Info.JRUBY_VERSION, jrubyVersion);
+
+                String patchLevel = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL);
+                if (patchLevel != null) props.put(Info.RUBY_PATCHLEVEL, patchLevel);
+
+                props.put(Info.RUBY_RELEASE_DATE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE));
 //                    props.put(Info.RUBY_EXECUTABLE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE));
-                    props.put(Info.RUBY_PLATFORM, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM));
-                    String gemHome = p.get(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
-                    if (gemHome != null) {
-                        props.put(Info.GEM_HOME, gemHome);
-                        props.put(Info.GEM_PATH, p.get(PLATFORM_PREFIX + idDot + Info.GEM_PATH));
-                        props.put(Info.GEM_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.GEM_VERSION));
-                    }
-                    Info info = new Info(props);
-                    platforms.add(new RubyPlatform(id, interpreterPath, info));
-                    foundDefault |= id.equals(PLATFORM_ID_DEFAULT);
+                props.put(Info.RUBY_PLATFORM, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM));
+                String gemHome = p.get(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
+                if (gemHome != null) {
+                    props.put(Info.GEM_HOME, gemHome);
+                    props.put(Info.GEM_PATH, p.get(PLATFORM_PREFIX + idDot + Info.GEM_PATH));
+                    props.put(Info.GEM_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.GEM_VERSION));
                 }
+                platforms.add(new RubyPlatform(id, interpreterPath, new Info(props)));
+                foundDefault |= id.equals(PLATFORM_ID_DEFAULT);
             }
-            if (!foundDefault) {
-                RubyPlatform defaultPlatform = findDefaultPlatform();
-                if (defaultPlatform != null) {
-                    platforms.add(defaultPlatform);
-                }
-            }
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    for (String interpreter : skipped) {
-                        try {
-                            addPlatform(new File(interpreter));
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            });
-            LOGGER.log(Level.FINE, "RubyPlatform initial list: {0}", platforms);
         }
+        if (!foundDefault) {
+            RubyPlatform defaultPlatform = findDefaultPlatform();
+            if (defaultPlatform != null) platforms.add(defaultPlatform);
+        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                for (String interpreter : skipped) {
+                    try {
+                        addPlatform(new File(interpreter));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+        LOGGER.log(Level.FINE, "RubyPlatform initial list: {0}", platforms);
 
         return platforms;
     }
@@ -347,9 +342,9 @@ public final class RubyPlatformManager {
     /** Typically bundled JRuby. */
     public static RubyPlatform getDefaultPlatform() {
         RubyPlatform defaultPlatform = RubyPlatformManager.getPlatformByID(PLATFORM_ID_DEFAULT);
-        if (defaultPlatform == null) {
-            LOGGER.fine("Default platform is not installed");
-        }
+
+        if (defaultPlatform == null) LOGGER.fine("Default platform is not installed");
+
         return defaultPlatform;
     }
 
