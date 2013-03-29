@@ -168,6 +168,7 @@ class IntroduceKindFinder implements ParseTreeVisitor {
         return invalid;
     }
 
+    @Override
     public boolean unvisit(Node node) {
         return invalid;
     }
