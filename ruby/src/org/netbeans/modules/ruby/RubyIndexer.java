@@ -247,13 +247,12 @@ public class RubyIndexer extends EmbeddingIndexer {
 //
 //    }
 
-    // deadlock if we to index the same file while asking for indexing on in IDE
     // See RubyIndex#search for why we need this
-    public static boolean preventIndexing = false;
+    public static RubyIndexerMutex lock = new RubyIndexerMutex();    
     
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
-        if (preventIndexing) return;
+        if (lock.isLocked()) return; // See RubyIndex#search for why we need this
 
         Node root = AstUtilities.getRoot(parserResult);
         RubyParseResult r = AstUtilities.getParseResult(parserResult);
