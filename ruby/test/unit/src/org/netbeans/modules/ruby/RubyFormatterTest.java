@@ -87,13 +87,16 @@ public class RubyFormatterTest extends RubyTestBase {
         }
     }
 
+    // UPGRADE19: This is ok to run when jruby-parser is updated or when jruby is updated for sanity (although it is very unlikely to find problems anymore).  However,
+    // this is so brittle over time and is so overkill to be run for every change to nb ruby that I am disabling it.
+    /*
     public void testReformatAll() {
         // Find ruby files
         List<FileObject> files = findJRubyRubyFiles();
         assertTrue(files.size() > 0);
 
         reformatAll(files);
-    }
+    }*/
     
     private boolean skip(FileObject fo, String name, String parentName) {
         if (fo.getName().equals(name) && (parentName == null || fo.getParent().getNameExt().equals(parentName))) {
