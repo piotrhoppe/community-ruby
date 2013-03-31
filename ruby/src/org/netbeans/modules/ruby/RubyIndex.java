@@ -186,17 +186,20 @@ public final class RubyIndex {
     // FIXME: Some change in the indexing library does not allow us to update the same file we are
     // indexing over.  This is causing a deadlock.  There must be a better way than not allowing
     // the indexer to update the index.
+    // ENEBO: I have audited other lang implementations and none of them have this same logic added
+    // so it is clear either they all have this bug or we are not doing something correctly with
+    // regards to indexing elsewhere (duh :) ).  This patch by Rocko Requin does work around the issue
+    // until we figure out where the other problem is.
     private boolean search(final String key, final String name, final QuerySupport.Kind kind, final Collection<IndexResult> result, final String... fieldsToLoad) {
         try {
-            if (RubyIndexer.preventIndexing) return false;
+            if (!RubyIndexer.lock.lock()) return false;
 
-            RubyIndexer.preventIndexing = true;
             result.addAll(querySupport.query(key, name, kind, fieldsToLoad));
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
             return false;
         } finally {
-            RubyIndexer.preventIndexing = false;
+            RubyIndexer.lock.release();
         }
         return true;
     }
