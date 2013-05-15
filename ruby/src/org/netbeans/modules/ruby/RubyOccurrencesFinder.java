@@ -56,34 +56,33 @@ import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.ArgsNode;
 import org.jrubyparser.ast.ArgumentNode;
 import org.jrubyparser.ast.AssignableNode;
-import org.jrubyparser.ast.BackRefNode;
 import org.jrubyparser.ast.BlockArgNode;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassVarAsgnNode;
 import org.jrubyparser.ast.ClassVarDeclNode;
-import org.jrubyparser.ast.ClassVarNode;
 import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.ConstDeclNode;
 import org.jrubyparser.ast.ConstNode;
 import org.jrubyparser.ast.DAsgnNode;
-import org.jrubyparser.ast.DVarNode;
 import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.GlobalAsgnNode;
-import org.jrubyparser.ast.GlobalVarNode;
+import org.jrubyparser.ast.IClassVariable;
+import org.jrubyparser.ast.IGlobalVariable;
+import org.jrubyparser.ast.IInstanceVariable;
+import org.jrubyparser.ast.ILocalVariable;
 import org.jrubyparser.ast.InstAsgnNode;
-import org.jrubyparser.ast.InstVarNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.LocalVarNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
-import org.jrubyparser.ast.NthRefNode;
 import org.jrubyparser.ast.ReturnNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.YieldNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.MethodNameNode;
 import org.jrubyparser.ast.SelfNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
@@ -126,6 +125,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
     public RubyOccurrencesFinder() {
     }
 
+    @Override
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
         return occurrences;
     }
@@ -138,21 +138,18 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         cancelled = false;
     }
 
+    @Override
     public final synchronized void cancel() {
         cancelled = true;
     }
 
     @Override
     public void run(Result info, SchedulerEvent event) {
-        if (!ENABLED) {
-            return;
-        }
+        if (!ENABLED) return;
 
         resume();
 
-        if (isCancelled()) {
-            return;
-        }
+        if (isCancelled()) return;
 
         FileObject currentFile = RubyUtils.getFileObject(info);
         if (currentFile != file) {
@@ -162,36 +159,25 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
 
         RubyParseResult rpr = AstUtilities.getParseResult(info);
-        if (rpr == null) {
-            return;
-        }
+        if (rpr == null) return;
 
         root = rpr.getRootNode();
-        if (root == null) {
-            return;
-        }
+        if (root == null) return;
 
-        Map<OffsetRange, ColoringAttributes> highlights =
-            new HashMap<OffsetRange, ColoringAttributes>(100);
+        Map<OffsetRange, ColoringAttributes> highlights = new HashMap<OffsetRange, ColoringAttributes>(100);
 
         int astOffset = AstUtilities.getAstOffset(info, caretPosition);
-        if (astOffset == -1) {
-            return;
-        }
+        if (astOffset == -1) return;
 
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
-        if (closest == null) {
-            return;
-        }
+        if (closest == null) return;
 
         // When we sanitize the line around the caret, occurrences
         // highlighting can get really ugly
         OffsetRange blankRange = rpr.getSanitizedRange();
 
-        if (blankRange.containsInclusive(astOffset)) {
-            closest = null;
-        }
+        if (blankRange.containsInclusive(astOffset)) closest = null;
 
         // JRuby sometimes gives me some "weird" sections. For example,
         // if you have
@@ -205,10 +191,8 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             //SourcePosition pos = closest.getPosition();
 
             BaseDocument doc = RubyUtils.getDocument(info);
-            if (doc == null) {
-                // Document was just closed
-                return;
-            }
+            if (doc == null) return; // Document was just closed
+
             try {
                 doc.readLock();
                 int length = doc.getLength();
@@ -219,12 +203,8 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
                 // If the buffer was just modified where a lot of text was deleted,
                 // the parse tree positions could be pointing outside the valid range
-                if (lexStartPos > length) {
-                    lexStartPos = length;
-                }
-                if (lexEndPos > length) {
-                    lexEndPos = length;
-                }
+                if (lexStartPos > length) lexStartPos = length;
+                if (lexEndPos > length) lexEndPos = length;
 
                 if (lexStartPos != -1 && lexEndPos != -1 && 
                                 Utilities.getRowStart(doc, lexStartPos) != Utilities.getRowStart(doc, lexEndPos)) {
@@ -264,56 +244,16 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
 
         if (closest != null) {
-            if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
-                // A local variable read or a parameter read, or an assignment to one of these
-                String name = ((INameNode)closest).getName();
-                Node method = AstUtilities.findLocalScope(closest, path);
-
-                highlightLocal(method, name, highlights);
-            } else if (closest instanceof DAsgnNode || closest instanceof ArgumentNode && closest.isBlockParameter()) {
-                // A dynamic variable read or assignment
-                String name = ((INameNode)closest).getName();
-                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
-                for (Node block : applicableBlocks) {
-                    highlightDynamnic(block, name, highlights);
+            if (closest instanceof ILocalVariable) {
+                for (ILocalVariable variable: ((ILocalVariable) closest).getOccurrences()) {
+                    highlights.put(AstUtilities.offsetRangeFor(variable.getNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
                 }
-            } else if (closest instanceof DVarNode) {
-                // A dynamic variable read or assignment
-                String name = ((DVarNode)closest).getName(); // Does not implement INameNode
-                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
-                for (Node block : applicableBlocks) {
-                    highlightDynamnic(block, name, highlights);
-                }
-            } else if (closest instanceof InstAsgnNode) {
-                // A field assignment
-                String name = ((INameNode)closest).getName();
-                highlightInstance(root, name, highlights);
-            } else if (closest instanceof InstVarNode) {
-                // A field variable read
-                highlightInstance(root, ((INameNode)closest).getName(), highlights);
-            } else if (closest instanceof ClassVarDeclNode || closest instanceof ClassVarAsgnNode) {
-                // A classvar assignment
-                String name = ((INameNode)closest).getName();
-                highlightClassVar(root, name, highlights);
-            } else if (closest instanceof ClassVarNode) {
-                // A xclass variable read
-                highlightClassVar(root, ((ClassVarNode)closest).getName(), highlights);
-            } else if (closest instanceof GlobalVarNode) {
-                // A global variable read
-                String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
-                highlightGlobal(root, name, highlights);
-            } else if (closest instanceof BackRefNode) {
-                // A global variable read
-                String name = "" + ((BackRefNode)closest).getType(); // BackRefNode does not implement INameNode
-                highlightGlobal(root, name, highlights);
-            } else if (closest instanceof NthRefNode) {
-                // A global variable read
-                String name = "" + ((NthRefNode)closest).getMatchNumber(); // NthRefNode does not implement INameNode
-                highlightGlobal(root, name, highlights);
-            } else if (closest instanceof GlobalAsgnNode) {
-                // A global variable assignment
-                String name = ((INameNode)closest).getName();
-                highlightGlobal(root, name, highlights);
+            } else if (closest instanceof IInstanceVariable) {
+                highlightInstance(root, ((INameNode)closest).getDecoratedName(), highlights);
+            } else if (closest instanceof IClassVariable) {
+                highlightClassVar(root, ((INameNode)closest).getDecoratedName(), highlights);
+            } else if (closest instanceof IGlobalVariable) {
+                highlightGlobal(root, ((INameNode)closest).getDecoratedName(), highlights);
             } else if (closest instanceof FCallNode || closest instanceof VCallNode ||
                     closest instanceof CallNode) {
                 // A method call
@@ -353,21 +293,18 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                     }
                 }
             } else if (closest instanceof YieldNode || closest instanceof ReturnNode) {
-                Node def = AstUtilities.findMethod(path);
+                MethodDefNode def = closest.getMethodFor();
 
-                if (def instanceof MethodDefNode) {
-                    highlightExits((MethodDefNode)def, highlights, info);
-                }
+                if (def != null) highlightExits(def, highlights, info);
             } else if (closest instanceof MethodDefNode) {
                 // A method definition. Only highlight if the caret is on the
                 // actual name, since otherwise just placing the caret on a blank
                 // line in a method will cause it to highlight.
-                OffsetRange range = AstUtilities.getFunctionNameRange(root);
+                OffsetRange range = AstUtilities.offsetRangeFor(((INameNode)closest).getDecoratedNamePosition());
 
                 if (range.containsInclusive(astOffset)) {
                     String name = ((MethodDefNode)closest).getName();
-                    highlightMethod(root, name,
-                        Collections.singletonList(Arity.getDefArity(closest)), highlights);
+                    highlightMethod(root, name, Collections.singletonList(Arity.getDefArity(closest)), highlights);
                 }
             } else if (closest instanceof Colon2Node) {
                 // A Class definition
@@ -377,8 +314,6 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
                 // TODO: alias nodes
             } else if (closest instanceof ConstNode || closest instanceof ConstDeclNode) {
-                // POSSIBLY a class usage.
-                //highlights.put(AstUtilities.getRange(closest), ColoringAttributes.MARK_OCCURRENCES);
                 highlightClass(root, ((INameNode)closest).getName(), highlights);
             } else if (closest instanceof SymbolNode) {
                 // TODO - what about Symbols for other things than fields?
@@ -417,7 +352,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                             name = AstUtilities.getNameOrValue(an.getNewName());
                         }
                     }
-
+                    
                     if (name != null) {
                         // It's over the old word: this counts as a usage.
                         // The problem is that we don't know if it's a local, a dynamic, an instance
@@ -435,10 +370,11 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
                             if (highlights.size() == count) {
                                 // Didn't find locals... try dynvars
-                                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
-                                for (Node block : applicableBlocks) {
-                                    highlightDynamnic(block, name, highlights);
-                                }
+// How do ALIASES play into all this for dvars?
+//                                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
+//                                for (Node block : applicableBlocks) {
+//                                    highlightDynamnic(block, name, highlights);
+//                                }
 
                                 if (highlights.size() == count) {
                                     // Didn't find locals... try methods
@@ -472,30 +408,12 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                         }
                     }
                 }
-            } else if (closest instanceof ArgumentNode) {
-                // A method name (if under a DefnNode or DefsNode) or a parameter (if indirectly under an ArgsNode)
-                String name = ((ArgumentNode)closest).getName(); // ArgumentNode doesn't implement INameNode
-
-                Node parent = path.leafParent();
-
-                if (parent != null) {
-                    if (parent instanceof MethodDefNode) {
-                        //highlightMethod(root, name,
-                        //    Collections.singletonList(Arity.getDefArity(parent)), highlights);
-                        highlightExits((MethodDefNode)parent, highlights, info);
-                    } else {
-                        // Parameter (check to see if its under ArgumentNode)
-                        Node method = AstUtilities.findLocalScope(closest, path);
-
-                        highlightLocal(method, name, highlights);
-                    }
-                }
+            } else if (closest instanceof MethodNameNode) {
+                highlightExits((MethodDefNode) closest.getParent(), highlights, info);
             }
         }
 
-        if (isCancelled()) {
-            return;
-        }
+        if (isCancelled()) return;
 
         if (highlights.size() > 0) {
             // XXX Parsing API
@@ -517,22 +435,18 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
     }
 
-    private void highlightExits(
-            final MethodDefNode node,
-            final Map<OffsetRange, ColoringAttributes> highlights,
+    private void highlightExits(final MethodDefNode node, final Map<OffsetRange, ColoringAttributes> highlights,
             final Result info) {
         BaseDocument doc = RubyUtils.getDocument(info);
-        if (doc == null) {
-            return;
-        }
+        if (doc == null) return;
+
         try {
             doc.readLock();
             Set<Node> exits = new HashSet<Node>();
             AstUtilities.findExitPoints(node, exits);
             for (Node exit : exits) {
-                if (exit.isInvisible()) {
-                    continue;
-                }
+                if (exit.isInvisible()) continue;
+
                 highlightExitPoint(exit, highlights, info);
             }
         } finally {
@@ -540,9 +454,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
     }
 
-    private void highlightExitPoint(
-            final Node node,
-            final Map<OffsetRange, ColoringAttributes> highlights,
+    private void highlightExitPoint(final Node node, final Map<OffsetRange, ColoringAttributes> highlights,
             final Result info) {
         if (node.getNodeType() == NodeType.RETURNNODE) {
             OffsetRange astRange = AstUtilities.getRange(node);
@@ -609,8 +521,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
     }
 
-    private void highlightLocal(Node node, String name,
-        Map<OffsetRange, ColoringAttributes> highlights) {
+    private void highlightLocal(Node node, String name, Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof LocalAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.offsetRangeFor(((AssignableNode) node).getLeftHandSidePosition());
@@ -619,7 +530,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         } else if (node instanceof LocalVarNode) {
             if (((INameNode)node).getName().equals(name)) {
                 highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }            
+            }
         } else if (node instanceof ArgsNode) {
             ArgsNode an = (ArgsNode)node;
 
@@ -674,49 +585,10 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            highlightLocal(child, name, highlights);
-        }
-    }
-
-    private void highlightDynamnic(Node node, String name,
-        Map<OffsetRange, ColoringAttributes> highlights) {
-        switch (node.getNodeType()) {
-        case DVARNODE:
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-            break;
-        case ARGUMENTNODE:
-            if (((INameNode)node).getName().equals(name) && node.isBlockParameter()) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-            break;
-        case DASGNNODE:
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.offsetRangeFor(((DAsgnNode)node).getLeftHandSidePosition()),
-                        ColoringAttributes.MARK_OCCURRENCES);
-            }
-            break;
-        case ALIASNODE:
-            if (!ignoreAlias) handleAliasNode((AliasNode)node, name, highlights);
-            break;
-        }
-
         for (Node child : node.childNodes()) {
             if (child.isInvisible()) continue;
 
-            switch (child.getNodeType()) {
-            case ITERNODE: case DEFNNODE: case DEFSNODE: case CLASSNODE: case SCLASSNODE: case MODULENODE:
-                continue;
-            }
-
-            highlightDynamnic(child, name, highlights);
+            highlightLocal(child, name, highlights);
         }
     }
 
@@ -730,17 +602,11 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
     private void highlightInstance(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof InstVarNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof InstAsgnNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.offsetRangeFor(((InstAsgnNode)node).getLeftHandSidePosition()),
+        if (node instanceof IInstanceVariable) {
+            if (((INameNode)node).getDecoratedName().equals(name)) {
+                highlights.put(AstUtilities.offsetRangeFor(((INameNode) node).getDecoratedNamePosition()),
                         ColoringAttributes.MARK_OCCURRENCES);
             }
-        } else if (!ignoreAlias && node instanceof AliasNode) {
-            handleAliasNode((AliasNode) node, name, highlights);
         } else if (AstUtilities.isAttr(node)) {
             // TODO: Compute the symbols and check for equality
             // attr_reader, attr_accessor, attr_writer
@@ -750,10 +616,6 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 if (name.equals("@" + symbols[i].getName())) {
                     highlights.put(AstUtilities.getRange(symbols[i]), ColoringAttributes.MARK_OCCURRENCES);
                 }
-            }
-        } else if (node instanceof SymbolNode) {
-            if (("@" + ((INameNode)node).getName()).equals(name)) { // NOI18N
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (node instanceof CallNode) {
             CallNode callNode = (CallNode) node;
@@ -770,94 +632,35 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             }
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             highlightInstance(child, name, highlights);
         }
     }
 
-    private void highlightClassVar(Node node, String name,
-        Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof ClassVarNode) {
-            if (((ClassVarNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof ClassVarDeclNode || node instanceof ClassVarAsgnNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.offsetRangeFor(((AssignableNode)node).getLeftHandSidePosition()),
-                        ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (!ignoreAlias && node instanceof AliasNode) {
-            handleAliasNode((AliasNode) node, name, highlights);
-        } else if (node instanceof SymbolNode) {
-            if (("@@" + ((INameNode)node).getName()).equals(name)) { // NOI18N
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-
-            // TODO - are there attr writers for class vars?
-            //        } else if (AstUtilities.isAttrReader(node) || AstUtilities.isAttrWriter(node)) {
-            //            // TODO: Compute the symbols and check for equality
-            //            // attr_reader, attr_accessor, attr_writer
-            //            SymbolNode[] symbols = AstUtilities.getAttrSymbols(node);
-            //
-            //            for (int i = 0; i < symbols.length; i++) {
-            //                if (name.equals("@@" + symbols[i].getName())) {
-            //                    OffsetRange range = AstUtilities.getRange(symbols[i]);
-            //                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            //                }
-            //            }
+    private void highlightClassVar(Node node, String name, Map<OffsetRange, ColoringAttributes> highlights) {
+        if (node instanceof IClassVariable && ((IClassVariable)node).getDecoratedName().equals(name)) {
+            highlights.put(AstUtilities.offsetRangeFor(((IClassVariable) node).getDecoratedNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             highlightClassVar(child, name, highlights);
         }
     }
 
-    private void highlightGlobal(Node node, String name,
-        Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof GlobalVarNode) {
-            //if (((INameNode)node).getName().equals(name)) { // GlobalVarNode does not implement INameNode
-            if (((GlobalVarNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof BackRefNode) {
-            //if (((INameNode)node).getName().equals(name)) { // BackRefNode does not implement INameNode
-            if (("" + ((BackRefNode)node).getType() + "").equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof NthRefNode) {
-            //if (((INameNode)node).getName().equals(name)) { // NthRefNode does not implement INameNode
-            if (("" + ((NthRefNode)node).getMatchNumber()).equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof GlobalAsgnNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.offsetRangeFor(((AssignableNode)node).getLeftHandSidePosition()),
-                        ColoringAttributes.MARK_OCCURRENCES);
-            }
+    private void highlightGlobal(Node node, String name, Map<OffsetRange, ColoringAttributes> highlights) {
+        if (node instanceof IGlobalVariable && ((IGlobalVariable) node).getDecoratedName().equals(name)) {
+            highlights.put(AstUtilities.offsetRangeFor(((IGlobalVariable) node).getDecoratedNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
         } else if (!ignoreAlias && node instanceof AliasNode) {
             handleAliasNode((AliasNode) node, name, highlights);
-        } else if (node instanceof SymbolNode) {
-            if (("$" + ((INameNode)node).getName()).equals(name)) { // NOI18N
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             highlightGlobal(child, name, highlights);
         }
     }
@@ -870,8 +673,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
             for (Arity arity : arities) {
                 if (Arity.matches(arity, defArity)) {
-                    OffsetRange range = AstUtilities.getFunctionNameRange(node);
-                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                    highlights.put(AstUtilities.offsetRangeFor(((MethodDefNode) node).getDecoratedNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
 
                     break;
                 }
@@ -896,12 +698,9 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             }
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             highlightMethod(child, name, arities, highlights);
         }
     }
@@ -912,54 +711,31 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         if (node instanceof MethodDefNode && ((MethodDefNode)node).getName().equals(name)) {
             Arity defArity = Arity.getDefArity(node);
 
-            if (Arity.matches(callArity, defArity)) {
-                defArities.add(defArity);
-            }
+            if (Arity.matches(callArity, defArity)) defArities.add(defArity);
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             findDefArities(defArities, child, name, callArity);
         }
     }
 
-    private void highlightClass(Node node, String name,
-        Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof ConstNode) {
+    private void highlightClass(Node node, String name, Map<OffsetRange, ColoringAttributes> highlights) {
+        if (node instanceof ConstNode || node instanceof ConstDeclNode || node instanceof Colon2Node) {
             if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof ConstDeclNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.offsetRangeFor(((ConstDeclNode)node).getLeftHandSidePosition()),
-                        ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (node instanceof Colon2Node) {
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
-            }
-        } else if (!ignoreAlias && node instanceof AliasNode) {
-            handleAliasNode((AliasNode) node, name, highlights);
-        } else if (node instanceof SymbolNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.getRange(node), ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.offsetRangeFor(((INameNode) node).getDecoratedNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
             }
         }
 
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             highlightClass(child, name, highlights);
         }
     }
 
+    @Override
     public void setCaretPosition(int position) {
         this.caretPosition = position;
     }

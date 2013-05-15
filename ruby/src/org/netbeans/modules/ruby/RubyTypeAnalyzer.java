@@ -233,7 +233,7 @@ final class RubyTypeAnalyzer {
                 collectMultipleAsgnVars(multipleAsgnNode, typeInferencer, vars);
                 for (Node each : vars.keySet()) {
                     if (each instanceof INameNode) {
-                        String name = AstUtilities.getName(each);
+                        String name = ((INameNode) each).getDecoratedName();
                         maybePutTypeForSymbol(typesForSymbols, name, vars.get(each), override, currentMethod);
                     }
                 }
@@ -245,7 +245,7 @@ final class RubyTypeAnalyzer {
                 collectMultipleAsgnVars(multipleAsgnNode, typeInferencer, vars);
                 for (Node each : vars.keySet()) {
                     if (each instanceof INameNode) {
-                        String name = AstUtilities.getName(each);
+                        String name = ((INameNode) each).getDecoratedName();
                         maybePutTypeForSymbol(typesForSymbols, name, vars.get(each), override, currentMethod);
                     }
                 }
@@ -279,29 +279,12 @@ final class RubyTypeAnalyzer {
                 maybePutTypeForSymbol(typesForSymbols, fqn, type, override, currentMethod);
                 break;
             }
-            case INSTASGNNODE:
-            case GLOBALASGNNODE:
-            case CLASSVARASGNNODE:
-            case CLASSVARDECLNODE:
+            case INSTASGNNODE: case GLOBALASGNNODE: case CLASSVARASGNNODE: case CLASSVARDECLNODE:
             case DASGNNODE: {
-                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
-
-                // null element in types set means that we are not able to infer
-                // the expression
-                String symbol = AstUtilities.getName(node);
-                maybePutTypeForSymbol(typesForSymbols, symbol, type, override, currentMethod);
+                maybePutTypeForSymbol(typesForSymbols, ((INameNode) node).getDecoratedName(), 
+                        typeInferencer.inferTypesOfRHS(node, currentMethod), override, currentMethod);
                 break;
             }
-//        case ITERNODE: {
-//            // A block. See if I know the LHS expression types, and if so
-//            // I can propagate the type into the block variables.
-//        }
-//        case CALLNODE: {
-//            // Look for known calls whose return types we can guess
-//            String name = AstUtilities.getName(node);
-//            if (name.startsWith("find")) {
-//            }
-//        }
         }
 
         if (node.getNodeType() == NodeType.IFNODE) {

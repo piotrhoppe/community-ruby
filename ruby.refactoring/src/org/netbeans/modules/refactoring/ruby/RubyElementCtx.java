@@ -110,6 +110,7 @@ public class RubyElementCtx {
         Node _root = AstUtilities.getRoot(parserResult);
 
         int astOffset = AstUtilities.getAstOffset(parserResult, caret);
+//        Node leaf = _root.getNodeAt(astOffset);
         path = new AstPath(_root, astOffset);
 
         Node leaf = path.leaf();
@@ -333,11 +334,7 @@ public class RubyElementCtx {
     }
 
     public String getSimpleName() {
-        if (name == null) {
-            getName();
-        }
-
-        return simpleName;
+        return name == null ? getName() : simpleName;
     }
 
     public void setNames(String name, String simpleName) {

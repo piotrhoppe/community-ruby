@@ -814,10 +814,10 @@ public class AstUtilities {
     private static Node findBySignature(Node root, Node node, String signature, String name, boolean[] lookingForMethod) {
         switch (node.getNodeType()) {
         case INSTASGNNODE:
-            if (name.charAt(0) == '@' && name.equals(((INameNode) node).getName())) return node;
+            if (name.charAt(0) == '@' && name.equals(((INameNode) node).getDecoratedName())) return node;
             break;
         case CLASSVARDECLNODE: case CLASSVARASGNNODE:
-            if (name.startsWith("@@") && name.equals(((INameNode) node).getName())) return node;
+            if (name.startsWith("@@") && name.equals(((INameNode) node).getDecoratedName())) return node;
             break;
 
         case DEFNNODE:
@@ -859,8 +859,8 @@ public class AstUtilities {
             break;
         }
         case FCALLNODE:
-            if (isAttr(node) || isNamedScope(node)
-                    || isActiveRecordAssociation(node) || isNodeNameIn(node, RubyStructureAnalyzer.DYNAMIC_METHODS)) { //NOI18N
+            if (isAttr(node) || isNamedScope(node) || isActiveRecordAssociation(node) || 
+                    isNodeNameIn((INameNode) node, RubyStructureAnalyzer.DYNAMIC_METHODS)) {
                 for (Node each : getChildValues(node)) {
                     if (name.equals(getNameOrValue(each))) return each;
                 }
@@ -1037,7 +1037,7 @@ public class AstUtilities {
         if (node instanceof AssignableNode) {
             return offsetRangeFor(((AssignableNode)node).getLeftHandSidePosition());
         } else if (node instanceof MethodDefNode) {
-            return getFunctionNameRange(node);
+            return offsetRangeFor(((INameNode) node).getDecoratedNamePosition());
         } else if (isCall(node)) {
             return getCallRange(node);
         } else if (node instanceof ClassNode) {
@@ -1099,6 +1099,7 @@ public class AstUtilities {
         return new OffsetRange(start, end);
     }
 
+    /*
     public static OffsetRange getFunctionNameRange(Node node) {
         // TODO - enforce MethodDefNode and call getNameNode on it!
         for (Node child : node.childNodes()) {
@@ -1134,7 +1135,7 @@ public class AstUtilities {
         }
 
         return OffsetRange.NONE;
-    }
+    }*/
 
     /**
      * Return the OffsetRange for an AliasNode that represents the new name portion.
@@ -1289,14 +1290,9 @@ public class AstUtilities {
 
             if (node instanceof ModuleNode || node instanceof ClassNode) {
                 Colon3Node cpath = ((IScopingNode)node).getCPath();
+                if (cpath == null) continue;
 
-                if (cpath == null) {
-                    continue;
-                }
-
-                if (sb.length() > 0) {
-                    sb.append("::"); // NOI18N
-                }
+                if (sb.length() > 0) sb.append("::"); // NOI18N
 
                 if (cpath instanceof Colon2Node) {
                     sb.append(getFqn((Colon2Node)cpath));
@@ -1310,42 +1306,25 @@ public class AstUtilities {
     }
 
     public static boolean isAttr(Node node) {
-        if (!isCallNode(node)) {
-            return false;
-        }
-
-        return isNodeNameIn(node, ATTR_ACCESSORS) || isNodeNameIn(node, CATTR_ACCESSORS);
+        return isCallNode(node) && (isNodeNameIn((INameNode) node, ATTR_ACCESSORS) || isNodeNameIn((INameNode) node, CATTR_ACCESSORS));
     }
 
     public static boolean isCAttr(Node node) {
-        if (!isCallNode(node)) {
-            return false;
-        }
-
-        return isNodeNameIn(node, CATTR_ACCESSORS);
+        return isCallNode(node) && isNodeNameIn((INameNode) node, CATTR_ACCESSORS);
     }
 
     static boolean isNamedScope(Node node) {
-        if (!isCallNode(node)) {
-            return false;
-        }
-        return isNodeNameIn(node, NAMED_SCOPE);
+        return isCallNode(node) && isNodeNameIn((INameNode) node, NAMED_SCOPE);
     }
-
 
     public static boolean isActiveRecordAssociation(Node node) {
-        if (!isCallNode(node)) {
-            return false;
-        }
-        return isNodeNameIn(node, ActiveRecordAssociationFinder.AR_ASSOCIATIONS);
+        return isCallNode(node) && isNodeNameIn((INameNode) node, ActiveRecordAssociationFinder.AR_ASSOCIATIONS);
     }
 
-    static boolean isNodeNameIn(Node node, String... names) {
-        String name = getName(node);
+    static boolean isNodeNameIn(INameNode node, String... names) {
+        String name = node.getName();
         for (String each : names) {
-            if (each.equals(name)) {
-                return true;
-            }
+            if (each.equals(name)) return true;
         }
         return false;
     }
@@ -1868,8 +1847,7 @@ public class AstUtilities {
         
         // Try to guess the name - see if it's in a method and if so name it after the parameter
         IndexedMethod[] methodHolder = new IndexedMethod[1];
-        @SuppressWarnings("unchecked")
-        Set<IndexedMethod>[] alternatesHolder = new Set[1];
+        @SuppressWarnings("unchecked") Set<IndexedMethod>[] alternatesHolder = new Set[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
         if (!RubyMethodCompleter.computeMethodCall(result, lexRange.getStart(), astRange.getStart(),

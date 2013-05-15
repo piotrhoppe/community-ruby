@@ -69,8 +69,7 @@ public final class ContextKnowledge {
         this(index, root, null, -1, -1, parserResult);
     }
 
-    public ContextKnowledge(RubyIndex index, Node root, Node target, int astOffset,
-            int lexOffset, ParserResult parserResult) {
+    public ContextKnowledge(RubyIndex index, Node root, Node target, int astOffset, int lexOffset, ParserResult parserResult) {
         Parameters.notNull("root", root);
         Parameters.notNull("parserResult", parserResult);
         this.index = index;
@@ -97,15 +96,14 @@ public final class ContextKnowledge {
      * @return
      */
     RubyType getTypeForMethod(String clazz, String methodName) {
-        if (analyzedMethods == null || analyzedMethods.isEmpty()) {
-            return null;
-        }
+        if (analyzedMethods == null || analyzedMethods.isEmpty()) return null;
+
         for (AstMethodElement each : analyzedMethods) {
             String in = each.getIn();
-            if (in != null && in.equals(clazz) && each.getName().equals(methodName)) {
-                return each.getType();
-            }
+
+            if (in != null && in.equals(clazz) && each.getName().equals(methodName)) return each.getType();
         }
+        
         return null;
     }
 
@@ -139,21 +137,20 @@ public final class ContextKnowledge {
         maybePutTypeForSymbol(var, RubyType.create(type), override);
     }
 
-    void maybePutTypeForSymbol(
-            final String symbol,
-            final RubyType newType,
-            final boolean override) {
+    void maybePutTypeForSymbol(final String symbol, final RubyType newType, final boolean override) {
         RubyType mapType = typesForSymbols.get(symbol);
+        
         if (mapType == null || override) {
             mapType = new RubyType();
             typesForSymbols.put(symbol, mapType);
         }
+        
         mapType.append(newType);
     }
 
-    static RubyType getTypesForSymbol(
-            final Map<String, RubyType> typeForSymbol, final String name) {
+    static RubyType getTypesForSymbol(final Map<String, RubyType> typeForSymbol, final String name) {
         RubyType type = typeForSymbol.get(name);
+        
         return type == null ? RubyType.unknown() : type;
     }
 
@@ -189,5 +186,4 @@ public final class ContextKnowledge {
     public String toString() {
         return "ContextKnowledge[realTypes:" + typesForSymbols + ']'; // NOI18N
     }
-
 }

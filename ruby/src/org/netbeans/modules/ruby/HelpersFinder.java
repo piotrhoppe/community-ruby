@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Set;
+import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.SymbolNode;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
@@ -71,24 +72,19 @@ final class HelpersFinder {
 
     private final RubyIndex index;
     private final SymbolNode closest;
-    private final Node root;
     private final AstPath path;
 
-    public HelpersFinder(RubyIndex index, SymbolNode closest, Node root, AstPath path) {
+    public HelpersFinder(RubyIndex index, SymbolNode closest, AstPath path) {
         this.index = index;
         this.closest = closest;
-        this.root = root;
         this.path = path;
     }
 
     private MethodInfo getMethodInfo(Node node) {
-        if (!AstUtilities.isCall(node)) {
-            return null;
-        }
+        if (!AstUtilities.isCall(node)) return null;
+
         for (MethodInfo each : APPLICABLE_METHODS) {
-            if (AstUtilities.isNodeNameIn(node, each.name)) {
-                return each;
-            }
+            if (AstUtilities.isNodeNameIn((INameNode) node, each.name)) return each;
         }
         return null;
     }
@@ -98,40 +94,33 @@ final class HelpersFinder {
         // first argument
         for (Node child : closest.childNodes()) {
             result = getMethodInfo(child);
-            if (result != null) {
-                return result;
-            }
+            if (result != null) return result;
         }
         // others
         result = getMethodInfo(path.leafParent());
-        if (result == null) {
-            result = getMethodInfo(path.leafGrandParent());
-        }
+        if (result == null) result = getMethodInfo(path.leafGrandParent());
+
         return result;
     }
 
 
     private String getClassName(MethodInfo methodInfo) {
         String className = AstUtilities.getName(closest);
-        if (className.length() == 0) {
-            return null;
-        }
+        if (className.length() == 0) return null;
+
         return methodInfo.getClassName(RubyUtils.underlinedNameToCamel(className)); //NOI18N
     }
 
     DeclarationLocation findHelperLocation() {
         MethodInfo methodInfo = getMethodInfo();
-        if (methodInfo == null) {
-            return DeclarationLocation.NONE;
-        }
+        if (methodInfo == null) return DeclarationLocation.NONE;
+
         String className = getClassName(methodInfo);
-        if (className == null) {
-            return DeclarationLocation.NONE;
-        }
+        if (className == null) return DeclarationLocation.NONE;
+
         Set<IndexedClass> result = index.getClasses(className, Kind.EXACT, true, false, false);
-        if (result.isEmpty()) {
-            return DeclarationLocation.NONE;
-        }
+        if (result.isEmpty()) return DeclarationLocation.NONE;
+
         return RubyDeclarationFinder.getLocation(result);
     }
 

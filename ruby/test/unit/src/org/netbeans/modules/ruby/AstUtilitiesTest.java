@@ -46,19 +46,13 @@ package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.ArrayNode;
-import org.jrubyparser.ast.AssignableNode;
 import org.jrubyparser.ast.CallNode;
-import org.jrubyparser.ast.ClassNode;
-import org.jrubyparser.ast.Colon2Node;
-import org.jrubyparser.ast.DStrNode;
 import org.jrubyparser.ast.DefnNode;
 import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.FalseNode;
@@ -74,11 +68,9 @@ import org.jrubyparser.ast.NilNode;
 import org.jrubyparser.ast.TrueNode;
 import org.jrubyparser.ast.VCallNode;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * @todo Lots of other methods to test!
@@ -145,7 +137,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         Node node = AstUtilities.findBySignature(root, "Ape#@dialogs");
         assertNotNull(node);
         assertEquals(node.getNodeType(), NodeType.INSTASGNNODE);
-        assertEquals("@dialogs", ((INameNode)node).getName());
+        assertEquals("@dialogs", ((INameNode)node).getDecoratedName());
     }
 
     public void testFindBySignatureClassVar() throws Exception {
@@ -153,7 +145,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         Node node = AstUtilities.findBySignature(root, "Ape#@@debugging");
         assertNotNull(node);
         assertEquals(node.getNodeType(), NodeType.CLASSVARASGNNODE);
-        assertEquals("@@debugging", ((INameNode)node).getName());
+        assertEquals("@@debugging", ((INameNode)node).getDecoratedName());
     }
 
     public void testFindRequires() throws Exception {

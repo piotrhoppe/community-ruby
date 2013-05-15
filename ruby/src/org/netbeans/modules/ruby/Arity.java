@@ -114,11 +114,7 @@ public final class Arity {
         Arity arity = new Arity(0, 0);
         arity.initializeFromCall(call);
 
-        if (arity.min == -1) {
-            return UNKNOWN;
-        } else {
-            return arity;
-        }
+        return arity.min == -1 ? UNKNOWN : arity;
     }
 
     public static boolean callHasArguments(Node call) {
@@ -128,19 +124,15 @@ public final class Arity {
     }
     
     private void initializeFromCall(Node node) {
+        if (node == null) return;
+        
         if (node instanceof FCallNode) {
-            Node argsNode = ((FCallNode)node).getArgs();
-            if (argsNode == null) {
-                return;
-            }
-
-            initializeFromCall(argsNode);
+            initializeFromCall(((FCallNode)node).getArgs());
         } else if (node instanceof LocalAsgnNode) {
-            if (max < Integer.MAX_VALUE) {
-                max++;
-            }
+            if (max < Integer.MAX_VALUE) max++;
         } else if (node instanceof ArgsCatNode) {
             ArgsCatNode args = (ArgsCatNode)node;
+            
             initializeFromCall(args.getFirst());
             // ArgsCatNode seems to be used only to append splats
             // but I don't get a splat node. So just pretend I did.
@@ -149,43 +141,25 @@ public final class Arity {
         } else if (node instanceof ArgsNode) {
             ArgsNode args = (ArgsNode)node;
 
-            if (args != null) {
-//                int value = args.getArity().getValue();
-                //XXX: jruby-parser
-                int value = args.getMaxArgumentsCount();
+            int value = args.getMaxArgumentsCount();
+            if (value < 0) value = -(1 + value);
 
-                if (value < 0) {
-                    value = -(1 + value);
-                }
-
-                min = max = value;
-            }
+            min = max = value;
         } else if (node instanceof SplatNode) {
             // Flexible number of arguments
             max = Integer.MAX_VALUE;
         } else if (node instanceof CallNode) {
-            Node argsNode = ((CallNode)node).getArgs();
-            if (argsNode == null) {
-                return;
-            }
-
-            initializeFromCall(argsNode);
+            initializeFromCall(((CallNode)node).getArgs());
         } else if (node instanceof VCallNode) {
-            List<Node> children = node.childNodes();
+            for (Node child : node.childNodes()) {
+                if (child.isInvisible()) continue;
 
-            for (Node child : children) {
-                if (child.isInvisible()) {
-                    continue;
-                }
                 initializeFromCall(child);
             }
         } else if (node instanceof ListNode) {
-            List<Node> children = node.childNodes();
+            for (Node child : node.childNodes()) {
+                if (child.isInvisible()) continue;
 
-            for (Node child : children) {
-                if (child.isInvisible()) {
-                    continue;
-                }
                 if (AstUtilities.isCall(child)) {
                     min++;
 
@@ -210,9 +184,7 @@ public final class Arity {
             //assert (node instanceof LocalVarNode || node instanceof SymbolNode || node instanceof FixnumNode || ...
             min++;
 
-            if (max < Integer.MAX_VALUE) {
-                max++;
-            }
+            if (max < Integer.MAX_VALUE) max++;
         }
     }
 
@@ -244,15 +216,8 @@ public final class Arity {
                 initializeFromDef(argsNode.getOptional());
             }
             
-            if (argsNode.getBlock() != null) {
-                if (max < Integer.MAX_VALUE) {
-                    max++;
-                }
-            }
-
-            if (argsNode.getRest() != null) {
-                max = Integer.MAX_VALUE;
-            }
+            if (argsNode.getBlock() != null && max < Integer.MAX_VALUE) max++;
+            if (argsNode.getRest() != null) max = Integer.MAX_VALUE;
 
             // TODO: Block arg node. Not sure how this should affect arity.
             //argsNode.getBlock()
@@ -285,24 +250,12 @@ public final class Arity {
         // If we don't know the arity for either side, consider it a match.
         // This may mean we get false positives (e.g. a method call doesn't
         // really a hit a method, so we may think it is used where it is not)
-        if ((call == UNKNOWN) || (method == UNKNOWN)) {
-            return true;
-        }
+        if (call == UNKNOWN || method == UNKNOWN) return true;
 
-        if (call.max < method.min) {
-            return false;
-        }
+        if (call.max < method.min) return false;
+        if (call.max == Integer.MAX_VALUE) return true; // Unknown number of args - assume it's okay
 
-        if (call.max == Integer.MAX_VALUE) {
-            // Unknown number of args - assume it's okay
-            return true;
-        }
-
-        if (call.max > method.max) {
-            return false;
-        }
-
-        return true;
+        return call.max <= method.max;
     }
 
     @Override
@@ -316,20 +269,11 @@ public final class Arity {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Arity other = (Arity) obj;
-        if (this.min != other.min) {
-            return false;
-        }
-        if (this.max != other.max) {
-            return false;
-        }
-        return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Arity other = (Arity) obj;
+        
+        return this.min == other.min && this.max == other.max;
     }
 
     @Override
