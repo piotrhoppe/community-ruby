@@ -362,10 +362,10 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         return false;
     }
 
-    private void highlightMethodName(Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
-        OffsetRange range = AstUtilities.getFunctionNameRange(node);
+    private void highlightMethodName(MethodDefNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
+        OffsetRange range = AstUtilities.offsetRangeFor(node.getDecoratedNamePosition());
         
         // Don't block out already annotated private methods
-        if (range != OffsetRange.NONE && !highlights.containsKey(range)) highlights.put(range, ColoringAttributes.METHOD_SET);
+        if (!highlights.containsKey(range)) highlights.put(range, ColoringAttributes.METHOD_SET);
     }
 }

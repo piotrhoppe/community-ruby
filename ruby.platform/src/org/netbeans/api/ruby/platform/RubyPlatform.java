@@ -185,7 +185,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      */
     @CheckForNull
     public static GemManager gemManagerFor(final Project project) {
-        RubyPlatform platform = RubyPlatform.platformFor(project);
+        RubyPlatform platform = platformFor(project);
         return platform == null ? null : platform.getGemManager();
     }
 
@@ -287,27 +287,24 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     public synchronized String getRake() {
-        if (rake == null) {
-            rake = findExecutable("rake"); // NOI18N
-            GemManager manager = getGemManager();
+        if (rake != null) return rake;
 
-            if (rake != null && !(new File(rake).exists()) && manager != null && manager.getLatestVersion("rake") != null) { // NOI18N
-                // On Windows, rake does funny things - you may only get a rake.bat
-                InstalledFileLocator locator = InstalledFileLocator.getDefault();
-                File f = locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
-                        null, false);
+        rake = findExecutable("rake"); // NOI18N
+        GemManager manager = getGemManager();
 
-                if (f == null) {
-                    throw new RuntimeException("Can't find cluster"); // NOI18N
-                }
+        if (rake != null && !(new File(rake).exists()) && manager != null && manager.getLatestVersion("rake") != null) { // NOI18N
+            // On Windows, rake does funny things - you may only get a rake.bat
+            InstalledFileLocator locator = InstalledFileLocator.getDefault();
 
-                f = new File(f.getParentFile().getParentFile().getAbsolutePath() + File.separator + "rake"); // NOI18N
+            File f = locator.locate("modules/org-netbeans-modules-ruby-project.jar", null, false); // NOI18N
+            if (f == null) throw new RuntimeException("Can't find cluster"); // NOI18N
 
-                try {
-                    rake = f.getCanonicalPath();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+            f = new File(f.getParentFile().getParentFile().getAbsolutePath() + File.separator + "rake"); // NOI18N
+
+            try {
+                rake = f.getCanonicalPath();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
 
@@ -315,23 +312,17 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     public synchronized String getRails() {
-        if (rails == null) {
-            rails = findExecutable("rails"); // NOI18N
-        }
+        if (rails == null) rails = findExecutable("rails"); // NOI18N
         return rails;
     }
 
     public synchronized String getAutoTest() {
-        if (autotest == null) {
-            autotest = findExecutable("autotest"); // NOI18N
-        }
+        if (autotest == null) autotest = findExecutable("autotest"); // NOI18N
         return autotest;
     }
 
     public synchronized String getAutoSpec() {
-        if (autospec == null) {
-            autospec = findExecutable("autospec"); // NOI18N
-        }
+        if (autospec == null) autospec = findExecutable("autospec"); // NOI18N
         return autospec;
     }
 
@@ -371,26 +362,26 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     public synchronized File getHome(boolean canonical) {
-        if (home == null) {
-            try {
-                String rp = getInterpreter(canonical);
-                if (rp == null) return null;
+        if (home != null) return home;
+        try {
+            String rp = getInterpreter(canonical);
+            if (rp == null) return null;
 
-                File r = new File(rp);
+            File r = new File(rp);
 
-                // Handle bogus paths like "/" which cannot possibly point to a valid ruby installation
-                File p = r.getParentFile();
-                if (p == null) return null;
+            // Handle bogus paths like "/" which cannot possibly point to a valid ruby installation
+            File p = r.getParentFile();
+            if (p == null) return null;
 
-                p = p.getParentFile();
-                if (p == null) return null;
+            p = p.getParentFile();
+            if (p == null) return null;
 
-                home = p.getCanonicalFile();
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                return null;
-            }
+            home = p.getCanonicalFile();
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return null;
         }
+
         return home;
     }
 
@@ -398,9 +389,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         if (homeUrl == null) {
             try {
                 File r = getHome();
-                if (r != null) {
-                    homeUrl = Utilities.toURI(r).toURL().toExternalForm();
-                }
+                if (r != null) homeUrl = Utilities.toURI(r).toURL().toExternalForm();
             } catch (MalformedURLException mue) {
                 Exceptions.printStackTrace(mue);
             }
@@ -445,9 +434,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     public synchronized FileObject getLibDirFO() {
         if (libDirFO == null) {
             String lib = getLibDir();
-            if (lib != null) {
-                libDirFO = FileUtil.toFileObject(new File(lib));
-            }
+            if (lib != null) libDirFO = FileUtil.toFileObject(new File(lib));
         }
         return libDirFO;
     }
@@ -461,45 +448,26 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     /** Return the site_ruby directory for the current ruby installation. Not cached. */
     public String getRubyLibSiteDir() {
-        String sitedir = null;
         File _home = getHome();
         assert _home != null : "home not null";
 
-        File lib =
-                new File(_home, "lib" + File.separator + "ruby" + File.separator + "site_ruby"); // NOI18N
-
-        if (!lib.exists()) {
-            return null;
-        }
+        File lib = new File(_home, "lib" + File.separator + "ruby" + File.separator + "site_ruby"); // NOI18N
+        if (!lib.exists()) return null;
 
         File f = new File(lib, DEFAULT_RUBY_RELEASE); // NOI18N
+        if (f.exists()) return f.getAbsolutePath();
 
-        if (f.exists()) {
-            sitedir = f.getAbsolutePath();
-        } else {
-            // Search for a numbered directory
-            File[] children = lib.listFiles();
+        // Search for a numbered directory
+        File[] children = lib.listFiles();
 
-            for (File c : children) {
-                if (!c.isDirectory()) {
-                    continue;
-                }
-
-                String name = c.getName();
-
-                if (name.matches("\\d+\\.\\d+")) { // NOI18N
-                    sitedir = c.getAbsolutePath();
-
-                    break;
-                }
-            }
-
-            if ((sitedir == null) && (children.length > 0)) {
-                sitedir = children[0].getAbsolutePath();
-            }
+        for (File c : children) {
+            if (!c.isDirectory()) continue;
+            if (c.getName().matches("\\d+\\.\\d+")) return c.getAbsolutePath(); // NOI18N
         }
 
-        return sitedir;
+        if (children.length > 0) return children[0].getAbsolutePath();
+
+        return null;
     }
 
     /**
@@ -570,18 +538,14 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             dlg.setVisible(true);
         } finally {
-            if (dlg != null) {
-                dlg.dispose();
-            }
+            if (dlg != null) dlg.dispose();
         }
         return descriptor.getValue();
     }
 
     private static JButton getCloseButton() {
-        JButton closeButton =
-                new JButton(NbBundle.getMessage(RubyPlatform.class, "CTL_Close"));
-        closeButton.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(RubyPlatform.class, "AD_Close"));
+        JButton closeButton = new JButton(NbBundle.getMessage(RubyPlatform.class, "CTL_Close"));
+        closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RubyPlatform.class, "AD_Close"));
         return closeButton;
     }
 
@@ -627,9 +591,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      */
     @CheckForNull
     public synchronized GemManager getGemManager() {
-        if (gemManager == null && hasRubyGemsInstalled()) {
-            gemManager = new GemManager(this);
-        }
+        if (gemManager == null && hasRubyGemsInstalled()) gemManager = new GemManager(this);
         return gemManager;
     }
 
@@ -638,13 +600,9 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     public String getBinDir(boolean canonical) {
-        String rubybin = null;
-        String r = getInterpreter(canonical);
+        String interp = getInterpreter(canonical);
 
-        if (r != null) {
-            rubybin = new File(r).getParent();
-        }
-        return rubybin;
+        return interp != null ? new File(interp).getParent() : null;
     }
 
     /**

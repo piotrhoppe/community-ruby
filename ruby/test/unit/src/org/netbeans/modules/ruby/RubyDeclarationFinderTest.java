@@ -80,7 +80,7 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
     }
 
     public void testAttrDeclaration2() throws Exception {
-        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :th^ud", "attr_declaration.rb", 135);
+        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :th^ud", "attr_declaration.rb", 58);
     }
 
     public void testAttrDeclaration3() throws Exception {

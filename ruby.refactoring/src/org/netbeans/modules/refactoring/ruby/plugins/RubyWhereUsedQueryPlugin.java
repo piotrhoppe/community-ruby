@@ -51,12 +51,8 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Document;
 import org.jrubyparser.ast.AliasNode;
-import org.jrubyparser.ast.ArgumentNode;
 import org.jrubyparser.ast.Colon2Node;
-import org.jrubyparser.ast.DAsgnNode;
-import org.jrubyparser.ast.DVarNode;
-import org.jrubyparser.ast.LocalAsgnNode;
-import org.jrubyparser.ast.LocalVarNode;
+import org.jrubyparser.ast.ILocalVariable;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
@@ -67,7 +63,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Modifier;
@@ -92,7 +87,6 @@ import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -228,7 +222,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
 //        return set;
 //    }
     
-    //@Override
+    @Override
     public Problem prepare(final RefactoringElementsBag elements) {
         Set<FileObject> a = getRelevantFiles(searchHandle);
         fireProgressListenerStart(ProgressEvent.START, a.size());
@@ -237,6 +231,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         if (targetName == null) {
             return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
@@ -247,6 +242,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         return null;
     }
     
+    @Override
     public Problem checkParameters() {
         return null;
     }
@@ -289,6 +285,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
             this.elements = elements;
         }
 
+        @Override
         protected Collection<ModificationResult> process(ParserResult parserResult) {
             if (isCancelled()) {
                 return Collections.<ModificationResult>emptySet();
@@ -379,24 +376,10 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
             } else if (isFindUsages()) {
-                Node method = null;
-                if (node instanceof ArgumentNode) {
-                    AstPath path = searchCtx.getPath();
-                    assert path.leaf() == node;
-                    Node parent = path.leafParent();
-
-                    if (!(parent instanceof MethodDefNode)) {
-                        method = AstUtilities.findLocalScope(node, path);
+                if (node instanceof ILocalVariable) {
+                    for (ILocalVariable variable: ((ILocalVariable) node).getOccurrences()) {
+                        elements.add(refactoring, WhereUsedElement.create(new RubyElementCtx(fileCtx, (Node) variable)));
                     }
-                } else if (node instanceof LocalVarNode || node instanceof LocalAsgnNode || node instanceof DAsgnNode || 
-                        node instanceof DVarNode) {
-                    // A local variable read or a parameter read, or an assignment to one of these
-                    AstPath path = searchCtx.getPath();
-                    method = AstUtilities.findLocalScope(node, path);
-                }
-
-                if (method != null) {
-                    findLocal(searchCtx, fileCtx, method, targetName);
                 } else {
                     // Full AST search
                     // TODO: If it's a local variable, parameter or dynamic variable, limit search to the current scope!
@@ -613,71 +596,5 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 path.ascend();
             }
         }
-        
-        /** Search for local variables in local scope */
-        private void findLocal(RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name) {
-            switch (node.getNodeType()) {
-            case ARGUMENTNODE:
-                // TODO - check parent and make sure it's not a method of the same name?
-                // e.g. if I have "def foo(foo)" and I'm searching for "foo" (the parameter),
-                // I don't want to pick up the ArgumentNode under def foo that corresponds to the
-                // "foo" method name!
-                if (((ArgumentNode)node).getName().equals(name)) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                    elements.add(refactoring, WhereUsedElement.create(matchCtx));
-                }
-                break;
-// I don't have alias nodes within a method, do I?                
-//            } else if (node instanceof AliasNode) { 
-//                AliasNode an = (AliasNode)node;
-//                if (an.getNewName().equals(name) || an.getOldName().equals(name)) {
-//                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-//                    elements.add(refactoring, WhereUsedElement.create(matchCtx));
-//                }
-//                break;
-            case LOCALVARNODE:
-            case LOCALASGNNODE:
-                if (((INameNode)node).getName().equals(name)) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                    elements.add(refactoring, WhereUsedElement.create(matchCtx));
-                }
-                break;
-            case DVARNODE:
-            case DASGNNODE:
-                 if (((INameNode)node).getName().equals(name)) {
-                    // Found a method call match
-                    // TODO - make a node on the same line
-                    // TODO - check arity - see OccurrencesFinder
-                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                    elements.add(refactoring, WhereUsedElement.create(matchCtx));
-                 }                 
-                 break;
-            case SYMBOLNODE:
-                // XXX Can I have symbols to local variables? Try it!!!
-                if (((SymbolNode)node).getName().equals(name)) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                    elements.add(refactoring, WhereUsedElement.create(matchCtx));
-                }
-                break;
-            }
-
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-                findLocal(searchCtx, fileCtx, child, name);
-            }
-        }
-
-//        private void findSubClass(Node node) {
-//            @SuppressWarnings("unchecked")
-//            List<Node> list = node.childNodes();
-//
-//            for (Node child : list) {
-//                findSubClass(child);
-//            }
-//        }
     }
 }

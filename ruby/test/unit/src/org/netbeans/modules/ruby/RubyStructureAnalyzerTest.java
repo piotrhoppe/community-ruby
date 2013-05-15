@@ -85,7 +85,7 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         // Gotta sort the results
         List<AstClassElement> clzList = new ArrayList<AstClassElement>(attributes.keySet());
         Collections.sort(clzList, new Comparator<AstClassElement>() {
-
+            @Override
             public int compare(AstClassElement arg0, AstClassElement arg1) {
                 return arg0.getFqn().compareTo(arg1.getFqn());
             }
@@ -98,14 +98,13 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
                 List<AstAttributeElement> attributeList = new ArrayList<AstAttributeElement>(aes);
                 Collections.sort(attributeList, new Comparator<AstAttributeElement>() {
 
+                    @Override
                     public int compare(AstAttributeElement arg0, AstAttributeElement arg1) {
                         return arg0.getName().compareTo(arg1.getName());
                     }
                 });
                 for (AstAttributeElement ae : attributeList) {
-                    sb.append("  ");
-                    sb.append(ae.getName());
-                    sb.append("\n");
+                    sb.append("  ").append(ae.getName()).append("\n");
                 }
             }
         }

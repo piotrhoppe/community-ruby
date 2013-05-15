@@ -1,5 +1,5 @@
 Code completion result for source line:
 arr.each { |_| Huh.err| }
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-------------------------------------
+wo                     ------------------------------------
 METHOD     errors                          [STATIC]   OpenSSL

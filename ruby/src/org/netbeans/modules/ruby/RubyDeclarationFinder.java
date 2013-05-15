@@ -67,16 +67,15 @@ import org.jrubyparser.ast.ClassVarNode;
 import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.ConstNode;
 import org.jrubyparser.ast.DAsgnNode;
-import org.jrubyparser.ast.DVarNode;
 import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.GlobalAsgnNode;
 import org.jrubyparser.ast.GlobalVarNode;
 import org.jrubyparser.ast.HashNode;
+import org.jrubyparser.ast.ILocalVariable;
 import org.jrubyparser.ast.InstAsgnNode;
 import org.jrubyparser.ast.InstVarNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.LocalAsgnNode;
-import org.jrubyparser.ast.LocalVarNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.StrNode;
@@ -99,6 +98,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import static org.netbeans.modules.ruby.RubyDeclarationFinderHelper.getLocation;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
@@ -389,36 +389,16 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                             return;
                         }
 
-                        // Look at the parse tree; find the closest node and jump based on the context
-                        if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
-                            // A local variable read or a parameter read, or an assignment to one of these
-                            String name = ((INameNode)closest).getName();
-                            Node method = AstUtilities.findLocalScope(closest, path);
-
-                            out.set(fix(findLocal(parserResult, method, name), parserResult));
-                        } else if (closest instanceof DVarNode) {
-                            // A dynamic variable read or assignment
-                            String name = ((DVarNode)closest).getName(); // Does not implement INameNode
-                            Node block = AstUtilities.findDynamicScope(closest, path);
-
-                            out.set(fix(findDynamic(parserResult, block, name), parserResult));
-                        } else if (closest instanceof DAsgnNode) {
-                            // A dynamic variable read or assignment
-                            String name = ((INameNode)closest).getName();
-                            Node block = AstUtilities.findDynamicScope(closest, path);
-
-                            out.set(fix(findDynamic(parserResult, block, name), parserResult));
-                        } else if (closest instanceof InstVarNode) {
-                            // A field variable read
-                            String name = ((INameNode)closest).getName();
-                            out.set(findInstanceFromIndex(parserResult, name, path, index, false));
-                        } else if (closest instanceof ClassVarNode) {
-                            // A class variable read
-                            String name = ((INameNode)closest).getName();
+                        if (closest instanceof ILocalVariable) {
+                            ILocalVariable declaration = ((ILocalVariable) closest).getDeclaration();
+                            
+                            out.set(fix(getLocation(parserResult, (Node) declaration), parserResult));
+                        } else if (closest instanceof InstVarNode || closest instanceof ClassVarNode) { // A field/class variable read
+                            String name = ((INameNode)closest).getDecoratedName();
                             out.set(findInstanceFromIndex(parserResult, name, path, index, false));
                         } else if (closest instanceof GlobalVarNode) {
                             // A global variable read
-                            String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
+                            String name = ((INameNode)closest).getDecoratedName();
                             out.set(fix(findGlobal(parserResult, root, name), parserResult));
                         } else if (closest instanceof FCallNode || closest instanceof VCallNode ||
                                 closest instanceof CallNode) {
@@ -492,7 +472,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                             // search for helpers
                             if (location == DeclarationLocation.NONE) {
-                                location = new HelpersFinder(index, (SymbolNode) closest, root, path).findHelperLocation();
+                                location = new HelpersFinder(index, (SymbolNode) closest, path).findHelperLocation();
                             }
 
                             if (location == DeclarationLocation.NONE) {

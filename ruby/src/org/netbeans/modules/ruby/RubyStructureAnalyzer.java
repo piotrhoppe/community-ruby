@@ -188,28 +188,20 @@ public class RubyStructureAnalyzer implements StructureScanner {
         public AstElement getElementFor(Node node) {
             for (AstElement element : getElements()) {
                 AstElement result = findElement(element, node);
-                if (result != null) {
-                    return result;
-                }
+                if (result != null) return result;
             }
 
             return null;
         }
 
         public AstElement findElement(AstElement element, Node node) {
-            if (element.getNode() == node) {
-                return element;
-            }
+            if (element.getNode() == node) return element;
 
             for (AstElement child : element.getChildren()) {
-                if (child.getNode() == node) {
-                    return child;
-                }
+                if (child.getNode() == node) return child;
 
                 AstElement result = findElement(child, node);
-                if (result != null) {
-                    return result;
-                }
+                if (result != null) return result;
             }
 
             return null;
@@ -281,7 +273,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             // Find unique variables
             if (assignments != null) {
                 for (InstAsgnNode assignment : assignments) {
-                    names.put(assignment.getName(), assignment);
+                    names.put(assignment.getDecoratedName(), assignment);
                 }
 
                 // Add unique fields
@@ -290,32 +282,22 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     //co.setIn(AstUtilities.getClassOrModuleName(clz));
                     co.setIn(clz.getFqn());
 
-                    // Make sure I don't already have an entry for this field as an
-                    // attr_accessor or writer
+                    // Make sure I don't already have an entry for this field as an attr_accessor or writer
+                    co.setType(knowledge.getType(field.getDecoratedName()));
                     String fieldName = field.getName();
-                    co.setType(knowledge.getType(fieldName));
-
-                    if (fieldName.startsWith("@@")) {
-                        fieldName = fieldName.substring(2);
-                    } else if (fieldName.startsWith("@")) {
-                        fieldName = fieldName.substring(1);
-                    }
 
                     boolean found = false;
 
                     for (AstElement member : clz.getChildren()) {
-                        if ((member.getKind() == ElementKind.ATTRIBUTE) &&
-                                member.getName().equals(fieldName)) {
+                        if ((member.getKind() == ElementKind.ATTRIBUTE) && member.getName().equals(fieldName)) {
                             member.setType(co.getType());
                             found = true;
                             break;
                         }
                     }
 
-                    // hide from the navigator view if there was attr_accessor for this field
-                    if (found) {
-                        co.setHidden(true);
-                    }
+                    if (found) co.setHidden(true); // hide from the navigator view if there was attr_accessor for this field
+
                     clz.addChild(co);
                 }
 
@@ -411,15 +393,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
     @Override
     public Map<String, List<OffsetRange>> folds(final ParserResult result) {
-        if (RubyUtils.isRhtmlFile(RubyUtils.getFileObject(result))) {
-            return Collections.emptyMap();
-        }
+        if (RubyUtils.isRhtmlFile(RubyUtils.getFileObject(result))) return Collections.emptyMap();
 
         Node root = AstUtilities.getRoot(result);
-
-        if (root == null) {
-            return Collections.emptyMap();
-        }
+        if (root == null) return Collections.emptyMap();
 
         RubyParseResult rpr = AstUtilities.getParseResult(result);
         AnalysisResult analysisResult = rpr.getStructure();
@@ -445,53 +422,28 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return folds;
     }
     
-    private void addFolds(
-            final BaseDocument doc,
-            final List<? extends AstElement> elements,
-            final Map<String,List<OffsetRange>> folds,
-            final List<OffsetRange> codeblocks) throws BadLocationException {
+    private void addFolds(final BaseDocument doc, final List<? extends AstElement> elements,
+            final Map<String,List<OffsetRange>> folds, final List<OffsetRange> codeblocks) throws BadLocationException {
         for (AstElement element : elements) {
-            ElementKind kind = element.getKind();
-            switch (kind) {
-            case METHOD:
-            case CONSTRUCTOR:
-            case CLASS:
-            case MODULE: {
-                Node node = element.getNode();
-                OffsetRange range = AstUtilities.getRange(node);
-                // note: unlike for java, allowing also folding of
-                // top level classes and modules - in ruby it's fairly common
-                // to have several top level classes in one file (#140247)
-                int start = range.getStart();
-                // Start the fold at the END of the line
-                start = org.netbeans.editor.Utilities.getRowEnd(doc, start);
-                int end = range.getEnd();
-                if (start != (-1) && end != (-1) && start < end && end <= doc.getLength()) {
-                    range = new OffsetRange(start, end);
-                    codeblocks.add(range);
+            switch (element.getKind()) {
+                case METHOD: case CONSTRUCTOR: case CLASS: case MODULE: case TEST: {
+                    OffsetRange range = AstUtilities.getRange(element.getNode());
+                    // note: unlike for java, allowing also folding of
+                    // top level classes and modules - in ruby it's fairly common
+                    // to have several top level classes in one file (#140247)
+                    // Start the fold at the END of the line
+                    int start = org.netbeans.editor.Utilities.getRowEnd(doc, range.getStart());
+                    int end = range.getEnd();
+                    if (start != -1 && end != -1 && start < end && end <= doc.getLength()) {
+                        range = new OffsetRange(start, end);
+                        codeblocks.add(range);
+                    }
+                    break;
                 }
-                break;
-            }
-            case TEST: {
-                Node node = element.getNode();
-                OffsetRange range = AstUtilities.getRange(node);
-
-                int start = range.getStart();
-                // Start the fold at the END of the line
-                start = org.netbeans.editor.Utilities.getRowEnd(doc, start);
-                int end = range.getEnd();
-                if (start != (-1) && end != (-1) && start < end && end <= doc.getLength()) {
-                    range = new OffsetRange(start, end);
-                    codeblocks.add(range);
-                }
-                break;
-            }
             }
             
             List<? extends AstElement> children = element.getChildren();
-            if (children != null && children.size() > 0) {
-                addFolds(doc, children, folds, codeblocks);
-            }
+            if (children != null && children.size() > 0) addFolds(doc, children, folds, codeblocks);
         }
     }
 
@@ -501,10 +453,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         } else {
             structure.add(child);
         }
-        if (child.getKind() == ElementKind.CLASS
-                || child.getKind() == ElementKind.MODULE) {
-            lastClassElement = child;
-        }
+        if (child.getKind() == ElementKind.CLASS || child.getKind() == ElementKind.MODULE) lastClassElement = child;
     }
 
     private void scan(final Node node, final AstPath path, String in, Set<String> includes, AstElement parent) {
@@ -552,11 +501,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             // Pass on to children
             Node receiver = ((SClassNode)node).getReceiver();
 
-            if (receiver instanceof INameNode) {
-                in = AstUtilities.getName(receiver);
-            } else {
-                in = null;
-            }
+            in = receiver instanceof INameNode ? AstUtilities.getName(receiver) : null;
 
             includes = new HashSet<String>();
             co.setIncludes(includes);
@@ -566,12 +511,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
-        case DEFNNODE:
-        case DEFSNODE: {
+        case DEFNNODE: case DEFSNODE: {
             AstMethodElement co = new AstMethodElement(result, node);
             methods.add(co);
-            String clzFqn = AstUtilities.getFqnName(path);
-            co.setIn(clzFqn);
+            co.setIn(AstUtilities.getFqnName(path));
 
             // "initialize" methods are private
             if ((node instanceof DefnNode) && "initialize".equals(AstUtilities.getName(node))) {
@@ -583,8 +526,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
             // A module inclusion callback? These often (at least in Rails) call
             // extend() to insert the instance methods into the class
-            if (node instanceof DefsNode &&
-                    parent instanceof AstModuleElement &&
+            if (node instanceof DefsNode && parent instanceof AstModuleElement &&
                     "included".equals(AstUtilities.getName(node))) { // NOI18N
                 // Analyze the given method to see if it's doing a simple
                 // base.extend(Whatever) in the included method.
@@ -598,11 +540,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
 
-            if (node instanceof DefnNode || node instanceof DefsNode) {
-                RubyType type = new RubyType();
-                type.append(typeInferencer.inferType(node));
-                co.setType(type);
-            }
+            RubyType type = new RubyType();
+            type.append(typeInferencer.inferType(node));
+            co.setType(type);
 
             // TODO - don't add this to the top level! Make a nested list
             addToParent(parent, co);
@@ -622,7 +562,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
-        case CLASSVARDECLNODE: {
+        case CLASSVARDECLNODE: case CLASSVARASGNNODE: {
             AstFieldElement co = new AstFieldElement(result, node);
             co.setIn(in);
 
@@ -630,24 +570,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
-            
-        case CLASSVARASGNNODE: {
-            AstFieldElement co = new AstFieldElement(result, node);
-            co.setIn(in);
-
-            addToParent(parent, co);
-            
-            break;
-        }
-
         case GLOBALASGNNODE: {
             // We don't have unique declarations, only assignments (possibly many)
             // so stash these in a map and extract unique fields when we're done
-            if (globals == null) {
-                globals = new HashMap<String, GlobalAsgnNode>();
-            }
+            if (globals == null) globals = new HashMap<String, GlobalAsgnNode>();
+
             GlobalAsgnNode global = (GlobalAsgnNode)node;
-            globals.put(global.getName(), global);
+            globals.put(global.getDecoratedName(), global);
 
             break;
         }
@@ -1019,12 +948,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
     }
 
     private AstClassElement findClassParent(AstElement candidate) {
-        if (candidate instanceof AstClassElement) {
-            return (AstClassElement) candidate;
-        }
-        if (isTestFile && lastClassElement instanceof AstClassElement) {
-            return (AstClassElement) lastClassElement;
-        }
+        if (candidate instanceof AstClassElement) return (AstClassElement) candidate;
+
+        if (isTestFile && lastClassElement instanceof AstClassElement) return (AstClassElement) lastClassElement;
+
         return null;
     }
 
@@ -1046,20 +973,17 @@ public class RubyStructureAnalyzer implements StructureScanner {
     }
     private AstElement findExistingVariable(String name) {
         for (AstElement child : structure) {
-            if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) {
-                return child;
-            }
+            if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) return child;
         }
+        
         return null;
     }
 
     private AstMethodElement findExistingMethod(String name) {
         for (AstMethodElement each : methods) {
-            if (each.getClass().equals(AstMethodElement.class) // don't include AstDynamicMethodElement
-                    && each.getName().equals(name)) {
-                return each;
-            }  
+            if (each.getClass().equals(AstMethodElement.class) && each.getName().equals(name)) return each; // don't include AstDynamicMethodElement
         }
+        
         return null;
     }
 
@@ -1082,25 +1006,18 @@ public class RubyStructureAnalyzer implements StructureScanner {
         // a ConstNode (look for FQNs here, could be a Colon2Node).
         List<String> argList = node.getArgs().getNormativeParameterNameList(true);
         
-        if (argList == null || argList.size() != 1) {
-            return null;
-        }
+        if (argList == null || argList.size() != 1) return null;
+
         String param = argList.get(0);
         
         CallNode call = findExtendCall(node);
-        if (call == null) {
-            return null;
-        }
+        if (call == null) return null;
         
         Node receiver = call.getReceiver();
-        if (receiver == null || !(receiver instanceof INameNode)) {
-            return null;
-        }
+        if (receiver == null || !(receiver instanceof INameNode)) return null;
         
         String receiverName = AstUtilities.getName(receiver);
-        if (!param.equals(receiverName)) {
-            return null;
-        }
+        if (!param.equals(receiverName)) return null;
         
         Node argsNode = call.getArgs();
 
@@ -1126,25 +1043,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
     }
     
     private CallNode findExtendCall(final Node node) {
-        if (node instanceof CallNode) {
-            CallNode call = (CallNode)node;
-            
-            if ("extend".equals(call.getName())) { // NOI18N
-                return call;
-            }
-        }
+        if (node instanceof CallNode && "extend".equals(((INameNode) node).getName())) return (CallNode) node; // NOI18N
         
-        List<Node> list = node.childNodes();
+        for (Node child : node.childNodes()) {
+            if (child.isInvisible()) continue;
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             CallNode call = findExtendCall(child);
-            
-            if (call != null) {
-                return call;
-            }
+            if (call != null) return call;
         }
         
         return null;
@@ -1154,16 +1059,14 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
     AnalysisResult analyze(final RubyParseResult result) {
         AnalysisResult scan = getCachedAnalysis(result);
-        if (scan != null) {
-            return scan;
-        }
+        if (scan != null) return scan;
+
         boolean addedWithIndex = false; // prevent stack-overflow
         FileObject toAnalyze = RubyUtils.getFileObject(result);
         try {
             addedWithIndex = currentlyAnalyzingWithIndex.add(toAnalyze);
-            if (addedWithIndex && result != null) {
-                this.index = RubyIndex.get(result);
-            }
+            if (addedWithIndex && result != null) this.index = RubyIndex.get(result);
+
             this.result = result;
             scan = scan(result);
             result.setStructure(scan);
@@ -1180,10 +1083,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     /** Look through the comment nodes and associate them with the AST nodes */
     public void addComments(final RubyParseResult result) {
         Node root = result.getRootNode();
-
-        if (root == null) {
-            return;
-        }
+        if (root == null) return;
 
         org.jrubyparser.parser.ParserResult r = result.getJRubyResult();
 
@@ -1206,23 +1106,14 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
         SourcePosition pos = node.getPosition();
 
-        if (end < pos.getStartOffset()) {
-            return node;
-        }
-
-        if (start > pos.getEndOffset()) {
-            return null;
-        }
+        if (end < pos.getStartOffset()) return node;
+        if (start > pos.getEndOffset()) return null;
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            Node closest = findClosest(child, start, end);
+            if (child.isInvisible()) continue;
 
-            if (closest != null) {
-                return closest;
-            }
+            Node closest = findClosest(child, start, end);
+            if (closest != null) return closest;
         }
 
         return null;
@@ -1266,9 +1157,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         // TODO - if I know types, list the type here instead. For now, just use the parameter name instead
                         formatter.appendText(ve);
 
-                        if (it.hasNext()) {
-                            formatter.appendHtml(", ");
-                        }
+                        if (it.hasNext()) formatter.appendHtml(", ");
                     }
 
                     formatter.parameters(false);
@@ -1316,28 +1205,17 @@ public class RubyStructureAnalyzer implements StructureScanner {
         @Override
         public boolean isLeaf() {
             switch (kind) {
-            case ATTRIBUTE:
-            case CONSTANT:
-            case CONSTRUCTOR:
-            case METHOD:
-            case FIELD:
-            case KEYWORD:
-            case VARIABLE:
-            case GLOBAL:
-            case OTHER:
-                return true;
-
-            case MODULE:
-            case CLASS:
-                return false;
-
-            case TEST: {
-                List<AstElement> nested = node.getChildren();
-                return nested == null || nested.isEmpty();
-            }
-
-            default:
-                throw new RuntimeException("Unhandled kind: " + kind);
+                case ATTRIBUTE: case CONSTANT: case CONSTRUCTOR: case METHOD: case FIELD: case KEYWORD:
+                case VARIABLE: case GLOBAL: case OTHER:
+                    return true;
+                case MODULE: case CLASS:
+                    return false;
+                case TEST: {
+                    List<AstElement> nested = node.getChildren();
+                    return nested == null || nested.isEmpty();
+                }
+                default:
+                    throw new RuntimeException("Unhandled kind: " + kind);
             }
         }
 
@@ -1345,7 +1223,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         public List<? extends StructureItem> getNestedItems() {
             List<AstElement> nested = node.getChildren();
 
-            if ((nested != null) && (nested.size() > 0)) {
+            if (nested != null && nested.size() > 0) {
                 List<RubyStructureItem> children = new ArrayList<RubyStructureItem>(nested.size());
 
                 for (AstElement co : nested) {
@@ -1370,47 +1248,24 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
         @Override
         public boolean equals(Object o) {
-            if (o == null) {
-                return false;
-            }
-
-            if (!(o instanceof RubyStructureItem)) {
-                // System.out.println("- not a desc");
-                return false;
-            }
+            if (o == null) return false;
+            if (!(o instanceof RubyStructureItem)) return false;
 
             RubyStructureItem d = (RubyStructureItem)o;
 
-            if (kind != d.kind) {
-                // System.out.println("- kind");
-                return false;
-            }
-
-            if (!getName().equals(d.getName())) {
-                // System.out.println("- name");
-                return false;
-            }
+            if (kind != d.kind || !getName().equals(d.getName())) return false;
 
             if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
                 // consider also arity (#131134)
                 Arity arity = Arity.getDefArity(node.getNode());
                 Arity darity = Arity.getDefArity(d.node.getNode());
-                if (!arity.equals(darity)) {
-                    return false;
-                }
-                
-                if (!getModifiers().equals(d.getModifiers())) {
-                    return false;
-                }
+                if (!arity.equals(darity) || !getModifiers().equals(d.getModifiers())) return false;
 
                 // consider parameters names and thus their arity (issue 101508)
                 List<String> parameters = ((AstMethodElement) node).getParameters();
                 List<String> dparameters = ((AstMethodElement) d.node).getParameters();
-                if (parameters == null) {
-                    return dparameters == null;
-                } else {
-                    return parameters.equals(dparameters);
-                }
+                
+                return parameters == null ? dparameters == null : parameters.equals(dparameters);
             }
 
             //            if ( !this.elementHandle.signatureEquals(d.elementHandle) ) {
@@ -1479,9 +1334,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             TokenSequence ts = th.tokenSequence();
-            if (ts == null) {
-                return items;
-            }
+            if (ts == null) return items;
 
             ts.moveStart();
             while (ts.moveNext()) {

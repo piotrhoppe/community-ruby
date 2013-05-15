@@ -182,14 +182,14 @@ public final class RubyTypeInferencer {
                 type = knowledge.getType(getLocalVarPath(knowledge.getRoot(), node, currentMethod));
                 break;
             case GLOBALVARNODE:
-                type = knowledge.getType(((INameNode) node).getName());
+                type = knowledge.getType(((INameNode) node).getDecoratedName());
                 if (!type.isKnown()) {
-                    RubyType preDefType = RubyPredefinedVariable.getType(((INameNode) node).getName());
+                    RubyType preDefType = RubyPredefinedVariable.getType(((INameNode) node).getDecoratedName());
                     if (preDefType != null) type = preDefType;
                 }
                 break;
             case DVARNODE: case INSTVARNODE: case CLASSVARNODE:
-                type = knowledge.getType(((INameNode) node).getName());
+                type = knowledge.getType(((INameNode) node).getDecoratedName());
                 break;
             case CONSTNODE:
                 type = knowledge.getType(AstUtilities.getFqnName(knowledge.getRoot(), node));
