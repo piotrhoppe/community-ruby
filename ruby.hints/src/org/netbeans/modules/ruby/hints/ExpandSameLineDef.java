@@ -174,6 +174,7 @@ public class ExpandSameLineDef extends RubyAstRule {
             this.path = path;
         }
 
+        @Override
         public String getDescription() {
             String code = path.leaf().getNodeType() == NodeType.DEFNNODE ? "def" : "class";
             return NbBundle.getMessage(ExpandSameLineDef.class, "ExpandLineFix", code);
@@ -183,12 +184,8 @@ public class ExpandSameLineDef extends RubyAstRule {
             if (node.getNodeType() == NodeType.NEWLINENODE) {
                 offsets.add(node.getPosition().getStartOffset());
             }
-            List<Node> list = node.childNodes();
 
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
+            for (Node child : node.childNodes()) {
                 findLineBreaks(child, offsets);
             }
         }

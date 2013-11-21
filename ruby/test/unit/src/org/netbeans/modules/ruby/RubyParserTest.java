@@ -114,6 +114,10 @@ public class RubyParserTest extends RubyTestBase {
         });
 
     }
+    
+    public void testEmpty1() throws Exception {
+        checkParseTree("testfiles/empty.rb", "^", "RootNode");
+    }
        
     public void testPartial1() throws Exception {
         checkParseTree("testfiles/broken1.rb", "x.^", "VCallNode");

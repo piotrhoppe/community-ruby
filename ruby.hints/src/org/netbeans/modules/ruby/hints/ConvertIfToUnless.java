@@ -111,6 +111,7 @@ public class ConvertIfToUnless extends RubyAstRule {
             
             if ("not".equals(call.getName())) return call;
             if ("!".equals(call.getName())) return call;
+            if ("!~".equals(call.getName())) return call;
             if ("!=".equals(call.getName())) return call;
         }
         
@@ -303,6 +304,7 @@ public class ConvertIfToUnless extends RubyAstRule {
                 if (lexIfOffset == -1 || lexIfOffset > doc.getLength()) return null;
 
                 boolean isEqualComparison = false;
+                boolean isMatchComparison = false;
                 char c = doc.getText(lexNotOffset, 1).charAt(0);
                 if (c != '!') {
                     // Probably something like "!=", where the not node range points to
@@ -314,6 +316,7 @@ public class ConvertIfToUnless extends RubyAstRule {
                         lineOffset = line.indexOf("!~");
                         if (lineOffset != -1) {
                             lexNotOffset += lineOffset;
+                            isMatchComparison = true;
                         } else {
                             boolean ok = false;
                             if (lexNotOffset < doc.getLength()-3) {
@@ -355,6 +358,9 @@ public class ConvertIfToUnless extends RubyAstRule {
                 if (isEqualComparison) {
                     // Convert != into ==
                     edits.replace(lexNotOffset, 1, "=", false, 0);
+                } else if (isMatchComparison) {
+                    edits.replace(lexNotOffset, 1, "~", false, 0);
+                    edits.replace(lexNotOffset+1, 1, "=", false, 0);
                 } else {
                     // Just remove ! from the expression (or "not ")
                     edits.replace(lexNotOffset, deleteSize, null, false, 0);

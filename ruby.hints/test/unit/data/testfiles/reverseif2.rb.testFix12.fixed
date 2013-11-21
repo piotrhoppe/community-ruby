@@ -1,5 +1,5 @@
 module IfTest
-  unless (final_path ~ /.*\.flv$/)
+  unless (final_path ~= /.*\.flv$/)
   end
 
   if (not params[:recipients].empty?)

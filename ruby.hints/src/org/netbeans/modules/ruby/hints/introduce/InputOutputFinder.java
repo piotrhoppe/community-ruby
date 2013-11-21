@@ -57,7 +57,6 @@ import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IterNode;
-import org.jrubyparser.ast.MultipleAsgn19Node;
 import static org.jrubyparser.ast.NodeType.MULTIPLEASGNNODE;
 
 /** 
@@ -206,12 +205,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             MultipleAsgnNode multiple = (MultipleAsgnNode)node;
             if (multiple.getValue() != null) new ParseTreeWalker(this).walk(multiple.getValue());
             break;
-        }
-        case MULTIPLEASGN19NODE: {
-            MultipleAsgn19Node multiple = (MultipleAsgn19Node)node;
-            if (multiple.getValue() != null) new ParseTreeWalker(this).walk(multiple.getValue());
-            break;
-        }            
+        }      
         case WHENNODE:
         case IFNODE:
             ifs++;

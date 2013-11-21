@@ -48,6 +48,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.ImplicitNilNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -86,7 +87,7 @@ public class ConvertConditionals extends RubyAstRule {
     
     private boolean isConvertible(RubyRuleContext context, IfNode ifNode) {
         // Can happen for this code: 'if (); end' (typically while editing)
-        if (ifNode.getCondition() == null) return false;
+        if (ifNode.getCondition() instanceof ImplicitNilNode) return false;
 
         Node body = ifNode.getThenBody();
         Node elseNode = ifNode.getElseBody();
@@ -99,9 +100,9 @@ public class ConvertConditionals extends RubyAstRule {
         
         int start = ifNode.getPosition().getStartOffset();
         // Can't convert blocks with multiple statements or already a statement modifier?
-        if (!RubyHints.isNullOrInvisible(body) && (body.getNodeType() == NodeType.BLOCKNODE || body.getPosition().getStartOffset() <= start)) {
+        if (!RubyHints.isNull(body) && (body.getNodeType() == NodeType.BLOCKNODE || body.getPosition().getStartOffset() <= start)) {
             return false;
-        } else if (!RubyHints.isNullOrInvisible(elseNode) && (elseNode.getNodeType() == NodeType.BLOCKNODE || elseNode.getPosition().getStartOffset() <= start)) {
+        } else if (!RubyHints.isNull(elseNode) && (elseNode.getNodeType() == NodeType.BLOCKNODE || elseNode.getPosition().getStartOffset() <= start)) {
             return false;
         }
         

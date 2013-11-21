@@ -264,69 +264,44 @@ class IntroduceFix implements PreviewableFix {
             return extractMethod(name);
         }
     }
+    
+    private int findConstantInsertionPoint() throws BadLocationException {
+        int begin = findClassBegin();
+        if (begin == -1) begin = findMethodBegin();
+        if (begin > 0) return Utilities.getRowStart(doc, begin); // Jump to beginning of line.
+        
+        return findStatementBegin(); // Not in a method - just place it before the method        
+    }
 
     private EditList introduceExp(String name, List<OffsetRange> duplicates) throws BadLocationException {
-        boolean isConstant = kind == IntroduceKind.CREATE_CONSTANT;
-
-        int begin;
-        if (isConstant) {
-            begin = findClassBegin();
-            if (begin == -1) {
-                begin = findMethodBegin();
-            }
-            if (begin == -1) {
-                // Not in a method - just place it before the method
-                begin = findStatementBegin();
-            } else {
-                // Jump to the beginning of the line
-                begin = Utilities.getRowStart(doc, begin);
-            }
-        } else {
-            begin = findStatementBegin();
-        }
-
+        boolean isConstant = kind != IntroduceKind.CREATE_CONSTANT;
+        int begin = isConstant ? findConstantInsertionPoint() : findStatementBegin();
         int lexStart = lexRange.getStart();
         int lexEnd = lexRange.getEnd();
         
         assert begin <= lexStart;
         StringBuilder sb = new StringBuilder();
 
-        if (isConstant && COMMENT_NEW_ELEMENTS) {
-            // TODO - insert a code template for editing the comment?
-            sb.append("# ");
-        }
+        if (isConstant && COMMENT_NEW_ELEMENTS) sb.append("# "); // TODO - insert a code template for editing the comment?
 
         int commentTextDelta = sb.length();
-        if (isConstant && COMMENT_NEW_ELEMENTS) {
-            sb.append(getCommentText());
-            sb.append("\n");
-        }
+        if (isConstant && COMMENT_NEW_ELEMENTS) sb.append(getCommentText()).append("\n");
         
-        sb.append(name);
-        sb.append(" = ");
+        sb.append(name).append(" = ");
 
         AstPath path = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
         boolean addHash = false;
         if (path.leafGrandParent() != null && path.leafGrandParent().getNodeType() == NodeType.HASHNODE) {
             addHash = true;
         }
-        if (addHash) {
-            sb.append("{ ");
-        }
-
+        if (addHash) sb.append("{ ");
         sb.append(doc.getText(lexStart, lexEnd - lexStart));
-        if (addHash) {
-            sb.append(" }");
-        }
-        sb.append("\n");
-        if (isConstant) {
-            sb.append("\n");
-        }
+        if (addHash) sb.append(" }");
 
-        commentOffset = -1;
-        if (isConstant && begin > 0 && COMMENT_NEW_ELEMENTS) {
-            commentOffset = begin+commentTextDelta;
-        }
+        sb.append("\n");
+        if (isConstant) sb.append("\n");
+
+        commentOffset = isConstant && begin > 0 && COMMENT_NEW_ELEMENTS ? begin+commentTextDelta : -1;
         
         EditList edits = new EditList(doc);
         edits.setFormatAll(false);

@@ -49,7 +49,6 @@ import java.util.List;
 
 import javax.swing.tree.TreeNode;
 
-import org.jrubyparser.SourcePosition;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.ConstDeclNode;
@@ -109,24 +108,28 @@ class AstNodeAdapter implements TreeNode {
         }
     }
 
+    @Override
     public TreeNode getChildAt(int i) {
         ensureChildrenInitialized();
 
         return children[i];
     }
 
+    @Override
     public int getChildCount() {
         ensureChildrenInitialized();
 
         return children.length;
     }
 
+    @Override
     public TreeNode getParent() {
         ensureChildrenInitialized();
 
         return parent;
     }
 
+    @Override
     public int getIndex(TreeNode treeNode) {
         ensureChildrenInitialized();
 
@@ -139,12 +142,14 @@ class AstNodeAdapter implements TreeNode {
         return -1;
     }
 
+    @Override
     public boolean getAllowsChildren() {
         ensureChildrenInitialized();
 
         return children.length > 0;
     }
 
+    @Override
     public boolean isLeaf() {
         ensureChildrenInitialized();
 
@@ -160,25 +165,11 @@ class AstNodeAdapter implements TreeNode {
 
     @Override
     public String toString() {
-        if (node.getPosition() == SourcePosition.INVALID_POSITION) {
-            return "INVALID_POSITION";
-        }
-
         StringBuilder sb = new StringBuilder();
 
         sb.append("<html>");
         sb.append(node.toString());
-        sb.append("<i>");
-        sb.append(" (");
-        if (node.isInvisible()) {
-            sb.append("INVISIBLE");
-        } else {
-            sb.append(getStartOffset());
-            sb.append("-");
-            sb.append(getEndOffset());
-        }
-        sb.append(") ");
-        sb.append("</i>");
+        sb.append("<i> (").append(getStartOffset()).append("-").append(getEndOffset()).append(") </i>");
 
         String name = null;
 
@@ -226,29 +217,11 @@ class AstNodeAdapter implements TreeNode {
     }
 
     public int getStartOffset() {
-        if (node.isInvisible()) {
-            return -1;
-        }
-        if (node.getPosition() == SourcePosition.INVALID_POSITION) {
-            return -1;
-        } else if (node.getPosition() != null) {
-            return node.getPosition().getStartOffset();
-        } else {
-            return -1;
-        }
+        return node.getPosition() == null ? -1 : node.getPosition().getStartOffset();
     }
 
     public int getEndOffset() {
-        if (node.isInvisible()) {
-            return -1;
-        }
-        if (node.getPosition() == SourcePosition.INVALID_POSITION) {
-            return -1;
-        } else if (node.getPosition() != null) {
-            return node.getPosition().getEndOffset();
-        } else {
-            return -1;
-        }
+        return node.getPosition() == null ? -1 : node.getPosition().getEndOffset();
     }
 
     public Object getAstNode() {

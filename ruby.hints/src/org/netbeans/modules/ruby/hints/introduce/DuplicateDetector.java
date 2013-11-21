@@ -88,9 +88,7 @@ public class DuplicateDetector {
             Node root, List<Node> nodes,
             Node startNode, Node endNode) {
         // I only support trivial duplicates now (single node constants like strings, numbers etc.
-        if (nodes.size() == 0 || startNode != endNode) {
-            return Collections.emptyList();
-        }
+        if (nodes.isEmpty() || startNode != endNode) return Collections.emptyList();
 
         if (startNode.getNodeType() == NodeType.ARRAYNODE) {
             if (startNode.childNodes().size() == 1) {
@@ -157,12 +155,8 @@ public class DuplicateDetector {
             }
         //}
         }
-        List<Node> list = node.childNodes();
 
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             visit(child, target);
         }
     }

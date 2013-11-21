@@ -207,6 +207,8 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       IN:MODULE:[]:ESCAPED{IN}:
         A:CLASS:[]:ESCAPED{A}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+          ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+          TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           address:ATTRIBUTE:[PUBLIC]:ESCAPED{address}:
           decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{A}</font>:
@@ -214,6 +216,8 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
         AAAA:CLASS:[]:ESCAPED{AAAA}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+          ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+          TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           address:ATTRIBUTE:[PUBLIC]:ESCAPED{address}:
           decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{AAAA}</font>:
@@ -222,6 +226,8 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         ClassValue:CONSTANT:[]:ESCAPED{ClassValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
         SRV:CLASS:[]:ESCAPED{SRV}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+          ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+          TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{SRV}</font>:
           encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
@@ -232,6 +238,8 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
           weight:ATTRIBUTE:[PUBLIC]:ESCAPED{weight}<font color='#777777'> : ESCAPED{Integer}</font>:
         WKS:CLASS:[]:ESCAPED{WKS}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+          ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+          TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           address:ATTRIBUTE:[PUBLIC]:ESCAPED{address}:
           bitmap:ATTRIBUTE:[PUBLIC]:ESCAPED{bitmap}:

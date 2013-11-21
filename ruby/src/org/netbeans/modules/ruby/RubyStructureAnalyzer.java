@@ -60,7 +60,6 @@ import javax.swing.text.Document;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.Colon2Node;
-import org.jrubyparser.ast.CommentNode;
 import org.jrubyparser.ast.ConstDeclNode;
 import org.jrubyparser.ast.ConstNode;
 import org.jrubyparser.ast.DefnNode;
@@ -79,7 +78,6 @@ import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
 import org.jrubyparser.ast.AliasNode;
-import org.jrubyparser.ast.MultipleAsgn19Node;
 import org.jrubyparser.ast.MultipleAsgnNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -273,7 +271,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             // Find unique variables
             if (assignments != null) {
                 for (InstAsgnNode assignment : assignments) {
-                    names.put(assignment.getDecoratedName(), assignment);
+                    names.put(assignment.getLexicalName(), assignment);
                 }
 
                 // Add unique fields
@@ -283,7 +281,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     co.setIn(clz.getFqn());
 
                     // Make sure I don't already have an entry for this field as an attr_accessor or writer
-                    co.setType(knowledge.getType(field.getDecoratedName()));
+                    co.setType(knowledge.getType(field.getLexicalName()));
                     String fieldName = field.getName();
 
                     boolean found = false;
@@ -576,7 +574,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             if (globals == null) globals = new HashMap<String, GlobalAsgnNode>();
 
             GlobalAsgnNode global = (GlobalAsgnNode)node;
-            globals.put(global.getDecoratedName(), global);
+            globals.put(global.getLexicalName(), global);
 
             break;
         }
@@ -600,10 +598,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
             break;
         }
         case VCALLNODE: {
-            String name = AstUtilities.getName(node);
+            String name = ((INameNode) node).getName();
 
-            if (("private".equals(name) || "protected".equals(name)) &&
-                    parent instanceof AstClassElement) { // NOI18N
+            if (("private".equals(name) || "protected".equals(name)) && parent instanceof AstClassElement) { // NOI18N
                 haveAccessModifiers.add((AstClassElement)parent);
             }
             
@@ -612,39 +609,6 @@ public class RubyStructureAnalyzer implements StructureScanner {
         case MULTIPLEASGNNODE: {
             Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
             RubyTypeAnalyzer.collectMultipleAsgnVars((MultipleAsgnNode) node, typeInferencer, vars);
-            for (Node each : vars.keySet()) {
-                switch (each.getNodeType()) {
-                    case LOCALASGNNODE: {
-                        if (parent == null && AstUtilities.findMethod(path) == null) {
-                            String name = AstUtilities.getName(each);
-                            if (findExistingVariable(name) == null) {
-                                AstElement co = new AstNameElement(result, each, name, ElementKind.VARIABLE);
-                                co.setType(vars.get(each));
-                                co.setIn(in);
-                                structure.add(co);
-                            }
-                        }
-                        break;
-                    }
-                    case INSTASGNNODE: {
-                        AstClassElement classParent = findClassParent(parent);
-                        if (classParent != null) {
-                            Set<InstAsgnNode> assignments = fields.get(classParent);
-                            if (assignments == null) {
-                                assignments = new HashSet<InstAsgnNode>();
-                                fields.put(classParent, assignments);
-                            }
-                            assignments.add((InstAsgnNode) each);
-                        }
-                        break;
-                    }
-                }
-            }
-            break;
-        }
-        case MULTIPLEASGN19NODE: {
-            Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
-            RubyTypeAnalyzer.collectMultipleAsgnVars((MultipleAsgn19Node) node, typeInferencer, vars);
             for (Node each : vars.keySet()) {
                 switch (each.getNodeType()) {
                     case LOCALASGNNODE: {
@@ -801,7 +765,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         AstAttributeElement co = new AstAttributeElement(result, s, node);
                         
                         if (parent instanceof AstClassElement) {
-                            Set<AstAttributeElement> attrsInClass = attributes.get(parent);
+                            Set<AstAttributeElement> attrsInClass = attributes.get((AstClassElement) parent);
 
                             if (attrsInClass == null) {
                                 attrsInClass = new HashSet<AstAttributeElement>();
@@ -917,15 +881,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 addToParent(lastClassElement, co);
                             }
                             // Prepend the function type (unless it's test - see 138260
-                            if (!name.equals("test")) { // NOI18N
-                                desc = name + ": " + desc; // NOI18N
-                            }
+                            if (!name.equals("test")) desc = name + ": " + desc; // NOI18N
                             break;
                         }
                     }
-                    AstElement co = new AstNameElement(result, node, desc,
-                            ElementKind.TEST);
-
+                    AstElement co = new AstNameElement(result, node, desc, ElementKind.TEST);
                     addToParent(parent, co);
                     parent = co;
                 }
@@ -935,12 +895,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             break;
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             path.descend(child);
             scan(child, path, in, includes, parent);
             path.ascend();
@@ -1046,9 +1001,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
         if (node instanceof CallNode && "extend".equals(((INameNode) node).getName())) return (CallNode) node; // NOI18N
         
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             CallNode call = findExtendCall(child);
+            
             if (call != null) return call;
         }
         
@@ -1080,27 +1034,6 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
 
-    /** Look through the comment nodes and associate them with the AST nodes */
-    public void addComments(final RubyParseResult result) {
-        Node root = result.getRootNode();
-        if (root == null) return;
-
-        org.jrubyparser.parser.ParserResult r = result.getJRubyResult();
-
-        // REALLY slow implementation
-        List<CommentNode> comments = r.getCommentNodes();
-
-        for (CommentNode comment : comments) {
-            SourcePosition pos = comment.getPosition();
-            int start = pos.getStartOffset();
-            int end = pos.getEndOffset();
-            Node node = findClosest(root, start, end);
-            assert node != null;
-
-            node.addComment(comment);
-        }
-    }
-
     private Node findClosest(final Node node, final int start, final int end) {
         List<Node> list = node.childNodes();
 
@@ -1110,9 +1043,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
         if (start > pos.getEndOffset()) return null;
 
         for (Node child : list) {
-            if (child.isInvisible()) continue;
-
             Node closest = findClosest(child, start, end);
+            
             if (closest != null) return closest;
         }
 

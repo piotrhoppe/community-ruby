@@ -46,11 +46,8 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jrubyparser.SourcePosition;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
@@ -139,18 +136,14 @@ public class AstPath implements Iterable<Node> {
     }
 
     private Node find(Node node, int offset) {
-        if (node.isInvisible()) return null;
+        if (node == null) return null;
 
         SourcePosition pos = node.getPosition();
         int begin = pos.getStartOffset();
         int end = pos.getEndOffset();
 
         if ((offset >= begin) && (offset <= end)) {
-            List<Node> children = node.childNodes();
-
-            for (Node child : children) {
-                if (child.isInvisible()) continue;
-
+            for (Node child : node.childNodes()) {
                 Node found = find(child, offset);
 
                 if (found != null && !found.getPosition().isEmpty()) {
@@ -162,20 +155,7 @@ public class AstPath implements Iterable<Node> {
 
             return node;
         } else {
-            List<Node> children = node.childNodes();
-            if (children == null) {
-                Logger logger = Logger.getLogger(AstPath.class.getName());
-                logger.log(Level.WARNING, "JRuby AST node {0} of type {1} has null as children", new Object[]{node, node.getClass().getName()});
-            }
-
-            for (Node child : children) {
-                if (child == null) {
-                    Logger logger = Logger.getLogger(AstPath.class.getName());
-                    logger.log(Level.WARNING, "JRuby AST node {0} of type {1} has a null child", new Object[]{node, node.getClass().getName()});
-                    continue;
-                }
-                if (child.isInvisible()) continue;
-
+            for (Node child : node.childNodes()) {
                 Node found = find(child, offset);
 
                 if (found != null) {
@@ -195,11 +175,7 @@ public class AstPath implements Iterable<Node> {
     public boolean find(Node node, Node target) {
         if (node == target) return true;
 
-        List<Node> children = node.childNodes();
-
-        for (Node child : children) {
-            if (child.isInvisible()) continue;
-
+        for (Node child : node.childNodes()) {
             if (find(child, target)) {
                 path.add(child);
 

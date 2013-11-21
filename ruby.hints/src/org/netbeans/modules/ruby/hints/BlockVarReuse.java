@@ -202,7 +202,7 @@ public class BlockVarReuse extends RubyAstRule {
             }
 
             for (Node child : node.childNodes()) {
-                if (child.isInvisible() || child instanceof MethodDefNode) continue; // Ignore stuff in nested methods
+                if (child instanceof MethodDefNode) continue; // Ignore stuff in nested methods
                 if (isThisBlock(child)) continue; // Skip the block the fix is applying to.
 
                 addNonBlockRefs(child, name, ranges, isParameter);
@@ -221,7 +221,7 @@ public class BlockVarReuse extends RubyAstRule {
             }
 
             for (Node child : node.childNodes()) {
-                if (child.isInvisible() || child instanceof MethodDefNode) continue; // Ignore stuff in nested methods
+                if (child instanceof MethodDefNode) continue; // Ignore stuff in nested methods
                 if (isThisBlock(child)) continue; // Skip the block the fix is applying to.
 
                 addBlockRefs(child, name, ranges, isParameter);

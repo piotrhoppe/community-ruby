@@ -259,8 +259,6 @@ public class RubyHintsProvider implements HintsProvider {
         applyRules(manager, context, node.getNodeType(), node, path, hints, result);
         
         for (Node child : childNodes(node)) {
-            if (child.isInvisible()) continue;
-
             if (isCancelled()) return;
 
             path.descend(child);

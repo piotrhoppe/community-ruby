@@ -237,9 +237,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     static boolean startsWith(String theString, String prefix, boolean caseSensitive) {
-        if (prefix.length() == 0) {
-            return true;
-        }
+        if (prefix.length() == 0) return true;
 
         return caseSensitive ? theString.startsWith(prefix)
                              : theString.toLowerCase().startsWith(prefix.toLowerCase());
@@ -258,40 +256,29 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      * kick in.
      */
     @SuppressWarnings("unchecked")
+    @Override
     public String getPrefix(ParserResult info, int lexOffset, boolean upToOffset) {
         try {
             BaseDocument doc = RubyUtils.getDocument(info);
-            if (doc == null) {
-                return null;
-            }
+            if (doc == null) return null;
 
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
             doc.readLock(); // Read-lock due to token hierarchy use
             try {
             int requireStart = LexUtilities.getRequireStringOffset(lexOffset, th);
 
-            if (requireStart != -1) {
-                // XXX todo - do upToOffset
-                return doc.getText(requireStart, lexOffset - requireStart);
-            }
+            // XXX todo - do upToOffset
+            if (requireStart != -1) return doc.getText(requireStart, lexOffset - requireStart);
 
             TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
-
-            if (ts == null) {
-                return null;
-            }
+            if (ts == null) return null;
 
             ts.move(lexOffset);
 
-            if (!ts.moveNext() && !ts.movePrevious()) {
-                return null;
-            }
+            if (!ts.moveNext() && !ts.movePrevious()) return null;
 
-            if (ts.offset() == lexOffset) {
-                // We're looking at the offset to the RIGHT of the caret
-                // and here I care about what's on the left
-                ts.movePrevious();
-            }
+            // We're looking at the offset to the RIGHT of the caret and here I care about what's on the left
+            if (ts.offset() == lexOffset) ts.movePrevious();
 
             Token<? extends RubyTokenId> token = ts.token();
 
@@ -305,9 +292,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     assert ts != null;
                     ts.move(lexOffset);
 
-                    if (!ts.moveNext() && !ts.movePrevious()) {
-                        return null;
-                    }
+                    if (!ts.moveNext() && !ts.movePrevious()) return null;
 
                     token = ts.token();
                     id = token.id();
@@ -1209,8 +1194,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
 
                 for (Node child : AstUtilities.findLocalScope(closest, path).childNodes()) {
-                    if (child.isInvisible()) continue;
-
                     addLocals(child, variables);
                 }
             }
@@ -1793,7 +1776,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible() || child instanceof ILocalScope) continue; // ignore invis or nested local scopes
+            if (child instanceof ILocalScope) continue; // ignore nested local scopes
 
             addLocals(child, variables);
         }
@@ -1844,7 +1827,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible() || child instanceof ILocalScope || child.getNodeType() == NodeType.ITERNODE) continue;
+            if (child instanceof ILocalScope || child.getNodeType() == NodeType.ITERNODE) continue;
 
             addDynamic(child, variables);
         }
@@ -1983,7 +1966,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
-        Node node = null;
+        Node node;
 
         if (element instanceof AstElement) {
             node = ((AstElement)element).getNode();
