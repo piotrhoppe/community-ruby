@@ -60,14 +60,13 @@ public abstract class RubyHints {
     }
 
     /**
-     * Checks whether the given <code>node</code> is <code>null</code> or
-     * represents an <code>InvisibleNode</code>.
+     * Checks whether the given <code>node</code> is <code>null</code>.
      *
      * @param node
-     * @return true if the node was null or invisible.
+     * @return true if the node was null.
      */
-    static boolean isNullOrInvisible(Node node) {
-        return node == null || node.isInvisible();
+    static boolean isNull(Node node) {
+        return node == null;
     }
 
     static boolean isInRailsProject(FileObject file) {

@@ -131,17 +131,10 @@ public class RailsViews extends RubyAstRule {
             }
         }
         
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             boolean result = shouldHaveView(info, child);
             
-            if (!result) {
-                return result;
-            }
+            if (!result) return result;
         }
         
         return true;

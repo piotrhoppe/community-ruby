@@ -249,11 +249,11 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                     highlights.put(AstUtilities.offsetRangeFor(variable.getNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
                 }
             } else if (closest instanceof IInstanceVariable) {
-                highlightInstance(root, ((INameNode)closest).getDecoratedName(), highlights);
+                highlightInstance(root, ((INameNode)closest).getLexicalName(), highlights);
             } else if (closest instanceof IClassVariable) {
-                highlightClassVar(root, ((INameNode)closest).getDecoratedName(), highlights);
+                highlightClassVar(root, ((INameNode)closest).getLexicalName(), highlights);
             } else if (closest instanceof IGlobalVariable) {
-                highlightGlobal(root, ((INameNode)closest).getDecoratedName(), highlights);
+                highlightGlobal(root, ((INameNode)closest).getLexicalName(), highlights);
             } else if (closest instanceof FCallNode || closest instanceof VCallNode ||
                     closest instanceof CallNode) {
                 // A method call
@@ -300,7 +300,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 // A method definition. Only highlight if the caret is on the
                 // actual name, since otherwise just placing the caret on a blank
                 // line in a method will cause it to highlight.
-                OffsetRange range = AstUtilities.offsetRangeFor(((INameNode)closest).getDecoratedNamePosition());
+                OffsetRange range = AstUtilities.offsetRangeFor(((INameNode)closest).getLexicalNamePosition());
 
                 if (range.containsInclusive(astOffset)) {
                     String name = ((MethodDefNode)closest).getName();
@@ -445,8 +445,6 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             Set<Node> exits = new HashSet<Node>();
             AstUtilities.findExitPoints(node, exits);
             for (Node exit : exits) {
-                if (exit.isInvisible()) continue;
-
                 highlightExitPoint(exit, highlights, info);
             }
         } finally {
@@ -586,8 +584,6 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             highlightLocal(child, name, highlights);
         }
     }
@@ -603,8 +599,8 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
     private void highlightInstance(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof IInstanceVariable) {
-            if (((INameNode)node).getDecoratedName().equals(name)) {
-                highlights.put(AstUtilities.offsetRangeFor(((INameNode) node).getDecoratedNamePosition()),
+            if (((INameNode)node).getLexicalName().equals(name)) {
+                highlights.put(AstUtilities.offsetRangeFor(((INameNode) node).getLexicalNamePosition()),
                         ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (AstUtilities.isAttr(node)) {
@@ -633,34 +629,28 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             highlightInstance(child, name, highlights);
         }
     }
 
     private void highlightClassVar(Node node, String name, Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof IClassVariable && ((IClassVariable)node).getDecoratedName().equals(name)) {
-            highlights.put(AstUtilities.offsetRangeFor(((IClassVariable) node).getDecoratedNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
+        if (node instanceof IClassVariable && ((IClassVariable)node).getLexicalName().equals(name)) {
+            highlights.put(AstUtilities.offsetRangeFor(((IClassVariable) node).getLexicalNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             highlightClassVar(child, name, highlights);
         }
     }
 
     private void highlightGlobal(Node node, String name, Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof IGlobalVariable && ((IGlobalVariable) node).getDecoratedName().equals(name)) {
-            highlights.put(AstUtilities.offsetRangeFor(((IGlobalVariable) node).getDecoratedNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
+        if (node instanceof IGlobalVariable && ((IGlobalVariable) node).getLexicalName().equals(name)) {
+            highlights.put(AstUtilities.offsetRangeFor(((IGlobalVariable) node).getLexicalNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
         } else if (!ignoreAlias && node instanceof AliasNode) {
             handleAliasNode((AliasNode) node, name, highlights);
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             highlightGlobal(child, name, highlights);
         }
     }
@@ -673,7 +663,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
             for (Arity arity : arities) {
                 if (Arity.matches(arity, defArity)) {
-                    highlights.put(AstUtilities.offsetRangeFor(((MethodDefNode) node).getDecoratedNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
+                    highlights.put(AstUtilities.offsetRangeFor(((MethodDefNode) node).getLexicalNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
 
                     break;
                 }
@@ -699,8 +689,6 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             highlightMethod(child, name, arities, highlights);
         }
     }
@@ -715,8 +703,6 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             findDefArities(defArities, child, name, callArity);
         }
     }
@@ -724,13 +710,11 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
     private void highlightClass(Node node, String name, Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof ConstNode || node instanceof ConstDeclNode || node instanceof Colon2Node) {
             if (((INameNode)node).getName().equals(name)) {
-                highlights.put(AstUtilities.offsetRangeFor(((INameNode) node).getDecoratedNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
+                highlights.put(AstUtilities.offsetRangeFor(((INameNode) node).getLexicalNamePosition()), ColoringAttributes.MARK_OCCURRENCES);
             }
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             highlightClass(child, name, highlights);
         }
     }

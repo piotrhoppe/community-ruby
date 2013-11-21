@@ -298,17 +298,9 @@ public class AttributeIsLocal extends RubyAstRule {
                 }
             }
 
-            List<Node> list = node.childNodes();
+            for (Node child : node.childNodes()) {
+                if (child instanceof MethodDefNode) continue; // Skip inline method defs
 
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-
-                // Skip inline method defs
-                if (child instanceof MethodDefNode) {
-                    continue;
-                }
                 addLocalRegions(child, name, ranges);
             }
         }

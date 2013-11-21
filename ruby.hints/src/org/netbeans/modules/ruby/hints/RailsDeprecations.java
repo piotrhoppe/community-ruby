@@ -52,7 +52,6 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
@@ -217,8 +216,6 @@ public class RailsDeprecations extends RubyAstRule {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             scan(info, child, result);
         }
     }

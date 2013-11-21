@@ -411,16 +411,9 @@ public class ConvertBlockType extends RubyAstRule {
                 offsets.add(start);
             }
 
-            List<Node> list = node.childNodes();
+            for (Node child : node.childNodes()) {
+                if (child.getNodeType() == NodeType.EVSTRNODE) continue; // Don't linebreak inside a #{} expression
 
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-                if (child.getNodeType() == NodeType.EVSTRNODE) {
-                    // Don't linebreak inside a #{} expression
-                    continue;
-                }
                 findLineBreaks(child, offsets);
             }
         }

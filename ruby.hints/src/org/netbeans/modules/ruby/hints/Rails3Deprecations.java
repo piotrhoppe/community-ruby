@@ -168,24 +168,17 @@ public class Rails3Deprecations extends RubyAstRule {
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             scan(info, child, result);
         }
     }
 
     private Deprecation findMatching(String name, Collection<Deprecation> deprecations) {
         for (Deprecation deprecation : deprecations) {
-            if (deprecation.oldName.equals(name)) {
-                return deprecation;
-            }
+            if (deprecation.oldName.equals(name)) return deprecation;
         }
+        
         return null;
-
     }
 
     private void addHintAndFix(Node node, List<Hint> result, String displayName, Deprecation deprecation) {

@@ -96,7 +96,7 @@ final class MigrationIndexer {
 
         // Find self.up
         String fileName = analyzer.getFile().getName();
-        Node top = null;
+        Node top;
         String version;
         if ("schema".equals(fileName)) { // NOI18N
             top = root;
@@ -327,12 +327,7 @@ final class MigrationIndexer {
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             scanMigration(child, items, currentTable);
         }
     }

@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.ClassNode;
@@ -115,7 +114,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
 
         // First try looking only at the local scope
         Set<String> uniqueClasses = new HashSet<String>();
-        while ((classes.size() == 0) && (fqn.length() > 0)) {
+        while ((classes.isEmpty()) && (fqn.length() > 0)) {
             classes =
                     index.getClasses(fqn + "::" + className, QuerySupport.Kind.EXACT, // NOI18N
                     true, false, false, uniqueClasses);
@@ -129,17 +128,17 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
             }
         }
 
-        if (classes.size() == 0) {
+        if (classes.isEmpty()) {
             classes = index.getClasses(className, QuerySupport.Kind.EXACT, true,
                     false, false, uniqueClasses);
         }
 
         // If no success with looking only at the source scope, look in libraries as well
-        if (classes.size() == 0) {
+        if (classes.isEmpty()) {
             fqn = possibleFqn;
 
             // Try looking at the libraries too
-            while ((classes.size() == 0) && (fqn.length() > 0)) {
+            while ((classes.isEmpty()) && (fqn.length() > 0)) {
                 classes =
                         index.getClasses(fqn + "::" + className, QuerySupport.Kind.EXACT, true, false, // NOI18N
                         false);
@@ -153,7 +152,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
                 }
             }
 
-            if (classes.size() == 0) {
+            if (classes.isEmpty()) {
                 classes = index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false);
             }
         }
@@ -182,17 +181,10 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             Node match = findClass(child, name, ignoreAlias);
 
-            if (match != null) {
-                return match;
-            }
+            if (match != null) return match;
         }
 
         return null;
@@ -343,7 +335,7 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
         // 8. Look at superclasses and consider -their- requires to figure out
         //   which class we're supposed to use
         // TODO
-        candidates = new HashSet<IndexedClass>();
+//        candidates = new HashSet<IndexedClass>();
 
         // Pick one arbitrarily
         if (classes.size() > 0) {

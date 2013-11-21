@@ -174,6 +174,7 @@ public final class RubyTypeInferencer {
 
         if (!knowledge.wasAnalyzed()) analyzer.analyze();
 
+        if (node != null) {
         switch (node.getNodeType()) {
             case LOCALVARNODE:
                 // uses currentMethod if passed; while it is not 100% accurate (currentMethod gets assigned
@@ -182,14 +183,14 @@ public final class RubyTypeInferencer {
                 type = knowledge.getType(getLocalVarPath(knowledge.getRoot(), node, currentMethod));
                 break;
             case GLOBALVARNODE:
-                type = knowledge.getType(((INameNode) node).getDecoratedName());
+                type = knowledge.getType(((INameNode) node).getLexicalName());
                 if (!type.isKnown()) {
-                    RubyType preDefType = RubyPredefinedVariable.getType(((INameNode) node).getDecoratedName());
+                    RubyType preDefType = RubyPredefinedVariable.getType(((INameNode) node).getLexicalName());
                     if (preDefType != null) type = preDefType;
                 }
                 break;
             case DVARNODE: case INSTVARNODE: case CLASSVARNODE:
-                type = knowledge.getType(((INameNode) node).getDecoratedName());
+                type = knowledge.getType(((INameNode) node).getLexicalName());
                 break;
             case CONSTNODE:
                 type = knowledge.getType(AstUtilities.getFqnName(knowledge.getRoot(), node));
@@ -213,7 +214,9 @@ public final class RubyTypeInferencer {
                 type = inferSuperNode(node);
                 break;
         }
+
         if (type == null && AstUtilities.isCall(node)) type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge, fast);
+        }
         if (type == null) type = getTypeForLiteral(node);
 
         // null element in types set means that we are not able to infer the expression
@@ -295,6 +298,8 @@ public final class RubyTypeInferencer {
      *   <code>Array</code>,  <code>Hash</code>,  <code>Regexp</code>, ...
      */
     static RubyType getTypeForLiteral(final Node node) {
+        if (node == null) return RubyType.unknown();
+        
         switch (node.getNodeType()) {
             case ARRAYNODE: case ZARRAYNODE:
                 return RubyType.ARRAY; // NOI18N
@@ -313,9 +318,7 @@ public final class RubyTypeInferencer {
             case FLOATNODE:
                 return RubyType.FLOAT; // NOI18N
             case NILNODE:
-                // NilImplicitNode - don't use it, the type is really unknown!
-                if (!node.isInvisible()) return RubyType.NIL_CLASS; // NOI18N
-                break;
+                return RubyType.NIL_CLASS; // NOI18N
             case SCLASSNODE: case UNDEFNODE: case UNTILNODE:
                 return RubyType.NIL_CLASS;
             case NOTNODE:

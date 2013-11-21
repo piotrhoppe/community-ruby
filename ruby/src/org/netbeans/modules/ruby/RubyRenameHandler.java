@@ -45,7 +45,6 @@ package org.netbeans.modules.ruby;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jrubyparser.ast.ArgsNode;
@@ -223,11 +222,7 @@ public class RubyRenameHandler implements InstantRenamer {
             addArgsNode(node, name, info, ranges);
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) continue;
-
+        for (Node child : node.childNodes()) {
             addLocals(info, child, name, ranges);
         }
     }
@@ -262,10 +257,7 @@ public class RubyRenameHandler implements InstantRenamer {
             addArgsNode(node, name, info, ranges);
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) continue;
+        for (Node child : node.childNodes()) {
             if (child instanceof ILocalScope || child.getNodeType() == NodeType.ITERNODE) continue;
 
             addDynamicVars(info, child, name, ranges);

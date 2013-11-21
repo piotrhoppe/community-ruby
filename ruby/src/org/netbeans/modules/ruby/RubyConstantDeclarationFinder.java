@@ -103,13 +103,9 @@ final class RubyConstantDeclarationFinder extends RubyBaseDeclarationFinder<Inde
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findLocal(child);
-            if (location != DeclarationLocation.NONE) {
-                return location;
-            }
+            
+            if (location != DeclarationLocation.NONE) return location;
         }
 
         return DeclarationLocation.NONE;

@@ -82,12 +82,8 @@ public class ParseTreeWalker {
             //for (Node child : list) {
             for (int i = 0, n = list.size(); i < n; i++) {
                 Node child = list.get(i);
-                if (child.isInvisible()) {
-                    continue;
-                }
-                if (walk(child)) {
-                    return true;
-                }
+
+                if (walk(child)) return true;
             }
         }
 

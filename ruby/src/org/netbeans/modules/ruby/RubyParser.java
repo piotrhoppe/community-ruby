@@ -62,6 +62,7 @@ import org.jrubyparser.parser.ParserConfiguration;
 import org.jrubyparser.parser.ParserResult;
 import org.jrubyparser.parser.Ruby18Parser;
 import org.jrubyparser.parser.Ruby19Parser;
+import org.jrubyparser.parser.Ruby20Parser;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -584,23 +585,23 @@ public final class RubyParser extends Parser {
 
         Node root = (result != null) ? result.getAST() : null;
 
+        // FIXME: Change all code to not mind searching from RootNode
         if (root instanceof RootNode) {
-            // Quick workaround for now to avoid NPEs all over when
-            // code looks at RootNode, whose getPosition()==null.
-            // Its bodynode is what used to be returned as the root!
-            root = ((RootNode) root).getBody();
+            Node body = ((RootNode) root).getBody();
+            
+            if (body != null) root = body;
         }
 
+        // FIXME: Is can a non-null result really have a null root node?
         if (root != null) {
             context.sanitized = sanitizing;
-            AstNodeAdapter ast = new AstNodeAdapter(null, root);
             RubyParseResult r = createParseResult(context.snapshot, root);
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             r.setSource(source);
             return r;
-        } else {
-            return sanitize(context, sanitizing);
         }
+        
+        return sanitize(context, sanitizing);
     }
 
 
@@ -627,28 +628,38 @@ public final class RubyParser extends Parser {
 
         if (platform == null) return getDefaultParser();
         if (platform.isJRuby()) return getParserForJRuby(owner);
-        if (platform.is19()) return new Ruby19Parser();
-        // FIXME: Update to 2.0 parser once jruby-parser add 2.0 parser support
-        if (platform.is20()) return new Ruby19Parser();
-
-        return new Ruby18Parser();
+        
+        return getParserFromProject(owner);
     }
-
+    
+    private static org.jrubyparser.parser.RubyParser getParserFromProject(Project owner) {
+        RubyPlatform platform = RubyPlatform.platformFor(owner);
+        
+        if (platform != null) {
+            if (platform.is18()) return new Ruby18Parser();
+            if (platform.is19()) return new Ruby19Parser();
+            if (platform.is20()) return new Ruby20Parser();
+        }
+        
+        return getDefaultParser();        
+    }
+    
     private static org.jrubyparser.parser.RubyParser getDefaultParser() {
-        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby19Parser();
+        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby20Parser();
     }
 
-    // FIXME: This should figure this out much differently.
     private static org.jrubyparser.parser.RubyParser getParserForJRuby(Project project) {
         PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
         if (evaluator != null) {
             // specified in SharedRubyProjectProperties, but don't want add a dep to it.
             String jvmArgs = evaluator.getProperty("jvm.args"); //NOI18N
             if (jvmArgs != null) {
-                return jvmArgs.contains("jruby.compat.version=RUBY1_8") ? new Ruby18Parser() : new Ruby19Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY1_8")) return new Ruby18Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY1_9")) return new Ruby19Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_0")) return new Ruby20Parser();
             }
         }
-        return new Ruby19Parser();
+        return getParserFromProject(project);
     }
 
     protected RubyParseResult createParseResult(Snapshot snapshots, Node rootNode) {
@@ -656,67 +667,43 @@ public final class RubyParser extends Parser {
     }
     
     public static RubyElement resolveHandle(org.netbeans.modules.csl.spi.ParserResult info, ElementHandle handle) {
+        if (handle instanceof RubyElement) return (RubyElement) handle;
         if (handle instanceof AstElement) {
             AstElement element = (AstElement)handle;
+            
             org.netbeans.modules.csl.spi.ParserResult oldInfo = element.getInfo();
-            if (oldInfo == info) {
-                return element;
-            }
+            if (oldInfo == info) return element;
+
             Node oldNode = element.getNode();
             Node oldRoot = AstUtilities.getRoot(oldInfo);
             
             Node newRoot = AstUtilities.getRoot(info);
-            if (newRoot == null) {
-                return null;
-            }
+            if (newRoot == null) return null;
 
             // Find newNode
             Node newNode = find(oldRoot, oldNode, newRoot);
-
-            if (newNode != null) {
-                AstElement co = AstElement.create(info, newNode);
-
-                return co;
-            }
-        } else if (handle instanceof RubyElement) {
-            return (RubyElement)handle;
+            if (newNode != null) return AstElement.create(info, newNode);
         }
-
         return null;
     }
 
+    /**
+     * Assumes nearly or completely identical ASTs.  Finds same point in new tree where oldObject
+     * was in old tree.
+     */
     private static Node find(Node oldRoot, Node oldObject, Node newRoot) {
         // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
-        List<?extends Node> oldChildren = oldRoot.childNodes();
-        List<?extends Node> newChildren = newRoot.childNodes();
-        Iterator<?extends Node> itOld = oldChildren.iterator();
-        Iterator<?extends Node> itNew = newChildren.iterator();
-
-        while (itOld.hasNext()) {
-            if (!itNew.hasNext()) {
-                return null; // No match - the trees have changed structure
-            }
-
-            Node o = itOld.next();
-            Node n = itNew.next();
-
-            if (o == oldObject) {
-                // Found it!
-                return n;
-            }
-
-            // Recurse
-            Node match = find(o, oldObject, n);
-
-            if (match != null) {
-                return match;
-            }
+        Iterator<Node> itNew = newRoot.childNodes().iterator();
+        
+        for (Node o: oldRoot.childNodes()) {
+            if (!itNew.hasNext()) return null; // different number of nodes between trees.  mismatch
+            
+            if (o == oldObject) return itNew.next(); // found location in old tree return new equiv.
+            
+            Node match = find(o, oldObject, itNew.next());  // depth-first search
+            if (match != null) return match;
         }
-
-        if (itNew.hasNext()) {
-            return null; // No match - the trees have changed structure
-        }
-
+        
         return null;
     }
 

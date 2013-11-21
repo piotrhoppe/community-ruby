@@ -53,7 +53,6 @@ import java.util.Map;
 import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.ArgsNode;
 import org.jrubyparser.ast.DAsgnNode;
-import org.jrubyparser.ast.DVarNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.LocalVarNode;
@@ -298,8 +297,6 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             path.descend(child);
             annotate(child, highlights, path, parameters, isParameter);
             path.ascend();
@@ -351,8 +348,6 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             // The "outer" foo here is unused - we shouldn't recurse into method bodies when doing unused detection:
             // foo = 1; def bar; foo = 2; print foo; end;
             if (child instanceof MethodDefNode) continue;
@@ -363,7 +358,7 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
     }
 
     private void highlightMethodName(MethodDefNode node, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
-        OffsetRange range = AstUtilities.offsetRangeFor(node.getDecoratedNamePosition());
+        OffsetRange range = AstUtilities.offsetRangeFor(node.getLexicalNamePosition());
         
         // Don't block out already annotated private methods
         if (!highlights.containsKey(range)) highlights.put(range, ColoringAttributes.METHOD_SET);

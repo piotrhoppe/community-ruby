@@ -585,12 +585,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 }
             }
 
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
+            for (Node child : node.childNodes()) {
                 path.descend(child);
                 find(path, searchCtx, fileCtx, child, name, upperCase);
                 path.ascend();

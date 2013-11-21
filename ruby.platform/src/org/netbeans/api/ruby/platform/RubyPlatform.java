@@ -198,13 +198,17 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     public Info getInfo() {
         return info;
     }
+    
+    public boolean is18() {
+        return getVersion() != null && getVersion().startsWith("1.8");
+    }
 
     public boolean is19() {
         return getVersion() != null && getVersion().startsWith("1.9");
     }
     
     public boolean is20() {
-        return getVersion() != null && getVersion().startsWith("2.0");
+        return getVersion() != null && getVersion().startsWith("2.");
     }
 
     /**
@@ -1219,13 +1223,10 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
+            if (obj == null || getClass() != obj.getClass()) return false;
+
             final Info other = (Info) obj;
+
             if (this.kind != other.kind && (this.kind == null || !this.kind.equals(other.kind))) {
                 return false;
             }

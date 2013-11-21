@@ -261,18 +261,8 @@ public class CamelCaseNames extends RubyAstRule {
                 isParameter = true;
             }
 
-
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-
-                // Skip inline method defs
-                if (child instanceof MethodDefNode) {
-                    continue;
-                }
+            for (Node child : node.childNodes()) {
+                if (child instanceof MethodDefNode) continue; // Skip inline method defs
 
                 addLocalRegions(child, name, ranges, isParameter);
             }

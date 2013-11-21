@@ -137,7 +137,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         Node node = AstUtilities.findBySignature(root, "Ape#@dialogs");
         assertNotNull(node);
         assertEquals(node.getNodeType(), NodeType.INSTASGNNODE);
-        assertEquals("@dialogs", ((INameNode)node).getDecoratedName());
+        assertEquals("@dialogs", ((INameNode)node).getLexicalName());
     }
 
     public void testFindBySignatureClassVar() throws Exception {
@@ -145,7 +145,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         Node node = AstUtilities.findBySignature(root, "Ape#@@debugging");
         assertNotNull(node);
         assertEquals(node.getNodeType(), NodeType.CLASSVARASGNNODE);
-        assertEquals("@@debugging", ((INameNode)node).getDecoratedName());
+        assertEquals("@@debugging", ((INameNode)node).getLexicalName());
     }
 
     public void testFindRequires() throws Exception {
@@ -276,8 +276,8 @@ public class AstUtilitiesTest extends RubyTestBase {
         AstUtilities.findExitPoints(methodDef, exits);
         assertEquals("Was: " + exits, 3, exits.size());
         assertEquals("raise", AstUtilities.getNameOrValue(exits.get(0)));
-        assertTrue(exits.get(1) instanceof FixnumNode);
-        assertEquals("77", AstUtilities.getNameOrValue(exits.get(2)));
+        assertTrue(exits.get(2) instanceof FixnumNode);
+        assertEquals("77", AstUtilities.getNameOrValue(exits.get(1)));
     }
 
     public void testGetMethodName() {
@@ -372,16 +372,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         list.add(node);
         parents.put(node, parent);
 
-        List<Node> children = node.childNodes();
-        assertNotNull(children);
-
-        for (Node child : children) {
-            if (child.isInvisible()) {
-                parents.put(child, node);
-                continue;
-            }
-            // No null nodes as children
-            assertNotNull(child);
+        for (Node child : node.childNodes()) {
             addAllNodes(child, list, node, parents);
         }
     }

@@ -76,10 +76,12 @@ public class NestedLocal extends RubyAstRule {
     public NestedLocal() {
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
+    @Override
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.FORNODE);
     }
@@ -88,18 +90,22 @@ public class NestedLocal extends RubyAstRule {
         // Does nothing
     }
 
+    @Override
     public String getId() {
         return "Nested_Local"; // NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(NestedLocal.class, "NestedLocal");
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(NestedLocal.class, "NestedLocalDesc");
     }
 
+    @Override
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         AstPath path = context.path;
@@ -150,21 +156,11 @@ public class NestedLocal extends RubyAstRule {
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             boolean found = isUsed(child, name, target, done);
             
-            if (found) {
-                return true;
-            }
-            
-            if (done[0]) {
-                return false;
-            }
+            if (found) return true;
+            if (done[0]) return false;
         }
         
         return false;
@@ -184,6 +180,7 @@ public class NestedLocal extends RubyAstRule {
             this.renameOuter = renameOuter;
         }
 
+        @Override
         public String getDescription() {
             if (renameOuter) {
                 return NbBundle.getMessage(NestedLocal.class, "ChangeOuter");
@@ -192,6 +189,7 @@ public class NestedLocal extends RubyAstRule {
             }
         }
 
+        @Override
         public EditList getEditList() throws Exception {
             BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
@@ -205,6 +203,7 @@ public class NestedLocal extends RubyAstRule {
             return edits;
         }
         
+        @Override
         public void implement() throws Exception {
             // Refactoring isn't necessary here since local variables and block
             // variables are limited to the local scope, so we can accurately just
@@ -240,22 +239,9 @@ public class NestedLocal extends RubyAstRule {
                 isParameter = true;
             }
 
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-
-                // Skip inline method defs
-                if (child instanceof MethodDefNode) {
-                    continue;
-                }
-                
-                if (child == target) {
-                    // prune the block
-                    continue;
-                }
+            for (Node child : node.childNodes()) {
+                if (child instanceof MethodDefNode) continue; // Skip inline method defs
+                if (child == target) continue; // prune the block
 
                 addNonBlockRefs(child, name, ranges, isParameter);
             }
@@ -277,31 +263,38 @@ public class NestedLocal extends RubyAstRule {
             return ranges;
         }
 
+        @Override
         public boolean isSafe() {
             return false;
         }
 
+        @Override
         public boolean isInteractive() {
             return true;
         }
 
+        @Override
         public boolean canPreview() {
             return true;
         }
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
 
+    @Override
     public boolean showInTasklist() {
         return true;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }

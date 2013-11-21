@@ -267,15 +267,8 @@ final class RailsIndexer {
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            if (scan(child, result)) {
-                found = true;
-            }
+        for (Node child : node.childNodes()) {
+            if (scan(child, result)) found = true;
         }
 
         return found;

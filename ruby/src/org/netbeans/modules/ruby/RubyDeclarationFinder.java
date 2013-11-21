@@ -394,11 +394,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                             
                             out.set(fix(getLocation(parserResult, (Node) declaration), parserResult));
                         } else if (closest instanceof InstVarNode || closest instanceof ClassVarNode) { // A field/class variable read
-                            String name = ((INameNode)closest).getDecoratedName();
+                            String name = ((INameNode)closest).getLexicalName();
                             out.set(findInstanceFromIndex(parserResult, name, path, index, false));
                         } else if (closest instanceof GlobalVarNode) {
                             // A global variable read
-                            String name = ((INameNode)closest).getDecoratedName();
+                            String name = ((INameNode)closest).getLexicalName();
                             out.set(fix(findGlobal(parserResult, root, name), parserResult));
                         } else if (closest instanceof FCallNode || closest instanceof VCallNode ||
                                 closest instanceof CallNode) {
@@ -410,8 +410,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                             RubyType type = call.getType();
                             String lhs = call.getLhs();
 
-                            if (!type.isKnown() && lhs != null && closest != null &&
-                                    call.isSimpleIdentifier()) {
+                            if (!type.isKnown() && lhs != null && call.isSimpleIdentifier()) {
                                 Node method = AstUtilities.findLocalScope(closest, path);
 
                                 if (method != null) {
@@ -1850,14 +1849,9 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findLocal(info, child, name);
 
-            if (location != DeclarationLocation.NONE) {
-                return location;
-            }
+            if (location != DeclarationLocation.NONE) return location;
         }
 
         return DeclarationLocation.NONE;
@@ -1871,9 +1865,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         }
 
         for (Node child : node.childNodes()) {
-            if (child.isInvisible()) continue;
-
             DeclarationLocation location = findDynamic(info, child, name);
+            
             if (location != DeclarationLocation.NONE) return location;
         }
 
@@ -1909,17 +1902,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             DeclarationLocation location = findInstance(info, child, name, index);
 
-            if (location != DeclarationLocation.NONE) {
-                return location;
-            }
+            if (location != DeclarationLocation.NONE) return location;
         }
 
         return DeclarationLocation.NONE;
@@ -1949,17 +1935,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             //            }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             DeclarationLocation location = findClassVar(info, child, name);
 
-            if (location != DeclarationLocation.NONE) {
-                return location;
-            }
+            if (location != DeclarationLocation.NONE) return location;
         }
 
         return DeclarationLocation.NONE;
@@ -2004,17 +1983,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             DeclarationLocation location = findGlobal(info, child, name);
 
-            if (location != DeclarationLocation.NONE) {
-                return location;
-            }
+            if (location != DeclarationLocation.NONE) return location;
         }
 
         return DeclarationLocation.NONE;
@@ -2035,17 +2007,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
         }
 
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
+        for (Node child : node.childNodes()) {
             DeclarationLocation location = findMethod(info, child, name, arity);
 
-            if (location != DeclarationLocation.NONE) {
-                return location;
-            }
+            if (location != DeclarationLocation.NONE) return location;
         }
 
         return DeclarationLocation.NONE;

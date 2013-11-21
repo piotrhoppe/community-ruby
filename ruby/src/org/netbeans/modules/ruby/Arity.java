@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.List;
 import org.jrubyparser.ast.ArgsCatNode;
 import org.jrubyparser.ast.ArgsNode;
 import org.jrubyparser.ast.ArgumentNode;
@@ -152,14 +151,10 @@ public final class Arity {
             initializeFromCall(((CallNode)node).getArgs());
         } else if (node instanceof VCallNode) {
             for (Node child : node.childNodes()) {
-                if (child.isInvisible()) continue;
-
                 initializeFromCall(child);
             }
         } else if (node instanceof ListNode) {
             for (Node child : node.childNodes()) {
-                if (child.isInvisible()) continue;
-
                 if (AstUtilities.isCall(child)) {
                     min++;
 
@@ -230,8 +225,6 @@ public final class Arity {
             max++;
         } else if (node instanceof ListNode) {
             for (Node child : node.childNodes()) {
-                if (child.isInvisible()) continue;
-
                 initializeFromDef(child);
             }
         }
