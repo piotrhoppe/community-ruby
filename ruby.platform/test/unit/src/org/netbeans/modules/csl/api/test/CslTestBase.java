@@ -157,7 +157,7 @@ import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.editor.codetemplates.CslCorePackageAccessor;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.hints.infrastructure.HintsSettings;
-import org.netbeans.modules.csl.hints.infrastructure.Pair;
+import org.openide.util.Pair;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -3348,7 +3348,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
 
-        return new Pair<EditHistory,String>(history, modifiedText);
+        return Pair.<EditHistory,String>of(history, modifiedText);
     }
 
     protected final Pair<EditHistory,String> getEditHistory(BaseDocument doc, final EditHistory history, String... edits) throws BadLocationException {
@@ -3423,7 +3423,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
 
-        return new Pair<EditHistory,String>(history, modifiedText);
+        return Pair.<EditHistory,String>of(history, modifiedText);
     }
     
     public static TokenSequence<?> getRubyTokenSequence(final Document doc, final TokenHierarchy th) {
