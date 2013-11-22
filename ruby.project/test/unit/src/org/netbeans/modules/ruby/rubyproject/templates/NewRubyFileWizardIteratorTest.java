@@ -95,7 +95,7 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         RubyProject p = createTestProject();
 
         NewRubyFileWizardIterator it = new NewRubyFileWizardIterator(type);
-        NewFileWizard wiz = new NewFileWizard(p);
+        NewFileWizard wiz = new NewFileWizard(p, true);
         it.initialize(wiz);
         FileObject libFile = p.getProjectDirectory().getFileObject("lib");
         assertNotNull(libFile);
