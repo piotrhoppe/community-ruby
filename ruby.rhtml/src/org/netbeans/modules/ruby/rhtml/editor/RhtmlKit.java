@@ -137,14 +137,12 @@ public class RhtmlKit extends HtmlKit {
 
 
 
-    @Override
     protected DeleteCharAction createDeletePrevAction() {
-        return new RhtmlDeleteCharAction(deletePrevCharAction, false, super.createDeletePrevAction());
+        return new RhtmlDeleteCharAction(deletePrevCharAction, false, new HtmlKit.DeleteCharAction(deletePrevCharAction, false));
     }
     
-    @Override
     protected ExtDefaultKeyTypedAction createDefaultKeyTypedAction() {
-        return new RhtmlDefaultKeyTypedAction(super.createDefaultKeyTypedAction());
+        return new RhtmlDefaultKeyTypedAction(new HtmlKit.ExtDefaultKeyTypedAction());
     }
 
     @Override

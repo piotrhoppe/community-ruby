@@ -46,6 +46,7 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Icon;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -261,10 +262,20 @@ public class RailsProject extends RubyBaseProject {
     }
 
     private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
-
+        final String WEB_ROOT = "public"; // NOI18N
+        
         @Override
         public FileObject getWebRoot(FileObject file) {
-            return getProjectDirectory().getFileObject("public"); // NOI18N
+            return getProjectDirectory().getFileObject(WEB_ROOT); 
+        }
+
+        @Override
+        public Collection<FileObject> getWebRoots() {
+            Collection<FileObject> roots = new ArrayList<FileObject>();
+            
+            roots.add(getWebRoot(null)); // Rails only has a single web root
+            
+            return roots;
         }
     }
 }
