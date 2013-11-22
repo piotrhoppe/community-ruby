@@ -265,7 +265,6 @@ public class IntroduceHint extends RubySelectionRule {
 
         return new OffsetRange(adjustedStart, adjustedEnd);
     }
-    
 
     /** Compute the set of applicable AST nodes for the given selection.
      * It will find a set of continguous nodes in the AST. The result is returned in the

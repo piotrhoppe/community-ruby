@@ -274,7 +274,7 @@ class IntroduceFix implements PreviewableFix {
     }
 
     private EditList introduceExp(String name, List<OffsetRange> duplicates) throws BadLocationException {
-        boolean isConstant = kind != IntroduceKind.CREATE_CONSTANT;
+        boolean isConstant = kind == IntroduceKind.CREATE_CONSTANT;
         int begin = isConstant ? findConstantInsertionPoint() : findStatementBegin();
         int lexStart = lexRange.getStart();
         int lexEnd = lexRange.getEnd();
