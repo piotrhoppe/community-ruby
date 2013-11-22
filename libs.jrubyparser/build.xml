@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
     <import file="nbproject/build-impl.xml"/>
     <target name="release" depends="projectized-common.release">
         <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="external/jrubyparser-0.4.2.jar" todir="${cluster}/modules/ext"/>
+        <copy file="external/jrubyparser-0.5.2.jar" todir="${cluster}/modules/ext"/>
     </target>
 </project>
