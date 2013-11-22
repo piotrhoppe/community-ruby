@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ruby.rhtml;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -87,6 +88,8 @@ public class RhtmlParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
         //do nothing
     }
+    
+    public final static List<? extends Error> EMPTY_ERRORS = new ArrayList<Error>();
 
     private static class FakeParserResult extends ParserResult {
 
@@ -96,7 +99,7 @@ public class RhtmlParser extends Parser {
 
         @Override
         public List<? extends Error> getDiagnostics() {
-            return Collections.EMPTY_LIST;
+            return EMPTY_ERRORS;
         }
 
         @Override
