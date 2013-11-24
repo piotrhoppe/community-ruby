@@ -39,6 +39,7 @@ import javax.swing.JComponent;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.MethodDefNode;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
@@ -69,15 +70,18 @@ public class RailsViews extends RubyAstRule {
     public RailsViews() {
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         ParserResult info = context.parserResult;
         return RubyUtils.getFileObject(info).getName().endsWith("_controller"); // NOI18N
     }
 
+    @Override
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.DEFNNODE);
     }
     
+    @Override
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         ParserResult info = context.parserResult;
@@ -86,11 +90,8 @@ public class RailsViews extends RubyAstRule {
         FileObject file = RubyUtils.getFileObject(info);
         assert file.getName().endsWith("_controller"); // NOI18N
 
-        // Methods with arguments aren't actions
-        Arity arity = Arity.getDefArity(node);
-        if (arity.getMinArgs() != 0 || arity.getMaxArgs() != 0) {
-            return;
-        }
+        if (!(node instanceof MethodDefNode)) return;
+        if (Arity.getDefArity((MethodDefNode) node).acceptsArgs()) return; // Methods with arguments aren't actions
         
         String name = ((INameNode)node).getName();
 

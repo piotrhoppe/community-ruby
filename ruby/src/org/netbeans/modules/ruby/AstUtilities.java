@@ -492,7 +492,7 @@ public class AstUtilities {
     public static MethodDefNode findMethod(Node node, String name, Arity arity) {
         // Recursively search for methods or method calls that match the name and arity
         if (node instanceof MethodDefNode && (((INameNode) node).getName()).equals(name) && 
-                Arity.matches(arity, Arity.getDefArity(node))) return (MethodDefNode) node;
+                Arity.matches(arity, Arity.getDefArity((MethodDefNode) node))) return (MethodDefNode) node;
 
         for (Node child : node.childNodes()) {
             MethodDefNode match = findMethod(child, name, arity);
@@ -723,7 +723,7 @@ public class AstUtilities {
 
         // Simple call today...
         return getDefName(method).equals(getCallName(call)) &&
-        Arity.matches(callArity, Arity.getDefArity(method));
+        Arity.matches(callArity, Arity.getDefArity((MethodDefNode) method));
     }
 
     // TODO: use the structure analyzer data for more accurate traversal?
@@ -911,11 +911,10 @@ public class AstUtilities {
             }
             break;
         }
-        List<Node> list = node.childNodes();
 
         boolean old = lookingForMethod[0];
 
-        for (Node child : list) {
+        for (Node child : node.childNodes()) {
             Node match = findBySignature(root, child, signature, name, lookingForMethod);
 
             if (match != null) return match;

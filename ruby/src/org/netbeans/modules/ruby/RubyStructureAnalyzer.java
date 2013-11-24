@@ -1189,8 +1189,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
             if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
                 // consider also arity (#131134)
-                Arity arity = Arity.getDefArity(node.getNode());
-                Arity darity = Arity.getDefArity(d.node.getNode());
+                Arity arity = Arity.getDefArity((MethodDefNode) node.getNode());
+                Arity darity = Arity.getDefArity((MethodDefNode) d.node.getNode());
                 if (!arity.equals(darity) || !getModifiers().equals(d.getModifiers())) return false;
 
                 // consider parameters names and thus their arity (issue 101508)
@@ -1224,7 +1224,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
             if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
                 // consider also arity
-                Arity arity = Arity.getDefArity(node.getNode());
+                Arity arity = Arity.getDefArity((MethodDefNode) node.getNode());
                 hash = 37 * hash + arity.hashCode();
             }
 

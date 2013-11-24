@@ -301,7 +301,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
                 if (range.containsInclusive(astOffset)) {
                     String name = ((MethodDefNode)closest).getName();
-                    highlightMethod(root, name, Collections.singletonList(Arity.getDefArity(closest)), highlights);
+                    highlightMethod(root, name, Collections.singletonList(Arity.getDefArity((MethodDefNode) closest)), highlights);
                 }
             } else if (closest instanceof Colon2Node) {
                 // A Class definition
@@ -656,7 +656,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         Map<OffsetRange, ColoringAttributes> highlights) {
         // Recursively search for methods or method calls that match the name and arity
         if (node instanceof MethodDefNode && ((MethodDefNode)node).getName().equals(name)) {
-            Arity defArity = Arity.getDefArity(node);
+            Arity defArity = Arity.getDefArity((MethodDefNode) node);
 
             for (Arity arity : arities) {
                 if (Arity.matches(arity, defArity)) {
@@ -694,7 +694,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
     private void findDefArities(List<Arity> defArities, Node node, String name, Arity callArity) {
         // Recursively search for methods or method calls that match the name and arity
         if (node instanceof MethodDefNode && ((MethodDefNode)node).getName().equals(name)) {
-            Arity defArity = Arity.getDefArity(node);
+            Arity defArity = Arity.getDefArity((MethodDefNode) node);
 
             if (Arity.matches(callArity, defArity)) defArities.add(defArity);
         }

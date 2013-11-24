@@ -1996,7 +1996,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         // Recursively search for methods or method calls that match the name and arity
         if (node instanceof MethodDefNode) {
             if (((MethodDefNode)node).getName().equals(name) &&
-                    Arity.matches(arity, Arity.getDefArity(node))) {
+                    Arity.matches(arity, Arity.getDefArity((MethodDefNode) node))) {
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {

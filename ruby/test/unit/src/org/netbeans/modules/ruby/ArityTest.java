@@ -49,6 +49,7 @@ import java.util.List;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.MethodDefNode;
 
 /**
  *
@@ -96,7 +97,7 @@ public class ArityTest extends RubyTestBase {
         for (Node n : nodes) {
             String name = ((INameNode)n).getName();
             if (name.equals(methodName)) {
-                assertEquals(arity, Arity.getDefArity(n));
+                assertEquals(arity, Arity.getDefArity((MethodDefNode) n));
                 return;
             }
         }
