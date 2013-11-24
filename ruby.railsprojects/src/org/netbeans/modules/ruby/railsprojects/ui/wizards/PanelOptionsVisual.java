@@ -231,9 +231,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private void initServerComboBox(){
         RubyPlatform platform = getPlatform();
         if (platform != null) {
-            RailsServerUiUtils.ServerListModel model = new RailsServerUiUtils.ServerListModel(getPlatform());
-            RailsServerUiUtils.addDefaultGlassFishGem(model, platform);
-            serverComboBox.setModel(model);
+            serverComboBox.setModel(new RailsServerUiUtils.ServerListModel(getPlatform()));
         } else {
             serverComboBox.setModel(new DefaultComboBoxModel(new Object[]{}));
         }
@@ -262,14 +260,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         if (warCheckBox.isSelected() && !isJdk()) {
             settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoJDK"));
         }
-        if (RailsServerUiUtils.isGlassFishGem(getServer()) && !isJdk6()) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelOptionsVisual.class, "MSG_GfGemRequiresJDK6"));
-            return false;
-        }
-        if (PlatformComponentFactory.getPlatform(platforms) == null) {
-            return false;
-        }
-        return true;
+
+        return PlatformComponentFactory.getPlatform(platforms) != null;
     }
     
     void read(WizardDescriptor d) {

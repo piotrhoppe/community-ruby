@@ -44,7 +44,6 @@ package org.netbeans.modules.ruby.railsprojects.server;
 
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyTestBase;
-import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry.ServerComparator;
 
 
@@ -63,13 +62,8 @@ public class ServerComparatorTest extends RubyTestBase {
         WEBrick webrick = new WEBrick(platform);
         Mongrel mongrel1 = new Mongrel(platform, "1.1.4");
         Mongrel mongrel2 = new Mongrel(platform, "1.1.5");
-        GlassFishGem gf1 = new GlassFishGem(platform, new GemInfo("glassfish", "0.9.1", getWorkDir()));
-        GlassFishGem gf2 = new GlassFishGem(platform, new GemInfo("glassfish", "1.0", getWorkDir()));
         ServerComparator comparator = new ServerComparator();
-        assertEquals(1, comparator.compare(webrick, gf1));
         assertEquals(1, comparator.compare(webrick, mongrel1));
-        assertEquals(1, comparator.compare(mongrel1, gf1));
-        assertEquals(1, comparator.compare(gf1, gf2));
         assertEquals(1, comparator.compare(mongrel1, mongrel2));
     }
 

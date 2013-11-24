@@ -53,11 +53,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.gems.GemInfo;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
-import org.netbeans.modules.ruby.railsprojects.ui.wizards.NewRailsProjectWizardIterator;
-import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,47 +73,8 @@ public final class RailsServerUiUtils {
         return result;
     }
 
-    public static void addDefaultGlassFishGem(ComboBoxModel servers, RubyPlatform platform) {
-        if (platform == null || !platform.isJRuby()) {
-            return;
-        }
-        for (int i = 0; i < servers.getSize(); i++) {
-            Object server = servers.getElementAt(i);
-            if (server instanceof GlassFishGem) {
-                return;
-            }
-        }
-        ServerListModel model = (ServerListModel) servers;
-        // no glassfish gem, add a placeholder
-        RubyInstance fakeGfGem = new FakeGlassFishGem();
-        model.addServer(fakeGfGem);
-    }
-
     public static boolean isValidServer(Object server) {
         return !(server instanceof FakeGlassFishGem);
-    }
-
-    public static boolean isGlassFishGem(Object server) {
-        return server instanceof FakeGlassFishGem || server instanceof GlassFishGem;
-    }
-
-    public static void replaceFakeGlassFish(WizardDescriptor descriptor) {
-        RubyInstance server = (RubyInstance) descriptor.getProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE);
-        if (!(server instanceof FakeGlassFishGem)) {
-            return;
-        }
-        RubyPlatform platform = (RubyPlatform) descriptor.getProperty(NewRailsProjectWizardIterator.PLATFORM);
-        GemManager gemManager = platform.getGemManager();
-        if (gemManager == null) {
-            return;
-        }
-        List<GemInfo> versions = gemManager.getVersions(GlassFishGem.GEM_NAME);
-        GemInfo glassFishGemInfo = versions.isEmpty() ? null : versions.get(0);
-        if (glassFishGemInfo == null) {
-            return;
-        }
-        GlassFishGem gfGem = new GlassFishGem(platform, glassFishGemInfo);
-        descriptor.putProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE, gfGem);
     }
 
     public static class ServerListModel extends AbstractListModel implements ComboBoxModel {

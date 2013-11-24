@@ -77,7 +77,7 @@ public class ServerRegistry implements VetoableChangeListener {
     /**
      * Switch for enabling support for Phusion Passenger.
      */
-    private static boolean ENABLE_PASSENGER = Boolean.getBoolean("passenger.support"); //NOI18N
+    private static final boolean ENABLE_PASSENGER = Boolean.getBoolean("passenger.support"); //NOI18N
 
     private ServerRegistry() {
     }
@@ -136,6 +136,7 @@ public class ServerRegistry implements VetoableChangeListener {
 
     }
 
+    @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (evt.getPropertyName().equals("platforms")) { //NOI18N
             ServerInstanceProviderImpl.getInstance().fireServersChanged();
@@ -163,7 +164,6 @@ public class ServerRegistry implements VetoableChangeListener {
                 return existing;
             }
             RubyServerFactory result = new RubyServerFactory(platform);
-            result.initGlassFish();
             result.initTrinidad();
             result.initMongrel();
             result.initWEBrick();
@@ -183,8 +183,6 @@ public class ServerRegistry implements VetoableChangeListener {
         private RubyServer createInstance(Class clazz, GemInfo gemInfo) {
             if (clazz == Trinidad.class) {
                 return new Trinidad(platform, gemInfo);
-            } else if (clazz == GlassFishGem.class) {
-                return new GlassFishGem(platform, gemInfo);
             } else if (clazz == Mongrel.class) {
                 return new Mongrel(platform, gemInfo.getVersion());
             } else if (clazz == Passenger.class) {
@@ -218,12 +216,6 @@ public class ServerRegistry implements VetoableChangeListener {
             }
         }
 
-        private void initGlassFish() {
-            if (platform.isJRuby()) {
-                initServer(GlassFishGem.class, GlassFishGem.GEM_NAME);
-            }
-        }
-
         private void initTrinidad() {
             if (platform.isJRuby()) {
                 initServer(Trinidad.class, Trinidad.GEM_NAME);
@@ -245,9 +237,9 @@ public class ServerRegistry implements VetoableChangeListener {
             initServer(Passenger.class, Passenger.GEM_NAME);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals("gems")) { //NOI18N
-                initGlassFish();
                 initMongrel();
                 initWEBrick();
                 ServerInstanceProviderImpl.getInstance().fireServersChanged();
@@ -256,21 +248,11 @@ public class ServerRegistry implements VetoableChangeListener {
     }
 
     static class ServerComparator implements Comparator<RubyServer> {
-
+        @Override
         public int compare(RubyServer o1, RubyServer o2) {
-            if (o1.getClass().equals(o2.getClass())) {
-                return o2.getDisplayName().compareTo(o1.getDisplayName());
-            }
-            if (o1 instanceof GlassFishGem) {
-                return -1;
-            }
-            if (o2 instanceof GlassFishGem) {
-                return 1;
-            }
-            if (o1 instanceof Mongrel) {
-                return -1;
-            }
-            return 1;
+            if (o1.getClass().equals(o2.getClass())) return o2.getDisplayName().compareTo(o1.getDisplayName());
+
+            return o1 instanceof Mongrel ? -1 : 1;
         }
     }
 
