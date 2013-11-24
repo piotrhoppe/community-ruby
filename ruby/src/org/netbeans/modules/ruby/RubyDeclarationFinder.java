@@ -616,7 +616,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                                 }
                                 case DEFNNODE:
                                 case DEFSNODE: {
-                                    MethodDefNode methodDef = AstUtilities.findMethod(path);
+                                    MethodDefNode methodDef = (MethodDefNode) scope;
                                     IndexedMethod superMethod = index.getSuperMethod(fqn, methodDef.getName(), true);
                                     if (superMethod != null) {
                                         out.set(getLocation(Collections.singleton(superMethod)));

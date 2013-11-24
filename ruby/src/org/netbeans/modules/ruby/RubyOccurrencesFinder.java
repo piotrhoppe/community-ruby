@@ -260,12 +260,9 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 String name = ((INameNode)closest).getName();
 
                 if ("raise".equals(name) || "fail".equals(name)) { // NOI18N
+                    MethodDefNode def = AstUtilities.findMethodAtOffset(root, astOffset);
 
-                    Node def = AstUtilities.findMethod(path);
-
-                    if (def instanceof MethodDefNode) {
-                        highlightExits((MethodDefNode)def, highlights, info);
-                    }
+                    if (def != null && def instanceof MethodDefNode) highlightExits(def, highlights, info);
                 } else {
                     // I shouldn't just highlight matches that match my call arity; I want
                     // to highlight all other calls that match the same set of methods.

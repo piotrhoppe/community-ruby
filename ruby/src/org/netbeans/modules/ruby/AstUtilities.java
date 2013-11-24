@@ -133,13 +133,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class AstUtilities {
-
     private static final Logger LOGGER = Logger.getLogger(AstUtilities.class.getName());
-    /**
-     * Whether or not the prefixes for defs should be highlighted, e.g. in def
-     * HTTP.foo should "HTTP." be highlighted, or just the foo portion?
-     */
-    private static final boolean INCLUDE_DEFS_PREFIX = false;
 
     private static final String[] ATTR_ACCESSORS = {"attr", "attr_reader", "attr_accessor", "attr_writer",
         "attr_internal", "attr_internal_accessor", "attr_internal_reader", "attr_internal_writer"};
@@ -517,19 +511,16 @@ public class AstUtilities {
      * @return the closest node or <code>null</code>.
      */
     public static Node findNodeAtOffset(Node root, int offset) {
-        AstPath path = new AstPath(root, offset);
-        Iterator<Node> it = path.leafToRoot();
-        return it.hasNext() ? it.next() : null;
+        return root == null ? null : root.getNodeAt(offset);
     }
 
     public static MethodDefNode findMethodAtOffset(Node root, int offset) {
-        for (Node node: new AstPath(root, offset)) {
-            if (node instanceof MethodDefNode) return (MethodDefNode) node;
-        }
-
-        return null;
+        Node child = findNodeAtOffset(root, offset);
+        
+        return child == null ? null : child.getMethodFor();
     }
 
+    // FIXME: Replace this with something which returns nearest module...Do we really specifically need class?
     public static ClassNode findClassAtOffset(Node root, int offset) {
         for (Node node: new AstPath(root, offset)) {
             if (node instanceof ClassNode) return (ClassNode) node;
@@ -689,19 +680,11 @@ public class AstUtilities {
 
                 for (int index = 0; index < children.size(); index++) {
                     Node child = children.get(index);
+                    SourcePosition pos = child.getPosition();
 
-                    if (child.getNodeType() == NodeType.HASHNODE) {
-                        // Invalid offsets - the hashnode often has the wrong offset
-                        OffsetRange range = AstUtilities.getRange(child);
-                        if (offset <= range.getEnd() && (offset >= prevEnd || offset >= range.getStart())) return index;
+                    if  (offset <= pos.getEndOffset() && (offset >= prevEnd || offset >= pos.getStartOffset())) return index;
 
-                        prevEnd = range.getEnd();
-                    } else {
-                        SourcePosition pos = child.getPosition();
-                        if  (offset <= pos.getEndOffset() && (offset >= prevEnd || offset >= pos.getStartOffset())) return index;
-
-                        prevEnd = pos.getEndOffset();
-                    }
+                    prevEnd = pos.getEndOffset();
                 }
 
                 // Caret -inside- empty parentheses?
@@ -977,32 +960,15 @@ public class AstUtilities {
      * Return a range that matches the given node's source buffer range
      */
     public static OffsetRange getRange(Node node) {
-        if (node.getNodeType() == NodeType.HASHNODE) {
-            // Workaround for incorrect JRuby AST offsets for hashnodes :
-            //   render :action => 'list'
-            // has wrong argument offsets, which we want to correct.
-            // Just adopt the start offset of its first child (if any) and
-            // the end offset of its last child (if any)
-            List<Node> list = node.childNodes();
-            if (list != null && list.size() > 0) {
-                int start = list.get(0).getPosition().getStartOffset();
-                int end = list.get(list.size()-1).getPosition().getEndOffset();
-                return new OffsetRange(start, end);
-            } else {
-                SourcePosition pos = node.getPosition();
-                return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
-            }
-        } else if (node.getNodeType() == NodeType.NILNODE) {
+        if (node.getNodeType() == NodeType.NILNODE) return OffsetRange.NONE;
+
+        SourcePosition pos = node.getPosition();
+        try {
+            return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+        } catch (Throwable t) {
+            // ...because there are some problems -- see AstUtilities.testStress
+            Exceptions.printStackTrace(t);
             return OffsetRange.NONE;
-        } else {
-            SourcePosition pos = node.getPosition();
-            try {
-                return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
-            } catch (Throwable t) {
-                // ...because there are some problems -- see AstUtilities.testStress
-                Exceptions.printStackTrace(t);
-                return OffsetRange.NONE;
-            }
         }
     }
     
@@ -1730,8 +1696,8 @@ public class AstUtilities {
     
     /** Collect nodes of the given types (node.getNodeType()==NodeType.x) under the given root */
     public static void addNodesByType(Node root, NodeType[] nodeIds, List<Node> result) {
-        for (int i = 0; i < nodeIds.length; i++) {
-            if (root.getNodeType() == nodeIds[i]) {
+        for (NodeType nodeId : nodeIds) {
+            if (root.getNodeType() == nodeId) {
                 result.add(root);
                 break;
             }

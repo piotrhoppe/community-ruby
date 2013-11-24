@@ -43,15 +43,12 @@ import org.netbeans.lib.lexer.test.TestLanguageProvider;
 //import org.netbeans.modules.gsf.api.CompilationInfo;
 //import org.netbeans.modules.gsf.api.Formatter;
 //import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
-import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.RhtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.rhtml.RhtmlLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -153,10 +150,9 @@ public class RhtmlKitTest extends RubyTestBase {
         insertChar("<%^ ", '%', "<%%^ ");
     }
 
-    // Fails - problem with Ruby completion itself
-    //public void testInsertTag5() throws Exception {
-    //    insertChar("<%%^ ", '>', "<%%>^ ");
-    //}
+    public void testInsertTag5() throws Exception {
+        insertChar("<%%^ ", '>', "<%%>^ ");
+    }
 
     public void testInsertTag5b() throws Exception {
         insertChar("<%#%^ ", '>', "<%#%>^ ");

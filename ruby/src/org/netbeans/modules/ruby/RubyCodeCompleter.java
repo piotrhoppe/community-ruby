@@ -2305,17 +2305,16 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         AstPath path = new AstPath(root, caretOffset);
 
         if (variable.equals(KEY_METHOD)) {
-            MethodDefNode method = path.leaf().getMethodFor();
+            MethodDefNode method = AstUtilities.findMethodAtOffset(root, caretOffset);
 
-            if (method != null) method.getName();
+            if (method != null) return method.getName();
         } else if (variable.equals(KEY_METHOD_FQN)) {
-            MethodDefNode node = AstUtilities.findMethod(path);
+            MethodDefNode method = AstUtilities.findMethodAtOffset(root, caretOffset);
 
-            if (node != null) {
+            if (method != null) {
                 String ctx = AstUtilities.getFqnName(path);
-                String methodName = AstUtilities.getDefName(node);
 
-                return ctx != null && ctx.length() > 0 ? ctx + "#" + methodName : methodName;
+                return !ctx.isEmpty() ? ctx + "#" + method.getName() : method.getName();
             }
         } else if (variable.equals(KEY_CLASS)) {
             ClassNode node = AstUtilities.findClass(path);

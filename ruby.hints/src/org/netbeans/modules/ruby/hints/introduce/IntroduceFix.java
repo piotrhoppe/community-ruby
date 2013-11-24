@@ -120,10 +120,12 @@ class IntroduceFix implements PreviewableFix {
         }
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(IntroduceHint.class, "FIX_" + getKeyExt()); //NOI18N
     }
 
+    @Override
     public void implement() throws Exception {
         String name = null;
         EditList edits = createEdits(name);
@@ -155,6 +157,7 @@ class IntroduceFix implements PreviewableFix {
         return NbBundle.getMessage(IntroduceHint.class, "DefaultMethodComment");
     }
 
+    @Override
     public EditList getEditList() {
         String name = "new_name";
         try {
@@ -529,31 +532,32 @@ class IntroduceFix implements PreviewableFix {
 
     /** Compute the beginning of the current method */
     private int findMethodBegin() throws BadLocationException {
-        AstPath path = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
-        MethodDefNode method = AstUtilities.findMethod(path);
-        if (method != null) {
-            int methodAstOffset = method.getPosition().getStartOffset();
-            int lexOffset = LexUtilities.getLexerOffset(info, methodAstOffset);
-            if (lexOffset != -1) {
-                OffsetRange comment = LexUtilities.findRDocRange(doc, methodAstOffset);
-                if (comment != OffsetRange.NONE) {
-                    return comment.getStart();
-                }
-            }
-            return LexUtilities.getLexerOffset(info, methodAstOffset);
-        } else {
-            return -1;
+        MethodDefNode method = AstUtilities.findMethodAtOffset(AstUtilities.getRoot(info), astRange.getStart());
+        if (method == null) return -1;
+        
+        int methodAstOffset = method.getPosition().getStartOffset();
+        
+        // Beginning of method is before method comment if there is any.
+        if (LexUtilities.getLexerOffset(info, methodAstOffset) != -1) {
+            OffsetRange comment = LexUtilities.findRDocRange(doc, methodAstOffset);
+
+            if (comment != OffsetRange.NONE) return comment.getStart();
         }
+
+        return LexUtilities.getLexerOffset(info, methodAstOffset);
     }
 
+    @Override
     public boolean isSafe() {
         return true;
     }
 
+    @Override
     public boolean isInteractive() {
         return true;
     }
 
+    @Override
     public boolean canPreview() {
         return true;
     }
