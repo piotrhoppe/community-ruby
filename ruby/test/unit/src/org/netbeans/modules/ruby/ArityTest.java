@@ -97,7 +97,7 @@ public class ArityTest extends RubyTestBase {
         for (Node n : nodes) {
             String name = ((INameNode)n).getName();
             if (name.equals(methodName)) {
-                assertEquals(arity, Arity.getDefArity((MethodDefNode) n));
+                assertEquals(arity, Arity.getArity((MethodDefNode) n));
                 return;
             }
         }

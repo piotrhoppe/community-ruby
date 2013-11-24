@@ -91,7 +91,7 @@ public class RailsViews extends RubyAstRule {
         assert file.getName().endsWith("_controller"); // NOI18N
 
         if (!(node instanceof MethodDefNode)) return;
-        if (Arity.getDefArity((MethodDefNode) node).acceptsArgs()) return; // Methods with arguments aren't actions
+        if (Arity.getArity((MethodDefNode) node).acceptsArgs()) return; // Methods with arguments aren't actions
         
         String name = ((INameNode)node).getName();
 

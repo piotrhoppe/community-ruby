@@ -345,14 +345,14 @@ public class RubyElementCtx {
     public Arity getArity() {
         if (arity == null) {
             if (node instanceof MethodDefNode) {
-                arity = Arity.getDefArity((MethodDefNode) node);
+                arity = Arity.getArity((MethodDefNode) node);
             } else if (AstUtilities.isCall(node)) {
                 arity = Arity.getCallArity(node);
             } else if (node instanceof ArgumentNode) {
                 AstPath _path = getPath();
 
                 if (_path.leafParent() instanceof MethodDefNode) {
-                    arity = Arity.getDefArity((MethodDefNode) _path.leafParent());
+                    arity = Arity.getArity((MethodDefNode) _path.leafParent());
                 }
             }
         }

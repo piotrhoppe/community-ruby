@@ -48,8 +48,6 @@ import org.jrubyparser.ast.ArgsNode;
 import org.jrubyparser.ast.ArgumentNode;
 import org.jrubyparser.ast.ArrayNode;
 import org.jrubyparser.ast.CallNode;
-import org.jrubyparser.ast.DefnNode;
-import org.jrubyparser.ast.DefsNode;
 import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.LocalAsgnNode;
@@ -188,7 +186,7 @@ public final class Arity {
         }
     }
 
-    public static Arity getDefArity(MethodDefNode method) {
+    public static Arity getArity(MethodDefNode method) {
         Arity arity = new Arity(0, 0);
         
         for (Node c : method.childNodes()) {
