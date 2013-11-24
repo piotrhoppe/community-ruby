@@ -79,7 +79,7 @@ public class RailsInstallationPanel extends JPanel {
     private static final String WARBLER = "warbler"; //NOI18N
     private static final String GLASSFISH = "glassfish"; //NOI18N
 
-    private Panel firer;
+    private final Panel firer;
     private WizardDescriptor wizardDescriptor;
     
     RailsInstallationPanel(Panel panel) {
@@ -155,18 +155,7 @@ public class RailsInstallationPanel extends JPanel {
                     NbBundle.getMessage(RailsInstallationPanel.class,
                     "RailsInstallationPanel.warblerLabel.text.installed", version));
             Mnemonics.setLocalizedText(installWarblerButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.updateWarblerButton.text")); // NOI18N
-        }
-        if (!isGlassFishGemInstalled()) {
-            gfGemLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.gfGemLabel.text"));
-            Mnemonics.setLocalizedText(installGfGemButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installGfGemButton.text")); // NOI18N
-        } else {
-            String version = gemManager().getLatestVersion(GLASSFISH);
-            gfGemLabel.setText(
-                    NbBundle.getMessage(RailsInstallationPanel.class,
-                    "RailsInstallationPanel.gfGemLabel.text.installed", version));
-            Mnemonics.setLocalizedText(installGfGemButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.updateGfGemButton.text")); // NOI18N
-        }
-        
+        }        
         if (!isJRubyOpenSSLInstalled()) {
             jrubySslLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.jrubySslLabel.text"));
             Mnemonics.setLocalizedText(sslButton, NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.sslButton.text")); // NOI18N
@@ -237,10 +226,6 @@ public class RailsInstallationPanel extends JPanel {
         wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,"");   //NOI18N
         return true;
     }
-
-    private boolean isGlassFishGemInstalled() {
-        return gemManager().isGemInstalled(GLASSFISH);//NOI18N
-    }
     
     private boolean isWarblerInstalled() {
         return gemManager().isGemInstalled(WARBLER) && platform().findExecutable(WARBLE_CMD) != null; //NOI18N
@@ -267,8 +252,6 @@ public class RailsInstallationPanel extends JPanel {
         railsVersionComboBox = new javax.swing.JComboBox();
         warblerLabel = new javax.swing.JLabel();
         installWarblerButton = new javax.swing.JButton();
-        gfGemLabel = new javax.swing.JLabel();
-        installGfGemButton = new javax.swing.JButton();
         withDispatchersCheckBox = new javax.swing.JCheckBox();
 
         FormListener formListener = new FormListener();
@@ -302,11 +285,6 @@ public class RailsInstallationPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(installWarblerButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installWarblerButton.text")); // NOI18N
         installWarblerButton.addActionListener(formListener);
 
-        org.openide.awt.Mnemonics.setLocalizedText(gfGemLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.gfGemLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(installGfGemButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installGfGemButton.text")); // NOI18N
-        installGfGemButton.addActionListener(formListener);
-
         org.openide.awt.Mnemonics.setLocalizedText(withDispatchersCheckBox, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.withDispatchersCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -328,15 +306,12 @@ public class RailsInstallationPanel extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(railsDetailButton)
-                            .add(railsButton))
-                        .add(162, 162, 162))
+                            .add(railsButton)))
                     .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 469, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jrubySslLabel)
                     .add(sslButton)
                     .add(warblerLabel)
                     .add(installWarblerButton)
-                    .add(gfGemLabel)
-                    .add(installGfGemButton)
                     .add(jrubyLabel))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -366,11 +341,7 @@ public class RailsInstallationPanel extends JPanel {
                 .add(warblerLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installWarblerButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(gfGemLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(installGfGemButton)
-                .add(18, 18, 18)
+                .add(10, 10, 10)
                 .add(proxyButton)
                 .addContainerGap())
         );
@@ -400,9 +371,6 @@ public class RailsInstallationPanel extends JPanel {
             }
             else if (evt.getSource() == installWarblerButton) {
                 RailsInstallationPanel.this.installWarblerButtonActionPerformed(evt);
-            }
-            else if (evt.getSource() == installGfGemButton) {
-                RailsInstallationPanel.this.installGfGemButtonActionPerformed(evt);
             }
         }
 
@@ -435,7 +403,6 @@ public class RailsInstallationPanel extends JPanel {
     private class InstallationComplete implements Runnable {
         public void run() {
             platform().recomputeRoots();
-            RailsServerUiUtils.replaceFakeGlassFish(wizardDescriptor);
             RailsInstallationPanel.this.updateLabel();
             RailsInstallationPanel.this.firer.fireChangeEvent();
             platform().recomputeRoots();
@@ -475,11 +442,6 @@ public class RailsInstallationPanel extends JPanel {
         
     }
 
-    private void installGfGemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installGfGemButtonActionPerformed
-        updateOrInstallGem(GLASSFISH);
-
-    }//GEN-LAST:event_installGfGemButtonActionPerformed
-
     private void railsVersionComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_railsVersionComboBoxItemStateChanged
         initWithDispatchersCheckBox();
     }//GEN-LAST:event_railsVersionComboBoxItemStateChanged
@@ -487,8 +449,6 @@ public class RailsInstallationPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel descLabel;
-    private javax.swing.JLabel gfGemLabel;
-    private javax.swing.JButton installGfGemButton;
     private javax.swing.JButton installWarblerButton;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jrubyLabel;
