@@ -53,6 +53,7 @@ import org.jrubyparser.ast.DefsNode;
 import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.ListNode;
 import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.OptArgNode;
 import org.jrubyparser.ast.SplatNode;
@@ -105,6 +106,10 @@ public final class Arity {
     
     public int getMaxArgs() {
         return max;
+    }
+    
+    public boolean acceptsArgs() {
+        return getMinArgs() != 0 && getMaxArgs() != 0;
     }
 
     public static Arity getCallArity(Node call) {
@@ -183,11 +188,9 @@ public final class Arity {
         }
     }
 
-    public static Arity getDefArity(Node method) {
-        assert method instanceof DefsNode || method instanceof DefnNode;
-
+    public static Arity getDefArity(MethodDefNode method) {
         Arity arity = new Arity(0, 0);
-
+        
         for (Node c : method.childNodes()) {
             if (c instanceof ArgsNode) {
                 arity.initializeFromDef(c);
