@@ -162,7 +162,7 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
             node = AstUtilities.findNodeAtOffset(root, offset + 1);
         }
         if (shouldEvaluate(node) && node instanceof INameNode) {
-            return AstUtilities.getName(node);
+            return ((INameNode) node).getLexicalName();
         }
         return null;
 
