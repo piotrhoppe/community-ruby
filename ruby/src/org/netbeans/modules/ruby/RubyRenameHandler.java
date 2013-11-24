@@ -183,7 +183,7 @@ public class RubyRenameHandler implements InstantRenamer {
                 // Make sure it's a parameter, not a method
                 if (!(parent instanceof MethodDefNode)) {
                     // Parameter (check to see if its under ArgumentNode)
-                    Node method = AstUtilities.findMethod(path);
+                    Node method = AstUtilities.findMethodAtOffset(root, astOffset);
 
                     if (method == null) method = AstUtilities.findBlock(path);
 

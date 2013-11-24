@@ -58,7 +58,7 @@ import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 public final class RubyTypeInferencer {
 
     private final ContextKnowledge knowledge;
-    private RubyTypeAnalyzer analyzer;
+    private final RubyTypeAnalyzer analyzer;
     private final boolean fast;
 
     public static RubyTypeInferencer create(ContextKnowledge knowledge) {

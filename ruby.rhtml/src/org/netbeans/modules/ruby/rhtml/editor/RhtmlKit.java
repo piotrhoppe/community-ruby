@@ -65,11 +65,13 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.InstantRenameAction;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.NextCamelCasePosition;
 import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectCodeElementAction;
 import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
@@ -135,21 +137,13 @@ public class RhtmlKit extends HtmlKit {
         return result;
     }
 
-
-
-    protected DeleteCharAction createDeletePrevAction() {
-        return new RhtmlDeleteCharAction(deletePrevCharAction, false, new HtmlKit.DeleteCharAction(deletePrevCharAction, false));
-    }
-    
-    protected ExtDefaultKeyTypedAction createDefaultKeyTypedAction() {
-        return new RhtmlDefaultKeyTypedAction(new HtmlKit.ExtDefaultKeyTypedAction());
-    }
-
     @Override
     protected Action[] createActions() {
         Action[] superActions = super.createActions();
         
         return TextAction.augmentList(superActions, new Action[] {
+            new RhtmlDeleteCharAction(deletePrevCharAction, false),
+            new RhtmlDefaultKeyTypedAction(),
             // TODO - also register a Tab key action which tabs out of <% %> if the caret is near the end
             // (Shift Enter inserts a line below the current - perhaps that's good enough)
             new RhtmlToggleCommentAction(),
@@ -176,27 +170,25 @@ public class RhtmlKit extends HtmlKit {
     }
 
     private boolean handleDeletion(BaseDocument doc, int dotPos) {
-        if (dotPos > 0) {
-            try {
-                char ch = doc.getText(dotPos-1, 1).charAt(0);
-                if (ch == '%') {
-                    TokenSequence<?> ts = LexUtilities.getRubyTokenSequence(doc);
-                    ts.move(dotPos);
-                    if (ts.movePrevious()) {
-                        Token<?> token = ts.token();
-                        if (token.id() == RhtmlTokenId.DELIMITER && ts.offset()+token.length() == dotPos && ts.moveNext()) {
-                            token = ts.token();
-                            if (token.id() == RhtmlTokenId.DELIMITER && ts.offset() == dotPos) {
-                                doc.remove(dotPos-1, 1+token.length());
-                                return true;
-                            }
-                        }
+
+        if (dotPos <= 0) return false;
+
+        try {
+            char ch = doc.getText(dotPos-1, 1).charAt(0);
+            if (ch != '%') return false;
+            TokenSequence<?> ts = LexUtilities.getRubyTokenSequence(doc);
+            ts.move(dotPos);
+            if (ts.movePrevious()) {
+                Token<?> token = ts.token();
+                if (token.id() == RhtmlTokenId.DELIMITER && ts.offset()+token.length() == dotPos && ts.moveNext()) {
+                    token = ts.token();
+                    if (token.id() == RhtmlTokenId.DELIMITER && ts.offset() == dotPos) {
+                        doc.remove(dotPos-1, 1+token.length());
+                        return true;
                     }
                 }
-            } catch (BadLocationException ble) {
-                // do nothing - see #154991
             }
-        }
+        } catch (BadLocationException ble) { /* do nothing - see #154991 */ }
         
         return false;
     }
@@ -280,58 +272,122 @@ public class RhtmlKit extends HtmlKit {
         return false;
     }
 
-    private class RhtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-        private ExtDefaultKeyTypedAction htmlAction;
+    private class RhtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {        
+        private JTextComponent currentTarget; // not passed into insertString so we temp save it as side-effect
 
-        RhtmlDefaultKeyTypedAction(ExtDefaultKeyTypedAction htmlAction) {
-            this.htmlAction = htmlAction;
-        }
-        
         @Override
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            Caret caret = target.getCaret();
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            String cmd = evt.getActionCommand();
-            if (cmd.length() > 0) {
-                char c = cmd.charAt(0);
-                if (handleInsertion(doc, caret, c)) {
+        public void actionPerformed(final ActionEvent e, final JTextComponent target) {
+            currentTarget = target; // Save so insertString can see this
+
+            try {
+                String cmd = e.getActionCommand();
+                
+                if (cmd.length() > 0 &&
+                    handleInsertion((BaseDocument) target.getDocument(), target.getCaret(), cmd.charAt(0))) return;
+                
+                super.actionPerformed(e, target);
+            } finally {
+                currentTarget = null;
+            }
+        }
+
+        /** called under document atomic lock */
+        @Override
+        protected void insertString(BaseDocument doc, int dotPos, Caret caret, String str,
+                boolean overwrite) throws BadLocationException {
+            if (str.isEmpty()) return; // see issue #211036 - inserted string can be empty since #204450
+
+            KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
+
+            if (bracketCompletion != null) {
+                // TODO - check if we're in a comment etc. and if so, do nothing
+                if (!bracketCompletion.beforeCharInserted(doc, dotPos, currentTarget, str.charAt(0))) {
+                    super.insertString(doc, dotPos, caret, str, overwrite);
+                    bracketCompletion.afterCharInserted(doc, dotPos, currentTarget, str.charAt(0));
+                }
+            } else {
+                super.insertString(doc, dotPos, caret, str, overwrite);
+            }
+        }
+
+        @Override
+        protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
+                String str, boolean overwrite) throws BadLocationException {
+            //workaround for #209019 - regression of issue
+            //#204450 - Rewrite actions to use TypingHooks SPI
+            if (str.length() == 0) {
+                //called from BaseKit.actionPerformed():1160 with empty str argument
+                //==> ignore this call since we are going to be called a bit later
+                //from HtmlKit.performTextInsertion() properly with the text typed
+                return ;
+            }
+            char c = str.charAt(0);
+            Document document = target.getDocument();
+
+            if (document instanceof BaseDocument) {
+                BaseDocument doc = (BaseDocument) document;
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
+
+                if (bracketCompletion != null) {
+                    try {
+                        int caretPosition = caret.getDot();
+
+                        boolean handled = bracketCompletion.beforeCharInserted(doc, caretPosition, target, c);
+
+                        int p0 = Math.min(caret.getDot(), caret.getMark());
+                        int p1 = Math.max(caret.getDot(), caret.getMark());
+
+                        if (p0 != p1) doc.remove(p0, p1 - p0);
+
+                        if (!handled && str.length() > 0) {
+                            doc.insertString(p0, str, null);
+                            bracketCompletion.afterCharInserted(doc, dotPos, currentTarget, c);
+                        }
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
+
                     return;
                 }
             }
 
-            htmlAction.actionPerformed(evt, target);
+            super.replaceSelection(target, dotPos, caret, str, overwrite);
         }
+        
     }
     
     private class RhtmlDeleteCharAction extends ExtDeleteCharAction {
-        //implements NextCharProvider { XXX - Parsing API
+        JTextComponent currentTarget; // not passed into charBackspaced so we temp save it as side-effect
         
-        private DeleteCharAction htmlAction;
-
-        public RhtmlDeleteCharAction(String nm, boolean nextChar, DeleteCharAction htmlAction) {
+        public RhtmlDeleteCharAction(String nm, boolean nextChar) {
             super(nm, nextChar);
-            this.htmlAction = htmlAction;
         }
-
+        
         @Override
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            target.putClientProperty(ExtDeleteCharAction.class, this);
+        public void actionPerformed(ActionEvent e, JTextComponent target) {
             try {
-                Caret caret = target.getCaret();
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                int dotPos = caret.getDot();
-                if (handleDeletion(doc, dotPos)) {
-                    return;
-                }
-
-                htmlAction.actionPerformed(evt, target);
+                currentTarget = target; // Save so charBackspaced can see this
+                
+                // call this because ExtDeleteChar action actually deletes the char from the doc (which is state
+                // of document when charBackspaced is called.
+                if (handleDeletion((BaseDocument) target.getDocument(), target.getCaret().getDot())) return;
+            
+                super.actionPerformed(e, target);
             } finally {
-                target.putClientProperty(ExtDeleteCharAction.class, null);
+                currentTarget = null;
             }
         }
+        
+        @Override
+        protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
+            KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
-        public boolean getNextChar() {
-            return nextChar;
+            if (bracketCompletion != null) {
+                bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
+                return;
+            }
+
+            super.charBackspaced(doc, dotPos, caret, ch);
         }
     }
     

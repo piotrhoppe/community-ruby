@@ -69,7 +69,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.util.Exceptions;
 
 /** 
  * Provide bracket completion for Ruby.
@@ -171,6 +170,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
         return true;
     }
 
+    @Override
     public int beforeBreak(Document document, int offset, JTextComponent target)
         throws BadLocationException {
         isAfter = false;
@@ -577,6 +577,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
         return false;
     }
 
+    @Override
     public boolean beforeCharInserted(Document document, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException {
         isAfter = false;
@@ -823,6 +824,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
      * @return Whether the insert was handled
      * @throws BadLocationException if dotPos is not correct
      */
+    @Override
     public boolean afterCharInserted(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
         isAfter = true;
@@ -1162,6 +1164,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
     }
     
     /** Replaced by RubyBracesMatcher */
+    @Override
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
         return OffsetRange.NONE;
     }
@@ -1176,6 +1179,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
     * @param ch the character that was deleted
     */
     @SuppressWarnings("fallthrough")
+    @Override
     public boolean charBackspaced(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
         BaseDocument doc = (BaseDocument)document;
@@ -1676,6 +1680,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
         }
     }
 
+    @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         Node root = AstUtilities.getRoot(info);
 
@@ -1802,7 +1807,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
 
             OffsetRange range = AstUtilities.getRange(node);
 
-            if (node.getNodeType() == NodeType.CALLNODE && ranges.size() == 0 && node == path.leaf()) {
+            if (node.getNodeType() == NodeType.CALLNODE && ranges.isEmpty() && node == path.leaf()) {
                 // Try to handle scenarios like issue 111941 - in a call like
                 //  foo.bar.snark
                 // there's no AST node for the "bar" part - only a CallNode for "foo.bar",
@@ -1834,6 +1839,7 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
     }
 
     // UGH - this method has gotten really ugly after successive refinements based on unit tests - consider cleaning up
+    @Override
     public int getNextWordOffset(Document document, int offset, boolean reverse) {
         BaseDocument doc = (BaseDocument)document;
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);

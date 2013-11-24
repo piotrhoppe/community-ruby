@@ -78,12 +78,12 @@ public abstract class HintTestBase extends RubyTestBase {
         "lib/ruby/1.8/cgi.rb",
         "lib/ruby/1.8/net/imap.rb",
          // Some of the biggest files in Rails
-        "lib/ruby/gems/shared/gems/actionmailer-" + RAILS_VERSION + "/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
-        "lib/ruby/gems/shared/gems/actionpack-" + RAILS_VERSION + "/test/controller/routing_test.rb",
-        "lib/ruby/gems/shared/gems/actionpack-" + RAILS_VERSION + "/test/template/date_helper_test.rb",
-        "lib/ruby/gems/shared/gems/activerecord-" + RAILS_VERSION + "/test/cases/validations_test.rb",
-        "lib/ruby/gems/shared/gems/activerecord-" + RAILS_VERSION + "/lib/active_record/associations.rb",
-        "lib/ruby/gems/shared/gems/activerecord-" + RAILS_VERSION + "/lib/active_record/base.rb",
+//        "lib/ruby/gems/shared/gems/actionmailer-" + RAILS_VERSION + "/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
+//        "lib/ruby/gems/shared/gems/actionpack-" + RAILS_VERSION + "/test/controller/routing_test.rb",
+//        "lib/ruby/gems/shared/gems/actionpack-" + RAILS_VERSION + "/test/template/date_helper_test.rb",
+//        "lib/ruby/gems/shared/gems/activerecord-" + RAILS_VERSION + "/test/cases/validations_test.rb",
+//        "lib/ruby/gems/shared/gems/activerecord-" + RAILS_VERSION + "/lib/active_record/associations.rb",
+//        "lib/ruby/gems/shared/gems/activerecord-" + RAILS_VERSION + "/lib/active_record/base.rb",
     };
 
     protected List<FileObject> getBigSourceFiles() {

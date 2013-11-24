@@ -76,8 +76,8 @@ made subject to such option by the copyright holder.
                 <package>org.jrubyparser.util</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jrubyparser-0.5.2.jar</runtime-relative-path>
-                <binary-origin>external/jrubyparser-0.5.2.jar</binary-origin>
+                <runtime-relative-path>ext/jrubyparser-0.5.3.jar</runtime-relative-path>
+                <binary-origin>external/jrubyparser-0.5.3.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
