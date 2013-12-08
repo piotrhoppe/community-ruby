@@ -82,6 +82,8 @@ import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.IParameterScope;
+import org.jrubyparser.ast.IterNode;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SuperNode;
 import org.jrubyparser.ast.ZSuperNode;
@@ -378,7 +380,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                         }
 
                         AstPath path = new AstPath(root, astOffset);
-                        Node closest = path.leaf();
+                        Node closest = AstUtilities.findNodeAtOffset(root, astOffset);
                         if (closest == null) return;
 
                         // See if the hyperlink is over a method reference in an rdoc comment
@@ -404,23 +406,18 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                                 closest instanceof CallNode) {
                             // A method call
                             String name = ((INameNode)closest).getName();
-
                             Call call = Call.getCallType(doc, th, lexOffset);
-
                             RubyType type = call.getType();
                             String lhs = call.getLhs();
 
                             if (!type.isKnown() && lhs != null && call.isSimpleIdentifier()) {
                                 Node method = AstUtilities.findLocalScope(closest, path);
 
-                                if (method != null) {
-                                    // TODO - if the lhs is "foo.bar." I need to split this
-                                    // up and do it a bit more cleverly
-                                    ContextKnowledge knowledge = new ContextKnowledge(
-                                            index, root, method, astOffset, lexOffset, parserResult);
-                                    RubyTypeInferencer inferencer = RubyTypeInferencer.create(knowledge);
-                                    type = inferencer.inferType(lhs);
-                                }
+                                // TODO - if the lhs is "foo.bar." I need to split this
+                                // up and do it a bit more cleverly
+                                ContextKnowledge knowledge = new ContextKnowledge(
+                                        index, root, method, astOffset, lexOffset, parserResult);
+                                type = RubyTypeInferencer.create(knowledge).inferType(lhs);
                             }
 
                             // Constructors: "new" ends up calling "initialize".
@@ -1346,37 +1343,28 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
     @SuppressWarnings("empty-statement")
     private DeclarationLocation findRDocMethod(ParserResult info, Document doc, int astOffset, int lexOffset,
             Node root, AstPath path, Node closest, RubyIndex index) {
-        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = LexUtilities.getRubyTokenSequence((BaseDocument)doc, lexOffset);
+//        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
 
-        if (ts == null) {
-            return DeclarationLocation.NONE;
-        }
+        TokenSequence<?> ts = LexUtilities.getRubyTokenSequence((BaseDocument)doc, lexOffset);
+        if (ts == null) return DeclarationLocation.NONE;
 
         ts.move(lexOffset);
 
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return DeclarationLocation.NONE;
-        }
+        if (!ts.moveNext() && !ts.movePrevious()) return DeclarationLocation.NONE;
 
         Token<?> token = ts.token();
-
         TokenSequence<?> embedded = ts.embedded();
 
         if (embedded != null) {
-            ts = embedded;
-
             embedded.move(lexOffset);
 
-            if (!embedded.moveNext() && !embedded.movePrevious()) {
-                return DeclarationLocation.NONE;
-            }
+            if (!embedded.moveNext() && !embedded.movePrevious()) return DeclarationLocation.NONE;
 
             token = embedded.token();
         }
 
         // Is this a comment? If so, possibly do rdoc-method reference jump
-        if ((token != null) && (token.id() == RubyCommentTokenId.COMMENT_LINK)) {
+        if (token != null && token.id() == RubyCommentTokenId.COMMENT_LINK) {
             // TODO - use findLinkedMethod
             String method = token.text().toString();
 
@@ -1385,20 +1373,13 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                 DeclarationLocation loc = findMethod(info, root, method, Arity.UNKNOWN);
 
-                // It looks like "#foo" can refer not just to methods (as rdoc suggested)
-                // but to attributes as well - in Rails' initializer.rb this is used
-                // in a number of places.
-                if (loc == DeclarationLocation.NONE) {
-                    loc = findInstance(info, root, "@" + method, index);
-                }
-
-                return loc;
+                // It looks like "#foo" can refer not just to methods (as rdoc suggested) but to 
+                // attributes as well - in Rails' initializer.rb this is used in a number of places.
+                return loc != DeclarationLocation.NONE ? loc : findInstance(info, root, "@" + method, index);
             } else {
                 // A URL such as http://netbeans.org - try to open it in a browser!
                 try {
-                    URL url = new URL(method);
-
-                    return new DeclarationLocation(url);
+                    return new DeclarationLocation(new URL(method));
                 } catch (MalformedURLException mue) {
                     // URL is from user source... don't complain with exception dialogs etc.
                     ;
@@ -1794,56 +1775,15 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
     private DeclarationLocation findLocal(ParserResult info, Node node, String name) {
         if (node instanceof LocalAsgnNode) {
-            if (((INameNode)node).getName().equals(name)) {
-                return getLocation(info, node);
-            }
+            if (((INameNode)node).getName().equals(name)) return getLocation(info, node);
         } else if (!ignoreAlias && node instanceof AliasNode) {
             String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
-            if (name.equals(newName)) {
-                return getLocation(info, node);
-            }
-        } else if (node instanceof ArgsNode) {
-            ArgsNode an = (ArgsNode)node;
 
-            if (an.getRequiredCount() > 0) {
-                List<Node> args = an.childNodes();
-
-                for (Node arg : args) {
-                    if (arg instanceof ListNode) {
-                        List<Node> args2 = arg.childNodes();
-
-                        for (Node arg2 : args2) {
-                            if (arg2 instanceof ArgumentNode) {
-                                if (((ArgumentNode)arg2).getName().equals(name)) {
-                                    return getLocation(info, arg2);
-                                }
-                            } else if (arg2 instanceof LocalAsgnNode) {
-                                if (((LocalAsgnNode)arg2).getName().equals(name)) {
-                                    return getLocation(info, arg2);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Rest args
-            if (an.getRest() != null) {
-                ArgumentNode bn = an.getRest();
-
-                if (bn.getName().equals(name)) {
-                    return getLocation(info, bn);
-                }
-            }
-
-            // Block args
-            if (an.getBlock() != null) {
-                BlockArgNode bn = an.getBlock();
-
-                if (bn.getName().equals(name)) {
-                    return getLocation(info, bn);
-                }
-            }
+            if (name.equals(newName)) return getLocation(info, node);
+        } else if (node instanceof IParameterScope) {
+            ILocalVariable parameter = ((IParameterScope) node).getParameterNamed(name);
+            
+            return parameter != null ? getLocation(info, (Node) parameter) : DeclarationLocation.NONE;
         }
 
         List<Node> list = node.childNodes();

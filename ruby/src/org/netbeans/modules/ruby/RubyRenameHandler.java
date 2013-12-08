@@ -147,11 +147,14 @@ public class RubyRenameHandler implements InstantRenamer {
         if (closest == null) return Collections.emptySet();
 
         if (closest.isBlockParameter()) {
-            String name = ((INameNode) closest).getName();
+            ILocalVariable blockParameter = (ILocalVariable) closest;
             
-            for (Node block : AstUtilities.getApplicableBlocks(path, true)) {
-                addDynamicVars(info, block, name, regions);
-            }            
+            for (ILocalVariable occurrence: blockParameter.getOccurrences()) {
+                OffsetRange range = LexUtilities.getLexerOffsets(info, 
+                        AstUtilities.offsetRangeFor(occurrence.getLexicalNamePosition()));
+                
+                if (range != OffsetRange.NONE) regions.add(range);
+            }         
         } else if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
             // A local variable read or a parameter read, or an assignment to one of these
             String name = ((INameNode)closest).getName();
