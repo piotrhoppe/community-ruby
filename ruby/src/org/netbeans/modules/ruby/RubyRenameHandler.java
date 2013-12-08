@@ -47,19 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jrubyparser.ast.ArgsNode;
-import org.jrubyparser.ast.ArgumentNode;
-import org.jrubyparser.ast.BlockArgNode;
-import org.jrubyparser.ast.ListNode;
-import org.jrubyparser.ast.LocalAsgnNode;
-import org.jrubyparser.ast.LocalVarNode;
-import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
-import org.jrubyparser.ast.NodeType;
-import org.jrubyparser.ast.INameNode;
-import org.jrubyparser.SourcePosition;
-import org.jrubyparser.ast.AssignableNode;
-import org.jrubyparser.ast.ILocalScope;
 import org.jrubyparser.ast.ILocalVariable;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -134,100 +122,20 @@ public class RubyRenameHandler implements InstantRenamer {
 
     @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
-        Node root = AstUtilities.getRoot(info);
-        if (root == null) return Collections.emptySet();
+        Node closest = AstUtilities.findNodeAtOffset(info, caretOffset);
+        if (closest == null || !(closest instanceof ILocalVariable)) return Collections.emptySet();
 
+        ILocalVariable variable = (ILocalVariable) closest;
         Set<OffsetRange> regions = new HashSet<OffsetRange>();
 
-        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-        if (astOffset == -1) return Collections.emptySet();
+        for (ILocalVariable occurrence: variable.getOccurrences()) {
+            OffsetRange range = LexUtilities.getLexerOffsets(info, 
+                    AstUtilities.offsetRangeFor(occurrence.getNamePosition()));
 
-        AstPath path = new AstPath(root, astOffset);
-        Node closest = path.leaf();
-        if (closest == null) return Collections.emptySet();
-
-        if (closest.isBlockParameter()) {
-            ILocalVariable blockParameter = (ILocalVariable) closest;
-            
-            for (ILocalVariable occurrence: blockParameter.getOccurrences()) {
-                OffsetRange range = LexUtilities.getLexerOffsets(info, 
-                        AstUtilities.offsetRangeFor(occurrence.getLexicalNamePosition()));
-                
-                if (range != OffsetRange.NONE) regions.add(range);
-            }         
-        } else if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
-            // A local variable read or a parameter read, or an assignment to one of these
-            String name = ((INameNode)closest).getName();
-            Node localScope = AstUtilities.findLocalScope(closest, path);
-
-            if (localScope == null) {
-                // Use parent, possibly Grand Parent if we have a newline node in the way
-                localScope = path.leafParent();
-
-                if (localScope.getNodeType() == NodeType.NEWLINENODE) localScope = path.leafGrandParent();
-                if (localScope == null) localScope = closest;
-            }
-
-            addLocals(info, localScope, name, regions);
-        } else if (closest.getNodeType() == NodeType.DVARNODE || closest.getNodeType() == NodeType.DASGNNODE) {
-            // 1.8-style block declaration: iter { dasgn }
-            String name = ((INameNode)closest).getName();
-            
-            for (Node block : AstUtilities.getApplicableBlocks(path, true)) {
-                addDynamicVars(info, block, name, regions);
-            }
-        } else if (closest.getNodeType() == NodeType.ARGUMENTNODE || closest.getNodeType() == NodeType.BLOCKARGNODE) {
-            // A method name (if under a DefnNode or DefsNode) or a parameter (if indirectly under an ArgsNode)
-            String name = ((INameNode)closest).getName();
-
-            Node parent = path.leafParent();
-
-            if (parent != null) {
-                // Make sure it's a parameter, not a method
-                if (!(parent instanceof MethodDefNode)) {
-                    // Parameter (check to see if its under ArgumentNode)
-                    Node method = AstUtilities.findMethodAtOffset(root, astOffset);
-
-                    if (method == null) method = AstUtilities.findBlock(path);
-
-                    if (method == null) {
-                        // Use parent, possibly Grand Parent if we have a newline node in the way
-                        method = path.leafParent();
-
-                        if (method.getNodeType() == NodeType.NEWLINENODE) method = path.leafGrandParent();
-                        if (method == null) method = closest;
-                    }
-
-                    addLocals(info, method, name, regions);
-                }
-            }
+            if (range != OffsetRange.NONE) regions.add(range);
         }
 
         return regions;
-    }
-
-    private void addLocals(ParserResult info, Node node, String name, Set<OffsetRange> ranges) {
-        if (node.getNodeType() == NodeType.LOCALVARNODE) {
-            if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) ranges.add(range);
-            }
-        } else if (node.getNodeType() == NodeType.LOCALASGNNODE) {
-            if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.getRange(node);
-                // Adjust end offset to only include the left hand size
-                range = new OffsetRange(range.getStart(), range.getStart() + name.length());
-                range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) ranges.add(range);
-            }
-        } else if (node.getNodeType() == NodeType.ARGSNODE) {
-            addArgsNode(node, name, info, ranges);
-        }
-
-        for (Node child : node.childNodes()) {
-            addLocals(info, child, name, ranges);
-        }
     }
 
     // TODO: Check
@@ -240,84 +148,4 @@ public class RubyRenameHandler implements InstantRenamer {
     //
     // Test both parent blocks, sibling blocks and descendant blocks
     // Make sure the "isUsed" detection is smarter too.
-    
-    private void addDynamicVars(ParserResult info, Node node, String name, Set<OffsetRange> ranges) {
-        switch (node.getNodeType()) {
-        case DVARNODE:
-            if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = LexUtilities.getLexerOffsets(info, AstUtilities.getRange(node));
-                if (range != OffsetRange.NONE) ranges.add(range);
-            }
-            break;
-        case DASGNNODE:
-            if (((INameNode)node).getName().equals(name)) {
-                OffsetRange range = AstUtilities.offsetRangeFor(((AssignableNode) node).getLeftHandSidePosition());
-                range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) ranges.add(range);
-            }
-            break;
-        case ARGSNODE:
-            addArgsNode(node, name, info, ranges);
-        }
-
-        for (Node child : node.childNodes()) {
-            if (child instanceof ILocalScope || child.getNodeType() == NodeType.ITERNODE) continue;
-
-            addDynamicVars(info, child, name, ranges);
-        }
-    }
-
-    private void addArgsNode(Node node, String name, ParserResult info, Set<OffsetRange> ranges) {
-        ArgsNode an = (ArgsNode)node;
-
-        if (an.getRequiredCount() > 0) {
-            for (Node arg : an.childNodes()) {
-                if (!(arg instanceof ListNode)) continue;
-                for (Node arg2 : arg.childNodes()) {
-                    if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
-                        if (((ArgumentNode)arg2).getName().equals(name)) {
-                            OffsetRange range = AstUtilities.getRange(arg2);
-                            range = LexUtilities.getLexerOffsets(info, range);
-                            if (range != OffsetRange.NONE) ranges.add(range);
-                        }
-                    } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
-                        if (((LocalAsgnNode)arg2).getName().equals(name)) {
-                            OffsetRange range = AstUtilities.getRange(arg2);
-                            // Adjust end offset to only include the left hand size
-                            range = new OffsetRange(range.getStart(), range.getStart() + name.length());
-                            range = LexUtilities.getLexerOffsets(info, range);
-                            if (range != OffsetRange.NONE) ranges.add(range);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Rest args
-        if (an.getRest() != null) {
-            ArgumentNode bn = an.getRest();
-
-            if (bn.getName().equals(name)) {
-                SourcePosition pos = bn.getPosition();
-
-                // +1: Skip "*" and "&" prefix
-                OffsetRange range = new OffsetRange(pos.getStartOffset() + 1, pos.getEndOffset());
-                range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) ranges.add(range);
-            }
-        }
-
-        if (an.getBlock() != null) {
-            BlockArgNode bn = an.getBlock();
-
-            if (bn.getName().equals(name)) {
-                SourcePosition pos = bn.getPosition();
-
-                // +1: Skip "*" and "&" prefix
-                OffsetRange range = new OffsetRange(pos.getStartOffset() + 1, pos.getEndOffset());
-                range = LexUtilities.getLexerOffsets(info, range);
-                if (range != OffsetRange.NONE) ranges.add(range);
-            }
-        }
-    }
 }
