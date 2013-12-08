@@ -57,7 +57,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public class RubyParseResult extends org.netbeans.modules.csl.spi.ParserResult {
     
-    private final RubyParser parser;
     private final Node rootNode;
     
     private String source;
@@ -69,9 +68,8 @@ public class RubyParseResult extends org.netbeans.modules.csl.spi.ParserResult {
     private boolean commentsAdded;
     private List<Error> errors;
 
-    public RubyParseResult(RubyParser parser, Snapshot snapshot, Node rootNode) {
+    public RubyParseResult(Snapshot snapshot, Node rootNode) {
         super(snapshot);
-        this.parser = parser;
         this.rootNode = rootNode;
         this.errors = new ArrayList<Error>();
     }
@@ -89,15 +87,6 @@ public class RubyParseResult extends org.netbeans.modules.csl.spi.ParserResult {
     public void setErrors(List<? extends Error> errors) {
         this.errors = new ArrayList<Error>(errors);
     }
-
-    // XXX: CSL rewrite
-//    public ParserResult.AstTreeNode getAst() {
-//        return ast;
-//    }
-//
-//    public void setAst(AstTreeNode ast) {
-//        this.ast = ast;
-//    }
 
     /** The root node of the AST produced by the parser.
      * Later, rip out the getAst part etc.

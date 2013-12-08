@@ -82,13 +82,11 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
             enforceCaretOffset(source, caretOffset);
         }
 
-        BaseDocument doc = getDocument(fo);
         ParserResult parserResult = getParserResult(fo);
         Node root = AstUtilities.getRoot(parserResult);
         initializeRegistry();
         RubyIndex index = RubyIndex.get(parserResult);
-        AstPath path = new AstPath(root, caretOffset);
-        Node node = path.leaf();
+        Node node = root.getNodeAt(caretOffset);
 
         if (findMethod) {
             MethodDefNode method = AstUtilities.findMethodAtOffset(root, caretOffset);

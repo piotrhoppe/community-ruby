@@ -524,9 +524,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         Parser.Result parserResult = getParserResult("testfiles/ape.rb");
         String text = getText(parserResult);
         int caretOffset = getCaretOffset(text, "might_^fail(uri, requested_e_coll, requested_m_coll)");
-        Node root = AstUtilities.getRoot(parserResult);
-        AstPath path = new AstPath(root, caretOffset);
-        Node call = path.leaf();
+        Node call = AstUtilities.getRoot(parserResult).getNodeAt(caretOffset);
         assertTrue(AstUtilities.isCall(call));
 
         caretOffset = getCaretOffset(text, "might_fail(^uri, requested_e_coll, requested_m_coll)");
@@ -557,9 +555,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         //int caretOffset = 2755; // "new" call from failed earlier test
         int caretOffset = getCaretOffset(text, "MUTEX = Mutex.^new");
 
-        Node root = AstUtilities.getRoot(parserResult);
-        AstPath path = new AstPath(root, caretOffset);
-        Node call = path.leaf();
+        Node call = AstUtilities.getRoot(parserResult).getNodeAt(caretOffset);
         assertTrue(AstUtilities.isCall(call));
 
         assertEquals(-1, AstUtilities.findArgumentIndex(call, caretOffset));
@@ -571,10 +567,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         String text = getText(parserResult);
         //int caretOffset = 2755; // "new" call from failed earlier test
         int caretOffset = getCaretOffset(text, "Gem.ac^tivate(gem_name, *version_requirements)");
-
-        Node root = AstUtilities.getRoot(parserResult);
-        AstPath path = new AstPath(root, caretOffset);
-        Node call = path.leaf();
+        Node call = AstUtilities.getRoot(parserResult).getNodeAt(caretOffset);        
         assertTrue(AstUtilities.isCall(call));
 
         caretOffset = getCaretOffset(text, "Gem.^activate(gem_name, *version_requirements)");

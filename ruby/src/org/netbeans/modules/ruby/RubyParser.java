@@ -663,7 +663,7 @@ public final class RubyParser extends Parser {
     }
 
     protected RubyParseResult createParseResult(Snapshot snapshots, Node rootNode) {
-        return new RubyParseResult(this, snapshots, rootNode);
+        return new RubyParseResult(snapshots, rootNode);
     }
     
     public static RubyElement resolveHandle(org.netbeans.modules.csl.spi.ParserResult info, ElementHandle handle) {

@@ -1707,19 +1707,33 @@ public class AstUtilities {
         }
     }
     
+    public static List<Node> getOutermostToInnerMostBlocks(Node leaf) {
+        Node scope = leaf.getInnermostIter();
+        
+        if (scope == null) return Collections.emptyList();
+        
+        List<Node> result = new ArrayList<Node>();
+        while (scope != null) {
+            result.add(scope);
+            
+            scope = scope.getInnermostIter();
+        }
+        
+        Collections.reverse(result);
+        
+        return result;
+    }
+    
     /** Return all the blocknodes that apply to the given node. The outermost block
      * is returned first.
      */
     public static List<Node> getApplicableBlocks(AstPath path, boolean includeNested) {
         Node block = AstUtilities.findBlock(path);
 
-        if (block == null) {
-            // Use parent
+        if (block == null) { // Use parent
             block = path.leafParent();
 
-            if (block == null) {
-                return Collections.emptyList();
-            }
+            if (block == null) return Collections.emptyList();
         }
         
         List<Node> result = new ArrayList<Node>();
@@ -1727,37 +1741,34 @@ public class AstUtilities {
         
         // Skip the leaf node, we're going to add it unconditionally afterwards
         if (includeNested) {
-            if (it.hasNext()) {
-                it.next();
-            }
+            if (it.hasNext()) it.next();
         }
 
         Node leaf = path.root();
 
-      while_loop:
+        while_loop:
         while (it.hasNext()) {
             Node n = it.next();
             switch (n.getNodeType()) {
-            //case BLOCKNODE:
-            case ITERNODE:
-                leaf = n;
-                result.add(n);
-                break;
-            case DEFNNODE:
-            case DEFSNODE:
-            case CLASSNODE:
-            case SCLASSNODE:
-            case MODULENODE:
-                leaf = n;
-                break while_loop;
+                case ITERNODE:
+                    leaf = n;
+                    result.add(n);
+                    break;
+                case DEFNNODE:
+                case DEFSNODE:
+                case CLASSNODE:
+                case SCLASSNODE:
+                case MODULENODE:
+                    leaf = n;
+                    break while_loop;
             }
         }
 
         if (includeNested) {
-            addNodesByType(leaf, new NodeType[] { /*NodeType.BLOCKNODE,*/ NodeType.ITERNODE }, result);
+            addNodesByType(leaf, new NodeType[] { NodeType.ITERNODE }, result);
         }
         
-        return result;
+      return result;
     }
     
     public static String guessName(Parser.Result result, OffsetRange lexRange, OffsetRange astRange) {

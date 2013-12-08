@@ -103,8 +103,7 @@ public class RubyParserTest extends RubyTestBase {
                     } else {
                         adjustedOffset = caretOffset;
                     }
-                    AstPath path = new AstPath(root, adjustedOffset);
-                    Node closest = path.leaf();
+                    Node closest = root.getNodeAt(adjustedOffset);
                     assertNotNull(closest);
                     String leafName = closest.getClass().getName();
                     leafName = leafName.substring(leafName.lastIndexOf('.') + 1);
