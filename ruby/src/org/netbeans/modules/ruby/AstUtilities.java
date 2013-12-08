@@ -519,6 +519,19 @@ public class AstUtilities {
         
         return child == null ? null : child.getMethodFor();
     }
+    
+    public static Node findNodeAtOffset(ParserResult info, int caretOffset) {
+        Node root = AstUtilities.getRoot(info);
+        if (root == null) return null;
+
+        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        if (astOffset == -1) return null;
+
+        Node closest = root.getNodeAt(astOffset);
+        if (closest == null) return null;
+        
+        return closest;
+    }
 
     // FIXME: Replace this with something which returns nearest module...Do we really specifically need class?
     public static ClassNode findClassAtOffset(Node root, int offset) {
