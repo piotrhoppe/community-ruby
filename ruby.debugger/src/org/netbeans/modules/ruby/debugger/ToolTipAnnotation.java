@@ -46,11 +46,9 @@ package org.netbeans.modules.ruby.debugger;
 
 import java.io.IOException;
 import javax.swing.JEditorPane;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.jrubyparser.ast.INameNode;
-import org.jrubyparser.ast.InstVarNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -149,23 +147,17 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
 
     static String getExpressionToEvaluate(FileObject fo, int offset) {
         Node root = AstUtilities.getRoot(fo);
-        if (root == null) {
-            return null;
-        }
-        Node node = AstUtilities.findNodeAtOffset(root, offset);
-        if (node == null) {
-            return null;
-        }
+        if (root == null) return null;
+
+        Node node = root.getNodeAt(offset);
+        if (node == null) return null;
+
         // handles the case when the caret is placed just before the
         // expression to evaluate, e.g. "^var.foo"
-        if (node.getNodeType() == NodeType.NEWLINENODE) {
-            node = AstUtilities.findNodeAtOffset(root, offset + 1);
-        }
-        if (shouldEvaluate(node) && node instanceof INameNode) {
-            return ((INameNode) node).getLexicalName();
-        }
-        return null;
+        if (node.getNodeType() == NodeType.NEWLINENODE) node = root.getNodeAt(offset+1);
+        if (shouldEvaluate(node) && node instanceof INameNode) return ((INameNode) node).getLexicalName();
 
+        return null;
     }
 
     private static boolean shouldEvaluate(Node node) {

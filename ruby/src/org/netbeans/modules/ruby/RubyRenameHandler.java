@@ -56,46 +56,9 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * Handle renaming of local elements
- * @todo I should be able to rename top-level methods as well since they
- *   are private
- * @todo Rename |j| in the following will only rename "j" inside the block!
- * <pre>
-i = 50
-j = 200
-k = 100
-x = [1,2,3]
-x.each do |j|
-  puts j
-end
-puts j
- * </pre>
- * @todo When you fix, make sure BlockarReuse is also fixed!
- * @todo Try renaming "hello" in the exception here; my code is confused
- *   about what I'm renaming (aliases method name) and the refactoring dialog
- *   name is wrong! This is happening because it's also changing GlobalAsgnNode for $!
- *   but its parent is LocalAsgnNode, and -its- -grand- parent is a RescueBodyNode! 
- *   I should special case this!
- * <pre>
-def hello
-  begin
-    ex = 50
-    puts "test"
-  
-  rescue Exception => hello
-    puts hello
-  end
-end
- *
- * </pre>
- *
- * @author Tor Norbye
+ * Handles renaming of local elements.
  */
 public class RubyRenameHandler implements InstantRenamer {
-    
-    public RubyRenameHandler() {
-    }
-
     @Override
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         Node root = AstUtilities.getRoot(info);
@@ -122,13 +85,12 @@ public class RubyRenameHandler implements InstantRenamer {
 
     @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
-        Node closest = AstUtilities.findNodeAtOffset(info, caretOffset);
-        if (closest == null || !(closest instanceof ILocalVariable)) return Collections.emptySet();
+        Node variable = AstUtilities.findNodeAtOffset(info, caretOffset);
+        if (variable == null || !(variable instanceof ILocalVariable)) return Collections.emptySet();
 
-        ILocalVariable variable = (ILocalVariable) closest;
         Set<OffsetRange> regions = new HashSet<OffsetRange>();
 
-        for (ILocalVariable occurrence: variable.getOccurrences()) {
+        for (ILocalVariable occurrence: ((ILocalVariable) variable).getOccurrences()) {
             OffsetRange range = LexUtilities.getLexerOffsets(info, 
                     AstUtilities.offsetRangeFor(occurrence.getNamePosition()));
 
@@ -137,15 +99,4 @@ public class RubyRenameHandler implements InstantRenamer {
 
         return regions;
     }
-
-    // TODO: Check
-    //  quick tip renaming
-    //  unused detection
-    //  occurrences marking
-    //  code completion
-    //  live code templates
-    // ...anyone else who calls findBlock
-    //
-    // Test both parent blocks, sibling blocks and descendant blocks
-    // Make sure the "isUsed" detection is smarter too.
 }
