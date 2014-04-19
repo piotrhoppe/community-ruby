@@ -2211,69 +2211,59 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         caretOffset = AstUtilities.boundCaretOffset(info, caretOffset);
 
         Node root = AstUtilities.getRoot(info);
-
-        if (root == null) {
-            return null;
-        }
+        if (root == null) return null;
 
         AstPath path = new AstPath(root, caretOffset);
         Node closest = path.leaf();
         if (closest == null) return null;
 
-        // TODO: Look for a unique global variable -- this requires looking at the index
-        if (prefix.startsWith("$")) return null;
-        // TODO: Look for a unique class variable -- this requires looking at superclasses and other class parts
-        if (prefix.startsWith("@@")) return null;
-        // TODO: Look for a unique instance variable -- this requires looking at superclasses and other class parts
-        if (prefix.startsWith("@")) return null;
+        // TODO: Look for a unique {global,class,instance} variable -- this requires looking at the index
+        if (prefix.startsWith("$") || prefix.startsWith("@")) return null;
 
-            // Look for a local variable in the given scope
-                Node method = AstUtilities.findLocalScope(closest, path);
-                Map<String, Node> variables = new HashMap<String, Node>();
-                addLocals(method, variables);
+        // Look for a local variable in the given scope
+        Node method = AstUtilities.findLocalScope(closest, path);
+        Map<String, Node> variables = new HashMap<String, Node>();
+        addLocals(method, variables);
 
-                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, false);
-                for (Node block : applicableBlocks) {
-                    addDynamic(block, variables);
-                }
+        for (Node block : AstUtilities.getApplicableBlocks(path, false)) {
+            addDynamic(block, variables);
+        }
                 
-                // See if we have any name suggestions
-                String suggestions = (String)params.get(ATTR_DEFAULTS);
+        // See if we have any name suggestions
+        String suggestions = (String) params.get(ATTR_DEFAULTS);
 
-                // Check the suggestions
-                if ((suggestions != null) && (suggestions.length() > 0)) {
-                    String[] names = suggestions.split(",");
+        // Check the suggestions
+        if (suggestions != null && !suggestions.isEmpty()) {
+            String[] names = suggestions.split(",");
 
-                    for (String suggestion : names) {
-                        if (!variables.containsKey(suggestion)) {
-                            return suggestion;
-                        }
-                    }
+            for (String suggestion : names) {
+                if (!variables.containsKey(suggestion)) return suggestion;
+            }
 
-                    // Try some variations of the name
-                    for (String suggestion : names) {
-                        for (int number = 2; number < 5; number++) {
-                            String name = suggestion + number;
+            // Try some variations of the name
+            for (String suggestion : names) {
+                for (int number = 2; number < 5; number++) {
+                    String name = suggestion + number;
 
-                            if (name.length() > 0 && !variables.containsKey(name)) return name;
-                        }
-                    }
+                    if (!variables.containsKey(name)) return name;
                 }
+            }
+        }
 
-                // Try the prefix
-                if (prefix.length() > 0 && !variables.containsKey(prefix)) return prefix;
+        // Try the prefix
+        if (!prefix.isEmpty() && !variables.containsKey(prefix)) return prefix;
 
-                // TODO: What's the right algorithm for uniqueifying a variable name in Ruby?
-                // For now, will just append a number
-                if (isEmpty(prefix)) prefix = "var";
+        // TODO: What's the right algorithm for uniqueifying a variable name in Ruby?
+        // For now, will just append a number
+        if (isEmpty(prefix)) prefix = "var";
 
-                for (int number = 1; number < 15; number++) {
-                    String name = (number == 1) ? prefix : (prefix + number);
+        for (int number = 1; number < 15; number++) {
+            String name = number == 1 ? prefix : (prefix + number);
 
-                    if ((name.length() > 0) && !variables.containsKey(name)) return name;
-                }
+            if (!variables.containsKey(name)) return name;
+        }
 
-            return null;
+        return null;
     }
 
     @Override
