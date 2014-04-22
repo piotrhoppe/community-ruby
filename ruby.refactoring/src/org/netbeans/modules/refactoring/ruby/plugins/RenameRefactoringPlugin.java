@@ -351,6 +351,13 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     }
 
     private Set<RubyElementCtx> allMethods;
+
+    private static final Comparator<Difference> COMPARATOR = new Comparator<Difference>() {
+        public int compare(Difference d1, Difference d2) {
+            return d1.getStartPosition().getOffset() - d2.getStartPosition().getOffset();
+
+        };
+    };
     
     public Problem prepare(RefactoringElementsBag elements) {
         if (treePathHandle == null) {
@@ -367,25 +374,30 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     rt.setWorkingCopy(parserResult);
                     rt.scan();
                     ModificationResult mr = new ModificationResult();
-                    mr.addDifferences(parserResult.getSnapshot().getSource().getFileObject(), rt.diffs);
+
+                    mr.addDifferences(parserResult.getSnapshot().getSource().getFileObject(), cullDifferences(rt.diffs));
+
                     return Collections.singleton(mr);
                 }
             };
 
             final Collection<ModificationResult> results = processFiles(files, transform);
-            elements.registerTransaction(new RetoucheCommit(results));
-            for (ModificationResult result:results) {
+
+            // We don't want retouche to look at all results since we are finding the same nodes
+            // repeated in our tree (e.g. @a += 1 has two nodes for @a for the assign and the references).
+            for (ModificationResult result: results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
+
                     for (Difference diff: result.getDifferences(jfo)) {
                         String old = diff.getOldText();
-                        if (old!=null) {
-                            //TODO: workaround
-                            //generator issue?
+                        if (old!=null) {  //TODO: workaround. generator issue?
                             elements.add(refactoring,DiffElement.create(diff, jfo, result));
                         }
                     }
                 }
             }
+
+            elements.registerTransaction(new RetoucheCommit(results));
         }
         // see #126733. need to set a correct new name for the file rename plugin
         // that gets invoked after this plugin when the refactoring is invoked on a file.
@@ -397,6 +409,29 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         fireProgressListenerStop();
                 
         return problem;
+    }
+
+    // At NB 8.0 it gets really unhappy if we submit duplicate Differences which overlap.
+    // This method sorts and then removes any which happen to have the same start offset.
+    // Start offset might not be perfect but in the cases on improper overlaps it should get
+    // repaired by the thing supplying the differences.
+    private static List<Difference> cullDifferences(List<Difference> oldDiffs) {
+        List<Difference> diffs = new ArrayList<Difference>();
+        Difference lastDiff = null;
+
+        if (oldDiffs.size() > 0) Collections.sort(oldDiffs, COMPARATOR);
+
+        for (Difference diff: oldDiffs) {
+            if (lastDiff == null ||
+                    (diff.getStartPosition().getOffset() != lastDiff.getStartPosition().getOffset() &&
+                    diff.getEndPosition().getOffset() != lastDiff.getEndPosition().getOffset())) {
+                diffs.add(diff);
+            }
+
+            lastDiff = diff;
+        }
+
+        return diffs;
     }
 
     private static final String getString(String key) {
@@ -871,7 +906,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 case CLASSVARASGNNODE:
                 case CLASSVARDECLNODE:
                     if (((INameNode)node).getName().equals(name)) {
-                        rename(node, name, null, null);
+                        rename(node, ((INameNode)node).getLexicalName(), null, null);
                     }
                     break;
                 }
