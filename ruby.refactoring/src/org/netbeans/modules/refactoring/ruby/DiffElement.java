@@ -48,10 +48,9 @@ import java.lang.ref.WeakReference;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.netbeans.modules.refactoring.ruby.ui.tree.ElementGripFactory;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -77,15 +76,18 @@ import org.openide.util.lookup.Lookups;
         this.modification = modification;
     }
 
+    @Override
     public String getDisplayText() {
         return displayText;
     }
 
+    @Override
     public Lookup getLookup() {
-        Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
-        if (composite==null) 
-            composite = parentFile;
-        return Lookups.fixed(composite, diff);
+//        Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
+//        if (composite==null)
+//            composite = parentFile;
+//        return Lookups.fixed(composite, diff);
+        return Lookups.fixed(diff);
     }
     
     @Override
@@ -95,6 +97,7 @@ import org.openide.util.lookup.Lookups;
         super.setEnabled(enabled);
     }
 
+    @Override
     public PositionBounds getPosition() {
         return bounds;
     }
@@ -103,9 +106,24 @@ import org.openide.util.lookup.Lookups;
         return displayText;
     }
 
+    @Override
     public void performChange() {
+        String oldFileName = diff.getOldText();
+        String newFileName = diff.getNewText();
+
+        if (parentFile.getName().equals(oldFileName)) {
+            try {
+                FileLock fileLock = parentFile.lock();
+                parentFile.rename(fileLock, newFileName, "ruby"); // NOI18N
+                fileLock.releaseLock();
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+
     }
 
+    @Override
     public FileObject getParentFile() {
         return parentFile;
     }
@@ -129,9 +147,8 @@ import org.openide.util.lookup.Lookups;
     }
     
     public static DiffElement create(Difference diff, FileObject fileObject, ModificationResult modification) {
-        PositionRef start = diff.getStartPosition();
-        PositionRef end = diff.getEndPosition();
-        PositionBounds bounds = new PositionBounds(start, end);
+        PositionBounds bounds = new PositionBounds(diff.getStartPosition(), diff.getEndPosition());
+        
         return new DiffElement(diff, bounds, fileObject, modification);
     }    
 }
