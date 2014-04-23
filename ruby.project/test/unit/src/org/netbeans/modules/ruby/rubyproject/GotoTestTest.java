@@ -144,6 +144,7 @@ public class GotoTestTest extends RubyProjectTestBase {
     //    assertIsProjFile("test/controllers/my_controller_test.rb", loc.getFileObject());
     //}
 
+    /*
     public void testGotoTestRspec() {
         assertNotNull(project);
         
@@ -151,7 +152,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("spec/models/whatever_spec.rb", loc.getFileObject());
         assertEquals(-1, loc.getOffset());
-    }
+    }*/
 
     public void testGotoTestRspecRubyProject() {
         assertNotNull(project);
@@ -212,6 +213,7 @@ public class GotoTestTest extends RubyProjectTestBase {
     //    assertIsProjFile("app/controllers/my_controller.rb", loc.getFileObject());
     //}
 
+    /*
     public void testGotoTestedRspec() {
         assertNotNull(project);
         
@@ -219,7 +221,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("app/models/whatever.rb", loc.getFileObject());
         assertEquals(-1, loc.getOffset());
-    }
+    }*/
 
     public void testGotoTestedRails() {
         assertNotNull(project);
@@ -255,7 +257,8 @@ public class GotoTestTest extends RubyProjectTestBase {
         "app/models/mymodel.rb",
         "test/unit/mymodel_test.rb"
     };
-    
+
+    /*
     public void testFindOpposite() {
         int index = 0;
         for (; index < FILES.length; index += 2) {
@@ -276,7 +279,7 @@ public class GotoTestTest extends RubyProjectTestBase {
             assertEquals(-1, res.getOffset());
         }
     }
-    
+
     public void testGoto112812() {
         assertNotNull(project);
         
@@ -320,6 +323,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertSame(DeclarationLocation.NONE, loc);
         assertEquals(-1, loc.getOffset());
     }
+    */
 
     public void testNegative2() {
         assertNotNull(project);
@@ -358,7 +362,8 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTest(getProjFile("test/unit/rest_phone/phone_call_test.rb"), -1);
         assertSame(DeclarationLocation.NONE, loc);
     }
-    
+
+    /*
     public void testGoto16588a() {
         assertNotNull(project);
         DeclarationLocation loc = gotoTest.findTest(getProjFile("lib/widget.rb"), -1);
@@ -400,7 +405,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("whatever/donkey_spec.rb", loc.getFileObject());
         assertEquals(-1, loc.getOffset());
-    }
+    }*/
 
     public void testRSpecVsTest() {
         assertNotNull(project);
