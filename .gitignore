@@ -1,0 +1,17 @@
+/o.jruby.distro/unpatched_source/
+/o.jruby/patched_source/
+**/build/
+**/nbproject/private/
+**/external/*.zip
+**/external/*.jar
+**/external/*.gz
+**/external/*.bz2
+**/external/*.gem
+**/external/*.dll
+**/external/*.xpi
+*.orig
+/misc/release
+/misc/manifest-subst.mf
+/misc/Info
+/misc/rubyide/dist
+/misc/stubs/generator/dist
