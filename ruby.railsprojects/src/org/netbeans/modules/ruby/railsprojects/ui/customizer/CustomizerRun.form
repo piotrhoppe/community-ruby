@@ -6,7 +6,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -178,40 +178,32 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="serverLabel" max="32767" attributes="1"/>
-                                  <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                              </Group>
-                              <Component id="railsEnvLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="serverArgsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="serverLabel" max="32767" attributes="1"/>
+                          <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="rakeLabel" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="encodingLabel" pref="152" max="32767" attributes="1"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="railsEnvLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="serverArgsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="rakeLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="encodingLabel" alignment="0" pref="152" max="32767" attributes="1"/>
                   </Group>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Component id="rakeHelpLabel" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace pref="408" max="32767" attributes="0"/>
-                      </Group>
                       <Component id="rakeTextField" alignment="0" pref="512" max="32767" attributes="1"/>
                       <Component id="encoding" alignment="1" pref="512" max="32767" attributes="1"/>
-                      <Component id="urlHelpLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="railsEnvCombo" alignment="0" pref="512" max="32767" attributes="0"/>
                       <Component id="portField" alignment="0" pref="512" max="32767" attributes="1"/>
                       <Component id="urlTextField" alignment="0" pref="512" max="32767" attributes="0"/>
                       <Component id="serverComboBox" alignment="0" pref="512" max="32767" attributes="0"/>
                       <Component id="serverArgsField" alignment="1" pref="512" max="32767" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="rakeHelpLabel" min="-2" max="-2" attributes="1"/>
+                              <Component id="urlHelpLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>

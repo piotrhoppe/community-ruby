@@ -189,43 +189,43 @@ public class PluginPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(updateAllButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.updateAllButton.text")); // NOI18N
         updateAllButton.addActionListener(formListener);
 
-        org.jdesktop.layout.GroupLayout installedPanelLayout = new org.jdesktop.layout.GroupLayout(installedPanel);
+        javax.swing.GroupLayout installedPanelLayout = new javax.swing.GroupLayout(installedPanel);
         installedPanel.setLayout(installedPanelLayout);
         installedPanelLayout.setHorizontalGroup(
-            installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(installedPanelLayout.createSequentialGroup()
+            installedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
-                        .add(reloadInstalledButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 376, Short.MAX_VALUE)
-                        .add(instSearchLbl)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(instSearchText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(installedPanelLayout.createSequentialGroup()
-                        .add(uninstallButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(updateButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(updateAllButton)))
+                .addGroup(installedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, installedPanelLayout.createSequentialGroup()
+                        .addComponent(reloadInstalledButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 376, Short.MAX_VALUE)
+                        .addComponent(instSearchLbl)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(instSearchText, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(installedPanelLayout.createSequentialGroup()
+                        .addComponent(uninstallButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(updateButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(updateAllButton)))
                 .addContainerGap())
         );
         installedPanelLayout.setVerticalGroup(
-            installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(installedPanelLayout.createSequentialGroup()
+            installedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(instSearchLbl)
-                    .add(reloadInstalledButton)
-                    .add(instSearchText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(uninstallButton)
-                    .add(updateAllButton)
-                    .add(updateButton))
+                .addGroup(installedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(instSearchLbl)
+                    .addComponent(reloadInstalledButton)
+                    .addComponent(instSearchText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(installedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(uninstallButton)
+                    .addComponent(updateAllButton)
+                    .addComponent(updateButton))
                 .addContainerGap())
         );
 
@@ -256,35 +256,35 @@ public class PluginPanel extends javax.swing.JPanel {
         newList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.newList.AccessibleContext.accessibleName")); // NOI18N
         newList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.newList.AccessibleContext.accessibleDescription")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout newPanelLayout = new org.jdesktop.layout.GroupLayout(newPanel);
+        javax.swing.GroupLayout newPanelLayout = new javax.swing.GroupLayout(newPanel);
         newPanel.setLayout(newPanelLayout);
         newPanelLayout.setHorizontalGroup(
-            newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(newPanelLayout.createSequentialGroup()
+            newPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(newPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, newPanelLayout.createSequentialGroup()
-                        .add(reloadNewButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 376, Short.MAX_VALUE)
-                        .add(newSearchLbl)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(installButton))
+                .addGroup(newPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, newPanelLayout.createSequentialGroup()
+                        .addComponent(reloadNewButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 376, Short.MAX_VALUE)
+                        .addComponent(newSearchLbl)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(searchNewText, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(installButton))
                 .addContainerGap())
         );
         newPanelLayout.setVerticalGroup(
-            newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(newPanelLayout.createSequentialGroup()
+            newPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(newPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(newSearchLbl)
-                    .add(reloadNewButton)
-                    .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(installButton)
+                .addGroup(newPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(newSearchLbl)
+                    .addComponent(reloadNewButton)
+                    .addComponent(searchNewText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(installButton)
                 .addContainerGap())
         );
 
@@ -319,41 +319,41 @@ public class PluginPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(addUrlButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.addUrlButton.text")); // NOI18N
         addUrlButton.addActionListener(formListener);
 
-        org.jdesktop.layout.GroupLayout repositoryPanelLayout = new org.jdesktop.layout.GroupLayout(repositoryPanel);
+        javax.swing.GroupLayout repositoryPanelLayout = new javax.swing.GroupLayout(repositoryPanel);
         repositoryPanel.setLayout(repositoryPanelLayout);
         repositoryPanelLayout.setHorizontalGroup(
-            repositoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(repositoryPanelLayout.createSequentialGroup()
+            repositoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(repositoryPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(repositoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, repositoryPanelLayout.createSequentialGroup()
-                        .add(discoverButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(addUrlButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(reloadReposButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 144, Short.MAX_VALUE)
-                        .add(repSearchLbl)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(searchReposText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(unregisterButton))
+                .addGroup(repositoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, repositoryPanelLayout.createSequentialGroup()
+                        .addComponent(discoverButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(addUrlButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(reloadReposButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 144, Short.MAX_VALUE)
+                        .addComponent(repSearchLbl)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(searchReposText, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(unregisterButton))
                 .addContainerGap())
         );
         repositoryPanelLayout.setVerticalGroup(
-            repositoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(repositoryPanelLayout.createSequentialGroup()
+            repositoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(repositoryPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(repositoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(repSearchLbl)
-                    .add(searchReposText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(discoverButton)
-                    .add(addUrlButton)
-                    .add(reloadReposButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(unregisterButton)
+                .addGroup(repositoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(repSearchLbl)
+                    .addComponent(searchReposText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(discoverButton)
+                    .addComponent(addUrlButton)
+                    .addComponent(reloadReposButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(unregisterButton)
                 .addContainerGap())
         );
 
@@ -368,20 +368,20 @@ public class PluginPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(proxyButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.proxyButton.text")); // NOI18N
         proxyButton.addActionListener(formListener);
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(proxyButton)
+                .addComponent(proxyButton)
                 .addContainerGap(564, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(proxyButton)
+                .addComponent(proxyButton)
                 .addContainerGap(406, Short.MAX_VALUE))
         );
 
@@ -389,20 +389,20 @@ public class PluginPanel extends javax.swing.JPanel {
 
         pluginsTab.addTab(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(pluginsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
+                .addComponent(pluginsTab, javax.swing.GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(pluginsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
+                .addComponent(pluginsTab, javax.swing.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

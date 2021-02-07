@@ -32,8 +32,8 @@
     <!-- build does not seem to notice harness changes...add this manually
          on deadlock once to wipe them out? -->
     <target name="nuke-platform-harness">
-      <delete dir=".hg/nb/harness"/>
-      <delete dir=".hg/nb/platform"/>
+      <delete dir=".git/nb/harness"/>
+      <delete dir=".git/nb/platform"/>
     </target>
 
     <target name="update-keystore-info">
