@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
                 <package>org.jrubyparser.rewriter</package>
                 <package>org.jrubyparser.rewriter.utils</package>
                 <package>org.jrubyparser.util</package>
+                <package>org.jrubyparser.util.diff</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jrubyparser-0.5.4.jar</runtime-relative-path>
