@@ -92,12 +92,7 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -263,7 +258,7 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
             if (files != null && files.iterator().hasNext()) {
                 try {
                     FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                    img = FileUIUtils.getImageDecorator(fo.getFileSystem()).annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
@@ -277,7 +272,7 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
             if (files != null && files.iterator().hasNext()) {
                 try {
                     FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                    img = FileUIUtils.getImageDecorator(fo.getFileSystem()).annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
