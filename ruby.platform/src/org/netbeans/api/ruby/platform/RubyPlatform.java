@@ -785,7 +785,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * returned by this function.
      */
     private Pattern getRequiredRDebugIDEVersionPattern() {
-        return Pattern.compile("0\\.4\\..*"); // NOI18N
+        return Pattern.compile("0\\.[4-9]\\..*"); // NOI18N
     }
 
     private boolean checkGem(final String gemName, final Pattern gemVersion) {
