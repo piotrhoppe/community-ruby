@@ -212,18 +212,18 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             }
 
             saveFile(file);
-
-            // If we try to "test" a file that has a corresponding test file,
-            // run/debug the test file instead
-            DeclarationLocation location = new GotoTest().findTest(file, -1);
-            if (location != DeclarationLocation.NONE) {
-                file = location.getFileObject();
-                // Save the test file too
-                saveFile(file);
-            } else if (RubyUtils.isRhtmlFile(file)) {
-                // Can't run RHTML files if there's no corresponding test
-                return;
-            }
+// TODO: figure out how resolve dependency from below code
+//            // If we try to "test" a file that has a corresponding test file,
+//            // run/debug the test file instead
+//            DeclarationLocation location = new GotoTest().findTest(file, -1);
+//            if (location != DeclarationLocation.NONE) {
+//                file = location.getFileObject();
+//                // Save the test file too
+//                saveFile(file);
+//            } else if (RubyUtils.isRhtmlFile(file)) {
+//                // Can't run RHTML files if there's no corresponding test
+//                return;
+//            }
 
             boolean isDebug = COMMAND_DEBUG_TEST_SINGLE.equals(command);
  

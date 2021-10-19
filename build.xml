@@ -10,7 +10,10 @@
                 <include name="*/external/binaries-list"/>
             </manifest>
         </downloadbinaries>
-
+        <get src="https://netbeans.osuosl.org/binaries/D4EF66C1CC8A5B3C97E0CC7C210227AAEC1F1086-jsearch-2.0_05.jar" dest="${harness.dir}/antlib/jsearch-2.0_05.jar" verbose="true" usetimestamp="true"/>
+        <get src="https://netbeans.osuosl.org/binaries/943CD5C8802B2A3A64A010EFB86EC19BAC142E40-ant-contrib-1.0b3.jar" dest="${binaries.cache}/943CD5C8802B2A3A64A010EFB86EC19BAC142E40-ant-contrib-1.0b3.jar" verbose="true" usetimestamp="true"/>
+        <copy file="${basedir}/misc/jars/jsch-0.1.55.jar" tofile="${harness.dir}/modules/com-jcraft-jsch.jar" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar" dest="${harness.dir}/modules/org-apache-commons-logging.jar" verbose="true" usetimestamp="true"/>
         <taskdef resource="net/sf/antcontrib/antlib.xml">
             <classpath>
                 <pathelement location="${binaries.cache}/943CD5C8802B2A3A64A010EFB86EC19BAC142E40-ant-contrib-1.0b3.jar"/>
