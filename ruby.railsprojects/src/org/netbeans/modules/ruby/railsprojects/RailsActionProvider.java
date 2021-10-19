@@ -212,7 +212,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             }
 
             saveFile(file);
-// TODO: figure out how resolve dependency from below code
+// TODO: figure out how resolve dependency for below code
 //            // If we try to "test" a file that has a corresponding test file,
 //            // run/debug the test file instead
 //            DeclarationLocation location = new GotoTest().findTest(file, -1);
