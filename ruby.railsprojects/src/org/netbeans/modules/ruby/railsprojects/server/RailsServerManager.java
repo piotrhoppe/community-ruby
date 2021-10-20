@@ -332,10 +332,11 @@ public final class RailsServerManager {
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
         //desc.showProgress(false); // http://ruby.netbeans.org/issues/show_bug.cgi?id=109261
         desc.showSuspended(true);
-        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
-        if (coverageProvider != null && coverageProvider.isEnabled()) {
-            desc = coverageProvider.wrapWithCoverage(desc, false, null);
-        }
+// TODO: figure out how resolve dependency for below code
+//        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+//        if (coverageProvider != null && coverageProvider.isEnabled()) {
+//            desc = coverageProvider.wrapWithCoverage(desc, false, null);
+//        }
         runServer(desc, displayName, new RailsServerLineConverter(server));
         return false;
     }

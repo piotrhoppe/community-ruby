@@ -226,10 +226,11 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             }
         }
 
-        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
-        if (coverageProvider != null && coverageProvider.isEnabled()) {
-            desc = coverageProvider.wrapWithCoverage(desc, false, null);
-        }
+// TODO: figure out how resolve dependency for below code
+//        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+//        if (coverageProvider != null && coverageProvider.isEnabled()) {
+//            desc = coverageProvider.wrapWithCoverage(desc, false, null);
+//        }
 
         return desc;
     }
@@ -399,10 +400,11 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
                         RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                         RubyLineConvertorFactory.EXT_RE, 1, 2));
 
-            RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
-            if (coverageProvider != null && coverageProvider.isEnabled()) {
-                desc = coverageProvider.wrapWithCoverage(desc, false, null);
-            }
+// TODO: figure out how resolve dependency for below code
+//            RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+//            if (coverageProvider != null && coverageProvider.isEnabled()) {
+//                desc = coverageProvider.wrapWithCoverage(desc, false, null);
+//            }
 
             RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());
             ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);

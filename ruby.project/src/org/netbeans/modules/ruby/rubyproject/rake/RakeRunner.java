@@ -271,10 +271,11 @@ public final class RakeRunner {
         Collection<? extends RakeTaskCustomizer> customizers = Lookup.getDefault().lookupAll(RakeTaskCustomizer.class);
         List<RubyExecutionDescriptor> result = new ArrayList<RubyExecutionDescriptor>(tasks.size());
 
-        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
-        if (coverageProvider == null || !coverageProvider.isEnabled()) {
-            coverageProvider = null;
-        }
+// TODO: figure out how resolve dependency for below code
+//        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+//        if (coverageProvider == null || !coverageProvider.isEnabled()) {
+//            coverageProvider = null;
+//        }
 
         for (RakeTask task : tasks) {
             RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, rake);
@@ -310,9 +311,10 @@ public final class RakeRunner {
             additionalArgs.addAll(task.getTaskParameters());
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
 
-            if (coverageProvider != null) {
-                desc = coverageProvider.wrapWithCoverage(desc, true, null);
-            }
+// TODO: figure out how resolve dependency for below code
+//            if (coverageProvider != null) {
+//                desc = coverageProvider.wrapWithCoverage(desc, true, null);
+//            }
 
             result.add(desc);
         }
