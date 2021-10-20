@@ -597,11 +597,11 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 desc.addOutConvertor(extra);
             }
         }
-
-        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
-        if (coverageProvider != null && coverageProvider.isEnabled()) {
-            desc = coverageProvider.wrapWithCoverage(desc, false, null);
-        }
+// TODO: figure out how resolve dependency for below code
+//        RubyCoverageProvider coverageProvider = RubyCoverageProvider.get(project);
+//        if (coverageProvider != null && coverageProvider.isEnabled()) {
+//            desc = coverageProvider.wrapWithCoverage(desc, false, null);
+//        }
 
         return desc;
     }
