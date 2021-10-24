@@ -63,6 +63,7 @@ import org.jrubyparser.parser.ParserResult;
 import org.jrubyparser.parser.Ruby18Parser;
 import org.jrubyparser.parser.Ruby19Parser;
 import org.jrubyparser.parser.Ruby20Parser;
+import org.jrubyparser.parser.Ruby23Parser;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -639,13 +640,14 @@ public final class RubyParser extends Parser {
             if (platform.is18()) return new Ruby18Parser();
             if (platform.is19()) return new Ruby19Parser();
             if (platform.is20()) return new Ruby20Parser();
+            if (platform.is23()) return new Ruby23Parser();
         }
         
         return getDefaultParser();        
     }
     
     private static org.jrubyparser.parser.RubyParser getDefaultParser() {
-        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby20Parser();
+        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby23Parser();
     }
 
     private static org.jrubyparser.parser.RubyParser getParserForJRuby(Project project) {
@@ -657,6 +659,7 @@ public final class RubyParser extends Parser {
                 if (jvmArgs.contains("jruby.compat.version=RUBY1_8")) return new Ruby18Parser();
                 if (jvmArgs.contains("jruby.compat.version=RUBY1_9")) return new Ruby19Parser();
                 if (jvmArgs.contains("jruby.compat.version=RUBY2_0")) return new Ruby20Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby23Parser();
             }
         }
         return getParserFromProject(project);
