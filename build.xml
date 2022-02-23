@@ -4,7 +4,7 @@
     <target name="downloadbinaries" description="Download external binaries not stored in Mercurial sources." depends="-taskdefs">
         <property file="${user.home}/.nbbuild.properties"/> <!-- permit binaries.cache to be overridden -->
         <property name="binaries.cache" location="${user.home}/.hgexternalcache"/>
-        <property name="binaries.server" value="http://hg.netbeans.org/binaries/"/>
+        <property name="binaries.server" value="https://hg.netbeans.org/binaries/"/>
         <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
             <manifest dir=".">
                 <include name="*/external/binaries-list"/>
