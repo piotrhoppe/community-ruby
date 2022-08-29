@@ -38,6 +38,7 @@
  
     <modules>
         <module>libs.jrubyparser</module>
+        <module>ruby.themes</module>
     </modules>
 
     <dependencyManagement>
