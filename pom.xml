@@ -38,6 +38,7 @@
  
     <modules>
         <module>libs.jrubyparser</module>
+        <module>o.jruby.distro</module>
         <module>ruby.themes</module>
         <module>ruby.rakeproject</module>
         <module>ruby.samples.depot</module>

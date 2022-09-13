@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.netbeans.modules.ruby</groupId>
+        <artifactId>community-ruby</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.netbeans.modules.ruby</groupId>
+    <artifactId>org.jruby.distro</artifactId>
+    <packaging>nbm</packaging>
+
+    <name>o.jruby.distro</name>
+
+    <properties>
+        <xtest.jruby.home>${settings.localRepository}/org/jruby/jruby/1.7.27</xtest.jruby.home>
+        <xtest.data>${project.build.directory}/test-classes/data</xtest.data>
+        <jruby.distro.dir>${project.build.directory}/nbm/netbeans/community_ruby</jruby.distro.dir>
+        <arjdbc.gem.list>jdbc-postgres-8.4.702-java.gem jdbc-mysql-5.0.4.gem activerecord-jdbc-adapter-0.9.6-java.gem activerecord-jdbcmysql-adapter-0.9.6-java.gem activerecord-jdbcpostgresql-adapter-0.9.6-java.gem</arjdbc.gem.list>
+        <rspec.gem.list>diff-lcs-1.1.3.gem rspec-core-2.13.1.gem rspec-expectations-2.13.0.gem rspec-mocks-2.13.0.gem rspec-2.13.0.gem</rspec.gem.list>
+        <rails.gem.list>rack-1.1.0.gem activesupport-2.3.8.gem actionpack-2.3.8.gem actionmailer-2.3.8.gem activerecord-2.3.8.gem activeresource-2.3.8.gem rails-2.3.8.gem</rails.gem.list>
+        <gems.list>rake-10.0.4.gem linecache-0.46-java.gem ruby-debug-base-0.10.5.rc2-java.gem columnize-0.3.6.gem ruby-debug-0.10.5.rc2.gem ruby-debug-ide-0.4.17.beta14.gem  rcov-0.8.1.5.0-java.gem</gems.list>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.netbeans.utilities</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <xtest.jruby.home>${xtest.jruby.home}/</xtest.jruby.home>
+                        <xtest.data>${xtest.data}</xtest.data>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>check-if-target-exist</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <target>
+                                <available file="${project.build.directory}\${project.build.finalName}.nbm" property="org.jruby.distro.target.exists"/>
+                            </target>
+                            <exportAntProperties>true</exportAntProperties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>prepare-org-jruby-distro</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <target unless="${org.jruby.distro.target.exists}">
+                                <macrodef name="gem-install">
+                                    <attribute name="compile.mode" default="OFF"/>
+                                    <attribute name="inproc" default="true"/>
+                                    <attribute name="jruby.args" default=""/>
+                                    <attribute name="gems"/>
+                                    <attribute name="dir" default="src/external"/>
+                                    <attribute name="jruby.launch.memory" default="512M"/>
+                                    <attribute name="jruby.home" default="${jruby.distro.dir}/jruby"/>
+
+                                    <sequential>
+                                        <echo message="Installing gems @{gems}"/>
+                                        <java classname="org.jruby.Main" fork="true" maxmemory="@{jruby.launch.memory}" failonerror="true" dir="@{dir}">
+                                            <classpath path="${jruby.distro.dir}/jruby/lib/jruby.jar"/>
+
+                                            <sysproperty key="jruby.home" value="@{jruby.home}"/>
+                                            <sysproperty key="jruby.compile.mode" value="@{compile.mode}"/>
+                                            <sysproperty key="jruby.launch.inproc" value="@{inproc}"/>
+
+                                            <arg line="@{jruby.args} -S gem install @{gems} --no-ri --no-rdoc"/>
+                                            <env key="JRUBY_OPTS" value=""/>
+                                        </java>
+                                    </sequential>
+                                </macrodef>
+                                <get src="https://netbeans.osuosl.org/binaries/D5EDA58A55B6C5BD7452E201E01AC0921F5EB367-activerecord-jdbc-adapter-0.9.6-java.gem" dest="src/external/activerecord-jdbc-adapter-0.9.6-java.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/D264B7A273F06BA06288E20C74B16E8B49F02570-activerecord-jdbcmysql-adapter-0.9.6-java.gem" dest="src/external/activerecord-jdbcmysql-adapter-0.9.6-java.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/8F043A9A7E84DDFC2F5EC1D5749C74E8D22A9413-activerecord-jdbcpostgresql-adapter-0.9.6-java.gem" dest="src/external/activerecord-jdbcpostgresql-adapter-0.9.6-java.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/75D0DABBFB577DC350519AED4B21F780313EFC9E-columnize-0.3.6.gem" dest="src/external/columnize-0.3.6.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/EDE3F3DAC76A747651204A73CBD9C9C53F766E4F-jdbc-mysql-5.0.4.gem" dest="src/external/jdbc-mysql-5.0.4.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/BAAD862632621CB49C1CC4A4A9BBA1318F4103DA-jdbc-postgres-8.4.702-java.gem" dest="src/external/jdbc-postgres-8.4.702-java.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/7788AD80929FC6EC684880D69B96F277821F74F7-rails-gems-2.3.8.zip" dest="src/external/rails-gems-2.3.8.zip" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/EC89CC4C97A44866310A5FA63AD14D5B13EFB0D7-rcov-0.8.1.5.0-java.zip" dest="src/external/rcov-0.8.1.5.0-java.zip" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/F9E5DAC8411C1B51905D71C38DA72AA4948514B7-diff-lcs-1.1.3.gem" dest="src/external/diff-lcs-1.1.3.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/9B9B26D013C073508891978FCAD6DA5EA04A65C3-rspec-mocks-2.13.0.gem" dest="src/external/rspec-mocks-2.13.0.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/6E6840DA013CCCA8B34C4F53E02E680BA7DF12E4-rspec-expectations-2.13.0.gem" dest="src/external/rspec-expectations-2.13.0.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/519EB818145995079B6061164B9FBAFEEE0ECDFF-rspec-core-2.13.1.gem" dest="src/external/rspec-core-2.13.1.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/F8C57AF6D805F3563FD7D24FEC410C533168BE07-rspec-2.13.0.gem" dest="src/external/rspec-2.13.0.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/2C0B9C484F46D570D1BBC061132D0020BA9E8CBB-jruby-bin-1.7.3.tar.gz" dest="src/external/jruby-bin-1.7.3.tar.gz" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/58B834DD204D978C0BC7F659BBD56DCCBA4898FA-ruby-debug-0.10.5.rc2.gem" dest="src/external/ruby-debug-0.10.5.rc2.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/3E0F54DD17853BF40A55CF5F48260C562D8172B5-ruby-debug-base-0.10.5.rc2-java.gem" dest="src/external/ruby-debug-base-0.10.5.rc2-java.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/E29FED3CB4F53B0FA25BE0FDB6263B494BE8EB80-ruby-debug-ide-0.4.17.beta14.gem" dest="src/external/ruby-debug-ide-0.4.17.beta14.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/1F3B835F83910FCF043C5FC23CB68187A0A8BED3-linecache-0.46-java.gem" dest="src/external/linecache-0.46-java.gem" verbose="true" skipexisting="true"/>
+                                <get src="https://netbeans.osuosl.org/binaries/59D5921AAB7E0DD212AE8FD0795088CFA48E84BA-rake-10.0.4.gem" dest="src/external/rake-10.0.4.gem" verbose="true" skipexisting="true"/>
+
+                                <!-- Uncompress and move jruby bin dist into plain 'jruby' dir -->
+                                <untar compression="gzip" dest="${jruby.distro.dir}" src="src/external/jruby-bin-1.7.3.tar.gz"/>
+                                <move file="${jruby.distro.dir}/jruby-1.7.3" tofile="${jruby.distro.dir}/jruby"/>
+                                <!-- Does the untar or move lose the execute bits from the file? -->
+                                <chmod dir="${jruby.distro.dir}/jruby/bin/" includes="*" perm="ugo+rx"/>
+                                <!-- Remove pre-expanded ri and rdocs -->
+                                <delete dir="${jruby.distro.dir}/jruby/share/ri"/>
+                                <!-- Install extra gems we want in our default distro -->
+                                <unzip dest="src/external" src="src/external/rails-gems-2.3.8.zip"/>
+                                <unzip dest="src/external" src="src/external/rcov-0.8.1.5.0-java.zip"/>
+                                <gem-install gems="${gems.list} ${arjdbc.gem.list} ${rspec.gem.list} ${rails.gem.list}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+    </dependencies>
+</project>
