@@ -44,6 +44,7 @@
         <module>ruby.samples.depot</module>
         <module>ruby.platform</module>
         <module>ruby</module>
+        <module>ruby.rhtml</module>
     </modules>
 
     <dependencyManagement>
