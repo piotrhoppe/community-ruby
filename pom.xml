@@ -46,6 +46,7 @@
         <module>ruby.platform</module>
         <module>ruby</module>
         <module>ruby.rhtml</module>
+        <module>ruby.codecoverage</module>
     </modules>
 
     <dependencyManagement>
