@@ -48,6 +48,7 @@
         <module>ruby.rhtml</module>
         <module>ruby.codecoverage</module>
         <module>ruby.project</module>
+        <module>ruby.debugger</module>
     </modules>
 
     <dependencyManagement>
