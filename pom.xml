@@ -50,6 +50,7 @@
         <module>ruby.codecoverage</module>
         <module>ruby.project</module>
         <module>ruby.debugger</module>
+        <module>ruby.hints</module>
     </modules>
 
     <dependencyManagement>
