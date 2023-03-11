@@ -51,6 +51,7 @@
         <module>ruby.project</module>
         <module>ruby.debugger</module>
         <module>ruby.hints</module>
+        <module>ruby.extrahints</module>
     </modules>
 
     <dependencyManagement>
