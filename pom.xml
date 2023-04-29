@@ -52,6 +52,7 @@
         <module>ruby.debugger</module>
         <module>ruby.hints</module>
         <module>ruby.extrahints</module>
+        <module>ruby.railsprojects</module>
     </modules>
 
     <dependencyManagement>
