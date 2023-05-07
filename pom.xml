@@ -36,6 +36,9 @@
         </repository>
     </repositories>
  
+    <modules>
+        <module>libs.jrubyparser</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>

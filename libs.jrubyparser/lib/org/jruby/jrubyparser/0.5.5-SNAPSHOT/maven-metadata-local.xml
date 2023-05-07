@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>org.jruby</groupId>
+  <artifactId>jrubyparser</artifactId>
+  <versioning>
+    <lastUpdated>20230507202746</lastUpdated>
+    <snapshot>
+      <localCopy>true</localCopy>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>0.5.5-SNAPSHOT</value>
+        <updated>20230507202746</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>0.5.5-SNAPSHOT</value>
+        <updated>20230507202746</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>0.5.5-SNAPSHOT</version>
+</metadata>
