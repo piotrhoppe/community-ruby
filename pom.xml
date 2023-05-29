@@ -53,6 +53,7 @@
         <module>ruby.hints</module>
         <module>ruby.extrahints</module>
         <module>ruby.railsprojects</module>
+        <module>ruby.refactoring</module>
     </modules>
 
     <dependencyManagement>
