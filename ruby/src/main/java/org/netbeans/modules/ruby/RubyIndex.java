@@ -1809,7 +1809,7 @@ public final class RubyIndex {
         if (clusterUrl == null) {
             File f =
                 InstalledFileLocator.getDefault()
-                                    .locate("modules/org-netbeans-modules-ruby.jar", null, false); // NOI18N
+                                    .locate("modules/org-netbeans-modules-ruby-editing.jar", null, false); // NOI18N
 
             if (f == null) {
                 throw new RuntimeException("Can't find cluster");
