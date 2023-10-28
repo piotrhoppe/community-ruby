@@ -58,6 +58,7 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-rubyforge-debugcommons</artifactId>
             <version>RELEASE691</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
