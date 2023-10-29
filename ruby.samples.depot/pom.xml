@@ -7,8 +7,8 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.netbeans.modules.ruby.samples.depot</groupId>
-    <artifactId>ruby.samples.depot</artifactId>
+    <groupId>org.netbeans.modules.ruby</groupId>
+    <artifactId>samples.depot</artifactId>
     <packaging>nbm</packaging>
 
     <build>
