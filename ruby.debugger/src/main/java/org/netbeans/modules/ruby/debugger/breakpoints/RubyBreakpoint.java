@@ -86,7 +86,11 @@ public abstract class RubyBreakpoint extends Breakpoint implements IRubyBreakpoi
 
     protected final void updateBreakpoint() {
         for (RubyDebuggerProxy proxy : RubyDebuggerProxy.PROXIES) {
-            proxy.updateBreakpoint(this);
+            try {
+                proxy.updateBreakpoint(this);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Exception during breakpoint update: " + e.getLocalizedMessage(), e);
+            }
         }
     }
     
