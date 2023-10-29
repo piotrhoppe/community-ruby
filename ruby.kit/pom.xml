@@ -15,6 +15,7 @@
     <name>ruby.kit</name>
     
     <build>
+        <finalName>ruby-${artifactId}-${version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.netbeans.utilities</groupId>
@@ -33,5 +34,95 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.netbeans.libs</groupId>
+            <artifactId>jrubyparser</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.jellytools.ruby</groupId>
+            <artifactId>jellytools.ruby</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>org.jruby.distro</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>rakeproject</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>samples.depot</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>platform</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>editing</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby.rhtml</groupId>
+            <artifactId>ruby.rhtml</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>codecoverage</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>project</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>javaint</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>debugger</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>hints</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>extrahints</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>railsprojects</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>refactoring</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>spellchecker.bindings.ruby</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules.ruby</groupId>
+            <artifactId>help</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
