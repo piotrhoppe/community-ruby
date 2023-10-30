@@ -208,9 +208,12 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
     
     public boolean is20() {
-        return getVersion() != null && getVersion().startsWith("2.");
+        return getVersion() != null && getVersion().startsWith("2.0.");
     }
 
+    public boolean is23() {
+        return getVersion() != null && getVersion().startsWith("2.3.");
+    }
     /**
      * Checks whether the platform has a valid Rake installed.
      *

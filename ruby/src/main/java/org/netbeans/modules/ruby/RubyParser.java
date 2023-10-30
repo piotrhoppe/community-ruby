@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.RootNode;
+import org.jrubyparser.CompatVersion;
 import org.jrubyparser.IRubyWarnings;
 import org.jrubyparser.IRubyWarnings.ID;
 import org.jrubyparser.SourcePosition;
@@ -63,6 +64,7 @@ import org.jrubyparser.parser.ParserResult;
 import org.jrubyparser.parser.Ruby18Parser;
 import org.jrubyparser.parser.Ruby19Parser;
 import org.jrubyparser.parser.Ruby20Parser;
+import org.jrubyparser.parser.Ruby23Parser;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -558,7 +560,7 @@ public final class RubyParser extends Parser {
                 fileName = fo.getNameExt();
             }
 
-            ParserConfiguration configuration = new ParserConfiguration();
+            ParserConfiguration configuration = getParserConfiguration(parser);
             LexerSource lexerSource =
                     LexerSource.getSource(fileName, new StringReader(source), configuration);
             result = parser.parse(configuration, lexerSource);
@@ -604,6 +606,22 @@ public final class RubyParser extends Parser {
         return sanitize(context, sanitizing);
     }
 
+    private static ParserConfiguration getParserConfiguration(org.jrubyparser.parser.RubyParser parser) {
+        ParserConfiguration configuration = null;
+
+        if (org.jrubyparser.parser.Ruby23Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY2_3);
+        } else if (org.jrubyparser.parser.Ruby20Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY2_0);
+        } else if (org.jrubyparser.parser.Ruby19Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY1_9);
+        } else if (org.jrubyparser.parser.Ruby18Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY1_8);
+        }
+
+        return configuration;
+    }
+
 
     /**
      * Gets the parser for the given context. If the context is owned by 
@@ -639,13 +657,14 @@ public final class RubyParser extends Parser {
             if (platform.is18()) return new Ruby18Parser();
             if (platform.is19()) return new Ruby19Parser();
             if (platform.is20()) return new Ruby20Parser();
+            if (platform.is23()) return new Ruby23Parser();
         }
         
         return getDefaultParser();        
     }
     
     private static org.jrubyparser.parser.RubyParser getDefaultParser() {
-        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby20Parser();
+        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby23Parser();
     }
 
     private static org.jrubyparser.parser.RubyParser getParserForJRuby(Project project) {
@@ -657,6 +676,7 @@ public final class RubyParser extends Parser {
                 if (jvmArgs.contains("jruby.compat.version=RUBY1_8")) return new Ruby18Parser();
                 if (jvmArgs.contains("jruby.compat.version=RUBY1_9")) return new Ruby19Parser();
                 if (jvmArgs.contains("jruby.compat.version=RUBY2_0")) return new Ruby20Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby23Parser();
             }
         }
         return getParserFromProject(project);
