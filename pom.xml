@@ -55,7 +55,6 @@
         <module>ruby.railsprojects</module>
         <module>ruby.refactoring</module>
         <module>spellchecker.bindings.ruby</module>
-        <module>ruby.help</module>
         <module>ruby.kit</module>
     </modules>
 
