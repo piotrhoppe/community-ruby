@@ -78,6 +78,8 @@
                     <version>4.3</version>
                     <configuration>
                         <cluster>community_ruby</cluster>
+                        <licenseName>GNU General Public License v2.0</licenseName>
+                        <licenseFile>${project.basedir}/LICENSE.TXT</licenseFile>
                     </configuration>
                 </plugin>
                 <plugin>
