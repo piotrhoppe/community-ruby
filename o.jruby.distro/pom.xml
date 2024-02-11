@@ -97,6 +97,9 @@
 
                                             <arg line="@{jruby.args} -S gem install @{gems} --no-ri --no-rdoc"/>
                                             <env key="JRUBY_OPTS" value=""/>
+                                            <env key="MY_RUBY_HOME" value="@{jruby.home}"/>
+                                            <env key="GEM_PATH" value="@{jruby.home}/lib/ruby/gems/shared/"/>
+                                            <env key="GEM_HOME" value="@{jruby.home}/lib/ruby/gems/shared/"/>
                                         </java>
                                     </sequential>
                                 </macrodef>
