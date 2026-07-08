@@ -298,12 +298,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.netbeans.modules.ruby</groupId>
             <artifactId>org.jruby.distro</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>test</scope>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.netbeans.modules.ruby</groupId>
             <artifactId>platform</artifactId>

@@ -65,6 +65,14 @@ import org.jrubyparser.parser.Ruby18Parser;
 import org.jrubyparser.parser.Ruby19Parser;
 import org.jrubyparser.parser.Ruby20Parser;
 import org.jrubyparser.parser.Ruby23Parser;
+import org.jrubyparser.parser.Ruby24Parser;
+import org.jrubyparser.parser.Ruby25Parser;
+import org.jrubyparser.parser.Ruby26Parser;
+import org.jrubyparser.parser.Ruby27Parser;
+import org.jrubyparser.parser.Ruby30Parser;
+import org.jrubyparser.parser.Ruby31Parser;
+import org.jrubyparser.parser.Ruby32Parser;
+import org.jrubyparser.parser.Ruby33Parser;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -609,7 +617,23 @@ public final class RubyParser extends Parser {
     private static ParserConfiguration getParserConfiguration(org.jrubyparser.parser.RubyParser parser) {
         ParserConfiguration configuration = null;
 
-        if (org.jrubyparser.parser.Ruby23Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+        if (org.jrubyparser.parser.Ruby33Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY3_3);
+        } else if (org.jrubyparser.parser.Ruby32Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY3_2);
+        } else if (org.jrubyparser.parser.Ruby31Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY3_1);
+        } else if (org.jrubyparser.parser.Ruby30Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY3_0);
+        } else if (org.jrubyparser.parser.Ruby27Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY2_7);
+        } else if (org.jrubyparser.parser.Ruby26Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY2_6);
+        } else if (org.jrubyparser.parser.Ruby25Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY2_5);
+        } else if (org.jrubyparser.parser.Ruby24Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
+            configuration = new ParserConfiguration(0, CompatVersion.RUBY2_4);
+        } else if (org.jrubyparser.parser.Ruby23Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
             configuration = new ParserConfiguration(0, CompatVersion.RUBY2_3);
         } else if (org.jrubyparser.parser.Ruby20Parser.class.getSimpleName().equals(parser.getClass().getSimpleName())) {
             configuration = new ParserConfiguration(0, CompatVersion.RUBY2_0);
@@ -658,13 +682,21 @@ public final class RubyParser extends Parser {
             if (platform.is19()) return new Ruby19Parser();
             if (platform.is20()) return new Ruby20Parser();
             if (platform.is23()) return new Ruby23Parser();
+            if (platform.is24()) return new Ruby24Parser();
+            if (platform.is25()) return new Ruby25Parser();
+            if (platform.is26()) return new Ruby26Parser();
+            if (platform.is27()) return new Ruby27Parser();
+            if (platform.is30()) return new Ruby30Parser();
+            if (platform.is31()) return new Ruby31Parser();
+            if (platform.is32()) return new Ruby32Parser();
+            if (platform.is33()) return new Ruby33Parser();
         }
         
         return getDefaultParser();        
     }
     
     private static org.jrubyparser.parser.RubyParser getDefaultParser() {
-        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby23Parser();
+        return DEFAULT_TO_RUBY18 ? new Ruby18Parser() : new Ruby33Parser();
     }
 
     private static org.jrubyparser.parser.RubyParser getParserForJRuby(Project project) {
@@ -677,6 +709,14 @@ public final class RubyParser extends Parser {
                 if (jvmArgs.contains("jruby.compat.version=RUBY1_9")) return new Ruby19Parser();
                 if (jvmArgs.contains("jruby.compat.version=RUBY2_0")) return new Ruby20Parser();
                 if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby23Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby24Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby25Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby26Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby27Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby30Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby31Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby32Parser();
+                if (jvmArgs.contains("jruby.compat.version=RUBY2_3")) return new Ruby33Parser();
             }
         }
         return getParserFromProject(project);
