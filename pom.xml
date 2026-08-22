@@ -30,10 +30,14 @@
         If you use Apache NetBeans starting with Apache NetBeans 9.0 
         you can remove the netbeans repository section
         -->
-        <repository>
+<!--        <repository>
             <id>netbeans</id>
             <name>NetBeans</name>
             <url>https://netbeans.apidesign.org/maven2/</url>
+        </repository>-->
+        <repository>
+            <id>netbeans-legacy</id>
+            <url>https://piotrhoppe.github.io/netbeans-legacy-maven/</url>
         </repository>
     </repositories>
  
