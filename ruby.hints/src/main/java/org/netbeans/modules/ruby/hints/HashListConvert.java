@@ -107,7 +107,12 @@ public class HashListConvert extends RubyAstRule {
     
     private static int getCommaOffset(RubyRuleContext context, ListNode listNode, int pair) {
         int prevEnd = listNode.get(2*pair).getPosition().getEndOffset();
-        int nextStart = listNode.get(2*pair+1).getPosition().getStartOffset();
+        int nextStart;
+        try {
+            nextStart = listNode.get(2*pair+1).getPosition().getStartOffset();
+        } catch (NullPointerException e) {
+            return -1;
+        }
         //XXX: there is a bug in the parser that causes it to return invalid offsets
         // for keys in hashes that use the new 1.9 syntax (e.g. {one: "one"})
         if (nextStart < prevEnd) {
