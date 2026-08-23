@@ -412,11 +412,10 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
             reloadGems();
 
             // Ensure that code coverage is initialized in case it's enabled...
-// TODO: figure out how resolve dependency for below code
-//            RubyCoverageProvider provider = RubyCoverageProvider.get(RubyBaseProject.this);
-//            if (provider.isEnabled()) {
-//                provider.notifyProjectOpened();
-//            }
+            RubyCoverageProvider provider = RubyCoverageProvider.get(RubyBaseProject.this);
+            if (provider.isEnabled()) {
+                provider.notifyProjectOpened();
+            }
         }
         
         protected void projectClosed() {
