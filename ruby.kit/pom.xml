@@ -44,11 +44,11 @@
             <artifactId>jellytools.ruby</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.netbeans.modules.ruby</groupId>
             <artifactId>org.jruby.distro</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.netbeans.modules.ruby</groupId>
             <artifactId>rakeproject</artifactId>
