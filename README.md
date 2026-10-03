@@ -7,6 +7,16 @@ Is based on the original [(c) Oracle Corporation plugin](http://hg.netbeans.org/
 which has been donated to the [Apache NetBeans](https://netbeans.org) part of
 [Apache Software Fundation](https://www.apache.org).
 
+## Support the project
+
+If you find this project useful, please consider supporting its development.
+
+Your support helps me spend more time maintaining and improving NetBeans Ruby support, fixing bugs, and keeping the project up to date.
+
+Every contribution is greatly appreciated. Thank you for supporting open source development!
+
+[![Sponsor](https://img.shields.io/badge/Sponsor-support%20the%20project-ea4aaa?logo=github)](https://github.com/sponsors/piotrhoppe)
+
 ## Plugin features
 * Editing
 * Refactoring
