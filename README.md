@@ -22,7 +22,7 @@ Every contribution is greatly appreciated. Thank you for supporting open source 
 * Refactoring
 * Projects
 * Ruby on Rails
-  * support version 2.3.x
+  * support version from 1.8.x to 3.3.x
 * Debugging
 * Unit Testing
 * Code Coverage Support
@@ -33,13 +33,12 @@ Every contribution is greatly appreciated. Thank you for supporting open source 
 * Additional Plugins
 * Ruby Gems Manager
 * Ruby Options
-* Integrated JRuby
 
 ## Requirements
 - NetBeans >= 14.0
 
 ## Documentation
-* [Old Ruby Plugin Wiki](https://web.archive.org/web/20111030214144/http://wiki.netbeans.org/Ruby)
+* [Community Ruby Documentation](https://piotrhoppe.github.io/community-ruby-documentation) - Basend on the [Old Ruby Plugin Wiki](https://web.archive.org/web/20111030214144/http://wiki.netbeans.org/Ruby) 
 
 ## Installation
 ### Community Ruby plugin
@@ -69,9 +68,7 @@ on the "Open" button
 the instructions
 
 ## Limitations
-* delivered the JRuby with plugin works only with java 1.8.x
-* delivered parser with plugin suports Ruby in version 2.3.x or olders, but can
-also work with newer versions although in some cases can show wrong hints
+* the current version does not include JRuby, as the original version did.
 
 ## Licence
 [Apache license 2.0](LICENSE)
