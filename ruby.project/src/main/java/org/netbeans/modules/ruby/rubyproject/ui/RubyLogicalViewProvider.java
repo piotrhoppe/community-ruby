@@ -193,8 +193,7 @@ public final class RubyLogicalViewProvider extends RubyBaseLogicalViewProvider {
             if (bundlerSupport.installed()) {
                 actions.add(bundlerSupport.createAction());
             }
-// TODO: figure out how resolve dependency for below code
-//            actions.add(RubyCoverageProvider.createCoverageAction(getProject()));
+            actions.add(RubyCoverageProvider.createCoverageAction(getProject()));
             actions.add(null);
 
             actions.add(CommonProjectActions.setProjectConfigurationAction());
