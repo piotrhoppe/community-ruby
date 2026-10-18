@@ -64,7 +64,7 @@ public final class UserQuestionHandler {
      * Handle a user question exception later (in the event thread).
      * Displays a dialog and invokes the appropriate method on the callback.
      * The callback will be notified in the event thread.
-     * Use when catching {@link UserQuestionException} during {@link FileObject#lock}.
+     * Use when catching {@link UserQuestionException} during {@code FileObject.lock()}.
      */
     public static void handle(final UserQuestionException e, final Callback callback) {
         SwingUtilities.invokeLater(new Runnable() {

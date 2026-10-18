@@ -86,8 +86,8 @@ public final class RubyTypeInferencer {
 
     /**
      * Tries to infer the type(s) of the given <code>symbol</code> within the
-     * context, that is by walking and analyzing {@link #RubyTypeAnalyzer the
-     * given block}.
+     * context, that is by walking and analyzing the given block with
+     * {@link RubyTypeAnalyzer}.
      *
      * @param symbol symbol for which to infer the type
      * @return inferred {@link RubyType types}, never <code>null</code>;

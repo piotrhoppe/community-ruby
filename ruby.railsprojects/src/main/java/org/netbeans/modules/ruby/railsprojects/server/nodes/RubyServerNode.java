@@ -49,7 +49,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 
 /**
- * A node for displaying <code>RubyServer<code>s under the servers node.
+ * A node for displaying {@code RubyServer}s under the servers node.
  *
  * @author Erno Mononen
  */

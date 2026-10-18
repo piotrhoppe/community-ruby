@@ -93,7 +93,7 @@ import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.ruby.platform.gems.GemPanel.TabIndex.*;
 
 /**
- * Provides UI for managing RubyGems like CLI <tt>gem</tt> tool does, albeit not
+ * Provides UI for managing RubyGems like CLI {@code gem} tool does, albeit not
  * so feature-full.
  */
 public final class GemPanel extends JPanel {

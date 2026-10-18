@@ -72,7 +72,7 @@ import org.openide.util.lookup.InstanceContent;
  * Checks both method definitions and local symbols to see if they are
  * using camel case rather than lowercase_names.
  * 
- * @todo Add fix to rename!
+ * TODO: Add fix to rename!
  * 
  * @author Tor Norbye
  */

@@ -198,7 +198,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
      *
      * @param descriptor description of the process to be debugged
      * @return debugger {@link java.lang.Process process}. Might be
-     *         <tt>null</tt> if debugging cannot be started for some reason.
+     *         {@code null} if debugging cannot be started for some reason.
      *         E.g. interpreter cannot be obtained from preferences.
      * @throws java.io.IOException
      * @throws org.rubyforge.debugcommons.RubyDebuggerException

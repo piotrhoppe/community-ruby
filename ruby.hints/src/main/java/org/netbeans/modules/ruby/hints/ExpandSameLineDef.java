@@ -80,11 +80,11 @@ import org.openide.util.NbBundle;
  * <p>
  * NOTE - this hint is only activated for the line under the caret!
  *
- * @todo Filter out the case where you have a def inside a class on the same line!
- * @todo Apply this tip to brace blocks as well - and offer both expand and collapse!
- * @todo Why doesn't this work on line begins? E.g. add "def foo; bar; end" and put the
+ * TODO: Filter out the case where you have a def inside a class on the same line!
+ * TODO: Apply this tip to brace blocks as well - and offer both expand and collapse!
+ * TODO: Why doesn't this work on line begins? E.g. add "def foo; bar; end" and put the
  *   caret to the left of "def"; it doesn't activate
- * @todo See James Moore's comment about formatting multi-line statements
+ * TODO: See James Moore's comment about formatting multi-line statements
  * 
  * @author Tor Norbye
  */

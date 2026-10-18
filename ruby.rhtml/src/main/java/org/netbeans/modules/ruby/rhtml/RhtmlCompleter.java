@@ -51,8 +51,8 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 public class RhtmlCompleter extends RubyCodeCompleter {
     
     /**
-     *  @todo Pass in the completion type? (Smart versus documentation etc.)
-     *  @todo Pass in the line offsets? Nah, just make the completion provider figure those out.
+     *  TODO: Pass in the completion type? (Smart versus documentation etc.)
+     *  TODO: Pass in the line offsets? Nah, just make the completion provider figure those out.
      */
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
@@ -69,8 +69,8 @@ public class RhtmlCompleter extends RubyCodeCompleter {
     /**
      * Consider a keystroke and decide whether it should automatically invoke some type
      * of completion. If so, return the desired type, otherwise return QueryType.NONE.
-     * @return A QueryType if automatic completion should be initiated, or {@link QueryType.NONE}
-     *   if it should be left alon, or {@link QueryType.STOP} if completion should be terminated
+     * @return A QueryType if automatic completion should be initiated, or {@link QueryType#NONE}
+     *   if it should be left alone, or {@link QueryType#STOP} if completion should be terminated
      */
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {

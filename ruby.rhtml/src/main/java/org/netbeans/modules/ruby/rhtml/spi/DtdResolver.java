@@ -54,10 +54,10 @@ import javax.swing.text.Document;
 public interface DtdResolver {
 
     /**
-     * Gets the identifier of the doctype that should 
-     * be used for the given <code>doc</doc>, e.g. 
-     * <code>"-//W3C//DTD XHTML 1.0 Strict//EN"</code>.
-     * 
+     * Gets the identifier of the doctype that should
+     * be used for the given {@code doc}, e.g.
+     * {@code "-//W3C//DTD XHTML 1.0 Strict//EN"}.
+     *
      * @param doc
      * @return the id or <code>null</code>.
      */

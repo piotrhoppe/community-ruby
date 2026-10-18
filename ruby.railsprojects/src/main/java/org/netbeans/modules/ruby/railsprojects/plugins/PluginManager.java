@@ -84,8 +84,8 @@ import org.openide.util.RequestProcessor;
 /**
  * Class which handles plugin interactions - executing plugin, installing, uninstalling, etc.
  *
- * @todo Use the new ExecutionService to do process manapluginent.
- * @todo Consolidate with the GemManager
+ * TODO: Use the new ExecutionService to do process manapluginent.
+ * TODO: Consolidate with the GemManager
  *
  * @author Tor Norbye
  */
@@ -135,7 +135,7 @@ public class PluginManager {
      * repository used by the current Rails project
      *
      * @param pluginName name of a plugin to be checked
-     * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
+     * @return {@code true} if installed; {@code false} otherwise
      */
     public boolean isPluginInstalled(final String pluginName) {
         FileObject dir = getPluginDir();
@@ -502,16 +502,17 @@ public class PluginManager {
     /**
      * Install the given plugin.
      *
-     * @param plugin Plugin description for the plugin to be installed. Only the name is relevant.
+     * @param plugins Plugin descriptions for the plugins to be installed.
      * @param parent For asynchronous tasks, provide a parent JComponent that will have progress dialogs added,
      *   a possible cursor change, etc.
+     * @param sourceRepository repository from which to install plugins
+     * @param svnExternals whether to use Subversion externals
+     * @param svnCheckout whether to check plugins out from Subversion
+     * @param revision optional repository revision
      * @param asynchronous If true, run the plugin task asynchronously - returning immediately and running the plugin task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    plugin output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the plugin task completes normally, this task will be run at the end.
-     * @param rdoc If true, generate rdoc as part of the installation
-     * @param ri If true, generate ri data as part of the installation
-     * @param version If non null, install the specified version rather than the latest available version
      */
     public boolean install(Plugin[] plugins, JComponent parent, String sourceRepository,
             boolean svnExternals, boolean svnCheckout, String revision, boolean asynchronous,
@@ -564,7 +565,8 @@ public class PluginManager {
     /**
      * Uninstall the given plugin.
      *
-     * @param plugin Plugin description for the plugin to be uninstalled. Only the name is relevant.
+     * @param plugins Plugin descriptions for the plugins to be uninstalled.
+     * @param sourceRepository repository containing the plugins
      * @param parent For asynchronous tasks, provide a parent JComponent that will have progress dialogs added,
      *   a possible cursor change, etc.
      * @param asynchronous If true, run the plugin task asynchronously - returning immediately and running the plugin task
@@ -621,8 +623,10 @@ public class PluginManager {
     /**
      * Update the given plugin, or all plugins if plugin == null
      *
-     * @param plugin Plugin description for the plugin to be uninstalled. Only the name is relevant. If null, all installed plugins
+     * @param plugins Plugin descriptions for the plugins to be updated. If null, all installed plugins
      *    will be updated.
+     * @param revision optional repository revision
+     * @param sourceRepository repository containing the plugins
      * @param parent For asynchronous tasks, provide a parent JComponent that will have progress dialogs added,
      *   a possible cursor change, etc.
      * @param asynchronous If true, run the plugin task asynchronously - returning immediately and running the plugin task

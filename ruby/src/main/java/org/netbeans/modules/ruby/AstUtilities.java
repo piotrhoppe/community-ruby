@@ -126,7 +126,7 @@ import org.openide.util.Exceptions;
  * Various utilities for operating on the JRuby ASTs that are used
  * elsewhere.
  * 
- * @todo Rewrite many of the custom recursion routines to simply 
+ * TODO: Rewrite many of the custom recursion routines to simply
  *  call {@link addNodesByType} and then iterate (without recursion) over
  *  the result set.
  *
@@ -1446,7 +1446,7 @@ public class AstUtilities {
     }
 
     /**
-     * @todo Should I really recurse into classes? If I have nested classes private
+     * TODO: Should I really recurse into classes? If I have nested classes private
      *  methods ther shouldn't be included for the parent!
      *
      * @param access The "current" known access level (PUBLIC, PROTECTED or PRIVATE)
@@ -1841,7 +1841,7 @@ public class AstUtilities {
         return methodNames;
     }
     
-    /** @todo Implement properly */
+    /** TODO: Implement properly */
     public static Set<String> getUsedConstants(RubyIndex index, AstPath path) {
         //String fqn = AstUtilities.getFqnName(path);
         //if (fqn == null || fqn.length() == 0) {

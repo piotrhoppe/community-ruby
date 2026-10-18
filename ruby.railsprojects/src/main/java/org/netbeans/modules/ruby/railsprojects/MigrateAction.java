@@ -90,7 +90,7 @@ import org.openide.util.actions.SystemAction;
  * etc.
  *
  * What about migration - can schema.rb contain many versions?
- * ActiveRecord::Schema.define(:version => 2) do
+ * {@code ActiveRecord::Schema.define(:version => 2) do}
  * ...
  *
  * @author Tor Norbye

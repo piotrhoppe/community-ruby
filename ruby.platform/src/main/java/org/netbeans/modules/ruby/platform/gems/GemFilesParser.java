@@ -95,7 +95,7 @@ public final class GemFilesParser {
 
     /**
      * Finds the files representing installed gems.
-     * Use {@link getFiles()} and {@link getGemInfos()} to retrieve the results.
+     * Use {@link #getFiles(boolean)} and {@link #getGemInfos()} to retrieve the results.
      */
     public void parseGems() {
 

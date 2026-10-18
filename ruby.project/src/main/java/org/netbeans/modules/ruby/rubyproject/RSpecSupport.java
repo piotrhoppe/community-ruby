@@ -64,7 +64,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * Various methods for supporting RSpec execution
  * 
- * @todo Use an output recognizer which munges the output... Can it recognize the
+ * TODO: Use an output recognizer which munges the output... Can it recognize the
  *   colors and do something to make that happen in the output window?
  * 
  * @author Tor Norbye

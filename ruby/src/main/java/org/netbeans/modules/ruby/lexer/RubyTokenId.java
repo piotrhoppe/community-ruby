@@ -61,7 +61,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 
 /**
- * @todo I should handle embeddings of =begin/=end token pairs such that they
+ * TODO: I should handle embeddings of =begin/=end token pairs such that they
  *   get comment/rdoc highlighting!
  * 
  * @author Tor Norbye

@@ -200,7 +200,7 @@ public final class PlatformComponentFactory {
 
     /**
      * Returns model containing all <em>currently</em> registered RubyPlatforms.
-     * See also {@link RubyPlatform#getPlatforms}.
+     * See also {@link RubyPlatformManager#getPlatforms}.
      * <p>Use in conjuction with {@link RubyPlatformListRenderer}</p>
      */
     public static class RubyPlatformListModel extends AbstractListModel

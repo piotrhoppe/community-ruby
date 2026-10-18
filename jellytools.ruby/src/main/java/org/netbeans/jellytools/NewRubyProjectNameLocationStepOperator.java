@@ -55,7 +55,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
- * @author Ivan Sidorkin <ivansidorkin@netbeans.org>
+ * @author Ivan Sidorkin (ivansidorkin@netbeans.org)
  */
 public class NewRubyProjectNameLocationStepOperator extends NewProjectWizardOperator {
 

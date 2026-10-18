@@ -71,18 +71,18 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 /**
  * Walk through the JRuby AST and note interesting things
- * @todo Use the org.jrubyparser.ast.visitor.NodeVisitor interface
- * @todo Do mixins and includes trip up my unused private method detection code?
- * @todo Treat toplevel methods as private?
- * @todo Show unused highlighting for unused class variables:
+ * TODO: Use the org.jrubyparser.ast.visitor.NodeVisitor interface
+ * TODO: Do mixins and includes trip up my unused private method detection code?
+ * TODO: Treat toplevel methods as private?
+ * TODO: Show unused highlighting for unused class variables:
  *    private_class_method
  *   See section 7.8 in http://www.rubycentral.com/faq/rubyfaq-7.html
- * @todo Handle java fully packaged names by not bolding "java" and "javax" method
+ * TODO: Handle java fully packaged names by not bolding "java" and "javax" method
  *   calls in Java projects
- * @todo I can do faster tree walking with a quick integer set of node types I'm
+ * TODO: I can do faster tree walking with a quick integer set of node types I'm
  *   interested in, or more specifically a set of node types I know I can prune:
  *   ArgNodes etc. 
- * @todo Stash unused variables in a list I can reference from a quickfix!
+ * TODO: Stash unused variables in a list I can reference from a quickfix!
  * @author Tor Norbye
  */
 public class RubySemanticAnalyzer extends SemanticAnalyzer {    

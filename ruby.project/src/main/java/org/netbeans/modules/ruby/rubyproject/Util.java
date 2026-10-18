@@ -89,7 +89,7 @@ public final class Util {
      * Tries to infer currently best suitable {@link RubyBaseProject Ruby
      * project} based on the current user's context.
      * 
-     * @return might be <tt>null</tt>
+     * @return might be {@code null}
      */
     public static RubyBaseProject inferRubyProject() {
         // try current context firstly

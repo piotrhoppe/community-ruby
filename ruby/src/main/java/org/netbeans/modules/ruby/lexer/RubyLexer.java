@@ -68,7 +68,7 @@ import org.openide.ErrorManager;
  * A scanner for Ruby, which directly uses the JRuby lexer and translates
  * from JRuby tokens to NetBeans lexer-based tokens
  *
- * @todo Should I generate a single large token for composite token types
+ * TODO: Should I generate a single large token for composite token types
  *  like strings and regular expressions? Today, I go to a lot of trouble
  *  to do state saving between the opening quote, middle literal string,
  *  and ending quote, for strings. (Ditto for regular expressions, single
@@ -315,7 +315,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
         return token(id, tokenLength);
     }
 
-    /** @todo Move classification of tokens into TokenTypes into JRuby somehow */
+    /** TODO: Move classification of tokens into TokenTypes into JRuby somehow */
     private RubyTokenId getTokenId(int token, int offset) {
         // If you add any new token types here, remember to update #getRelevantTokenTypes below
         switch (token) {

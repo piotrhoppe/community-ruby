@@ -161,7 +161,7 @@ public interface RubyInstance {
      * may require additional parameters).
      * 
      * TODO Need better error reporting for this result, asynchronous or not.
-     * Perhaps use Future<OperationResult> which combines the operation state
+     * Perhaps use {@code Future<OperationResult>} which combines the operation state
      * with a message.
      * 
      * @param applicationName name to assign to deployed application (defaults

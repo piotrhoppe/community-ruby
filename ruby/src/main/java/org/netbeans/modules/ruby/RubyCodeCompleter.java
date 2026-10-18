@@ -122,59 +122,59 @@ import static org.netbeans.modules.ruby.RubyUtils.*;
  * Bug: I add lists of fields etc. But if these -overlap- the current line,
  *  I throw them away. The problem is that there may be other references
  *  to the field that I should -not- throw away, elsewhere!
- * @todo Ensure that I prefer assignment over reference such that javadoc is
+ * TODO: Ensure that I prefer assignment over reference such that javadoc is
  *   more likely to be there!
  *   
  * 
- * @todo Handle this case:  {@code class HTTPBadResponse &lt; StandardError; end}
- * @todo Code completion should automatically suggest "initialize()" for def completion! (if I'm in a class)
- * @todo It would be nice if you select a method that takes a block, such as Array.each, if we could
+ * TODO: Handle this case:  {@code class HTTPBadResponse &lt; StandardError; end}
+ * TODO: Code completion should automatically suggest "initialize()" for def completion! (if I'm in a class)
+ * TODO: It would be nice if you select a method that takes a block, such as Array.each, if we could
  *   insert a { ^ } suffix
- * @todo Use lexical tokens to avoid attempting code completion within comments,
+ * TODO: Use lexical tokens to avoid attempting code completion within comments,
  *   literal strings and regexps
- * @todo Percent-completion doesn't work if you at this to the end of the
+ * TODO: Percent-completion doesn't work if you at this to the end of the
  *   document:  x = %    and try to complete.
- * @todo Handle more completion scenarios: Classes (no keywords) after "class Foo &lt;",
+ * TODO: Handle more completion scenarios: Classes (no keywords) after "class Foo &lt;",
  *   classes after "::", parameter completion (!!!), .new() completion (initialize), etc.
- * @todo Make sure completion works during a "::"
- * @todo I need to move the smart-determination from just checking in=Object/Class/Module
+ * TODO: Make sure completion works during a "::"
+ * TODO: I need to move the smart-determination from just checking in=Object/Class/Module
  *   to the code which computes matches, since we have for example ObjectMixin in pretty printer
  *   which adds mixin methods to Object.
- * @todo Handle Rails methods that deal with hashes:
+ * TODO: Handle Rails methods that deal with hashes:
  *    - Try figuring out whether the method should take parameters by looking for examples;
  *      lines that start with the method name and looks like it might have arguments
  *    - Try to figure out what the different parameters are if there are hashes
- *    - &lt;tt&gt;: looks like a parameter, e.g. "<tt>:filename</tt>"
+ *    - &lt;tt&gt;: looks like a parameter, e.g. "{@code :filename}"
  *      and to see which parameter it might correspond to, see the
  *      label; see if any of the parameter names are listed there (possibly in the args list)
  *      A fallback is to look for args that look like they may be hashes, e.g.  
  *      def(foo1, foo2, foo3={}) - the third one is obviously a hash
- * @todo Make code completion when we're in a parameter list include the parameters as well!
- * @todo For .rjs files, insert an object named "page" of type 
+ * TODO: Make code completion when we're in a parameter list include the parameters as well!
+ * TODO: For .rjs files, insert an object named "page" of type
  *    ActionView::Helpers::PrototypeHelper::JavaScriptGenerator::GeneratorMethods
  *    (#105088)
- * @todo For .builder files, insert an object named "xml" of type
+ * TODO: For .builder files, insert an object named "xml" of type
  *    Builder::XmlMarkup
- * @todo For .rhtml/.html.erb files, insert fields etc. as documented in actionpack's lib/action_view/base.rb
+ * TODO: For .rhtml/.html.erb files, insert fields etc. as documented in actionpack's lib/action_view/base.rb
  *    (#105095)
- * @todo For test files in Rails, get testing context (#105043). In particular, actionpack's
+ * TODO: For test files in Rails, get testing context (#105043). In particular, actionpack's
  *    ActionController::Assertions needs to be pulled in. This happens in action_controller/assertions.rb.
- * @todo Require-completion should handle ruby gems; it should provide the "preferred" (entry-point) files for
+ * TODO: Require-completion should handle ruby gems; it should provide the "preferred" (entry-point) files for
  *    all the ruby gems, and it should hide all the files that are inside the gem
- * @todo Rakefiles files should inherit Rakefile context
- * @todo See http://blog.diegodoval.com/2007/09/ruby_on_os_x_some_useful_links.html
- * @todo Documentation completion in a rdoc should preview that rdoc section
- * @todo Make a dedicated completion item which I return on documentation completion if I want  to
+ * TODO: Rakefiles files should inherit Rakefile context
+ * TODO: See http://blog.diegodoval.com/2007/09/ruby_on_os_x_some_useful_links.html
+ * TODO: Documentation completion in a rdoc should preview that rdoc section
+ * TODO: Make a dedicated completion item which I return on documentation completion if I want  to
  *    complete the CURRENT element; it basically just wraps the desired comment so we can pull it
  *    out in the document() method
- * @todo Provide code completion for "3|" or "3 |" - show available overloaded operators! This
+ * TODO: Provide code completion for "3|" or "3 |" - show available overloaded operators! This
  *    shouldn't just apply to numbers - any class you've overridden
- * @todo Digest http://blogs.sun.com/coolstuff/entry/using_java_classes_in_jruby
+ * TODO: Digest http://blogs.sun.com/coolstuff/entry/using_java_classes_in_jruby
  *    to fix require'java' etc.
- * @todo http://www.innovationontherun.com/scraping-dynamic-websites-using-jruby-and-htmlunit/
+ * TODO: http://www.innovationontherun.com/scraping-dynamic-websites-using-jruby-and-htmlunit/
  *    Idea: Use a quicktip to require all the jars in the project?
- * @todo The "h" method in <%= %> doesn't show up in RHTML files... where is it?
- * @todo Completion AFTER a method which takes a block (optional or required) should offer
+ * TODO: The "h" method in {@code <%= %>} doesn't show up in RHTML files... where is it?
+ * TODO: Completion AFTER a method which takes a block (optional or required) should offer
  *    { } and do/end !!
  * @author Tor Norbye
  */
@@ -1950,7 +1950,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
     
     /**
-     * @todo If you invoke this on top of a symbol, I should really just show
+     * TODO: If you invoke this on top of a symbol, I should really just show
      *   the documentation for that symbol!
      * 
      * @param element The element we want to look up comments for
@@ -2378,8 +2378,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
     
     /** Return true if we always want to use parentheses
-     * @todo Make into a user-configurable option
-     * @todo Avoid doing this if there's possible ambiguity (e.g. nested method calls
+     * TODO: Make into a user-configurable option
+     * TODO: Avoid doing this if there's possible ambiguity (e.g. nested method calls
      *   without spaces
      */
     

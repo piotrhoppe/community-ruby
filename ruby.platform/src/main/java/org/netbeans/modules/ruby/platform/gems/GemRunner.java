@@ -312,7 +312,7 @@ final class GemRunner {
      * @param progressPanel {@link GemProgressPanel} isntance
      * @param processHolder will put a {@link Process} instance into the first
      *        element
-     * @param commandArgs argument to the <tt>gemCommand</tt>
+     * @param commandArgs argument to the {@code gemCommand}
      * @return whether underlaying <em>gem</em> tool succeeded
      */
     private boolean runGemTool(String gemCommand, boolean needsWrite,

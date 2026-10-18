@@ -116,15 +116,15 @@ import org.openide.util.Exceptions;
 /**
  * Find a declaration from an element in the JRuby AST.
  *
- * @todo Look at the target to see which method to choose. For example, if
+ * TODO: Look at the target to see which method to choose. For example, if
  *  you do Foo.new, I should locate "initialize" in Foo, not somewhere else.
- * @todo Don't include inexact matches like alias nodes when searching first;
+ * TODO: Don't include inexact matches like alias nodes when searching first;
  *   only if a search for actual declaration nodes fail should I revert to looking
  *   for aliases!
- * @todo If you're looking for a local class, such as a Rails model, I should
+ * TODO: If you're looking for a local class, such as a Rails model, I should
  *   find those first!
- * @todo Within a gem, prefer other matches within the same gem or gem cluster
- * @todo Prefer files named after the class! (e.g. SchemaStatements in schema_statements.rb)
+ * TODO: Within a gem, prefer other matches within the same gem or gem cluster
+ * TODO: Prefer files named after the class! (e.g. SchemaStatements in schema_statements.rb)
  * 
  * @author Tor Norbye
  */

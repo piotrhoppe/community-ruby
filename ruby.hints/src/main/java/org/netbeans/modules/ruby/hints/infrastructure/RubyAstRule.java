@@ -68,7 +68,7 @@ public abstract class RubyAstRule implements AstRule {
     private final Map<FileObject, RubyIndex> indexHolder = new HashMap<FileObject, RubyIndex>(1);
     /** 
      * Get the ElementKinds this rule should run on.
-     * The integers should correspond to values in {@link org.jrubyparser.ast.NodeTypes}
+     * The values should correspond to constants in {@link NodeType}.
      */
     public abstract Set<NodeType> getKinds();
 

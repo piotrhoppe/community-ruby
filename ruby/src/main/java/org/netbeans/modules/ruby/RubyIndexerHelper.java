@@ -76,8 +76,8 @@ import org.openide.filesystems.FileObject;
  * </ul>
  *
  *
- * @todo Rename PlatformFileIndexer, and move activesupport stuff in here
- * @todo Dynamically "patch" index entries for things I don't actually have.
+ * TODO: Rename PlatformFileIndexer, and move activesupport stuff in here
+ * TODO: Dynamically "patch" index entries for things I don't actually have.
  *
  * @author Tor Norbye
  */
@@ -87,24 +87,22 @@ public final class RubyIndexerHelper {
         // Private utility class, not instantiatable
     }
     /**
-     * @todo Compute parameter delimiters (e.g. DSL methods which shouldn't have params should be noted here
-     * @todo Compute hash arguments
-     * @todo Gotta store the WHOLE argument string, but avoid "indexOf" looks at the 
+     * TODO: Compute parameter delimiters (e.g. DSL methods which shouldn't have params should be noted here
+     * TODO: Compute hash arguments
+     * TODO: Gotta store the WHOLE argument string, but avoid "indexOf" looks at the
      *   attribute list from getting too perky
     // TODO - store deprecated status?
-     * 
+     *
      * @param child
-     * @param indexedList
-     * @param notIndexedList
-     * @param topLevel
+     * @param flags
      * @param signature
      * @param fo
-     * @param doc
+     * @param knowledge
      * @return An updated signature, or null if this method should be removed from index
      */
     public static String getMethodSignature(AstElement child, int flags,
             String signature, FileObject fo, ContextKnowledge knowledge) {
-        
+
         if (knowledge.getParserResult().getSnapshot() == null) { // tests?
             return signature;
         }

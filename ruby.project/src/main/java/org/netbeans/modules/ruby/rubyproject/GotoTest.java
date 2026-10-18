@@ -368,7 +368,7 @@ public class GotoTest implements TestLocator {
      * @param caretOffset The current caret offset, or -1 if not known. The caret offset
      *    can be used to look into the file and see if we're inside a class, and if so
      *    look for a class that is named say Test+name or name+Test.
-     * @return The declaration location for the test, or {@link DeclarationLocation.NONE} if
+     * @return The declaration location for the test, or {@link DeclarationLocation#NONE} if
      *   not found.
      */
     public DeclarationLocation findTest(FileObject fileObject, int caretOffset) {
@@ -381,7 +381,7 @@ public class GotoTest implements TestLocator {
      * @param caretOffset The current caret offset, or -1 if not known. The caret offset
      *    can be used to look into the file and see if we're inside a class, and if so
      *    look for a class that is named say Test+name or name+Test.
-     * @return The declaration location for the tested file, or {@link DeclarationLocation.NONE} if
+     * @return The declaration location for the tested file, or {@link DeclarationLocation#NONE} if
      *   not found.
      */
     public DeclarationLocation findTested(FileObject fileObject, int caretOffset) {

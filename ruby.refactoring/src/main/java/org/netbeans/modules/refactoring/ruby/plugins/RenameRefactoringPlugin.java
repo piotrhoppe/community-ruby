@@ -129,16 +129,16 @@ import org.openide.util.NbBundle;
  * @author Daniel Prusa
  * @author Tor Norbye
  * 
- * @todo Perform index lookups to determine the set of files to be checked!
- * @todo Check that the new name doesn't conflict with an existing name
- * @todo Check unknown files!
- * @todo More prechecks
- * @todo When invoking refactoring on a file object, I also rename the file. I should (a) list the
+ * TODO: Perform index lookups to determine the set of files to be checked!
+ * TODO: Check that the new name doesn't conflict with an existing name
+ * TODO: Check unknown files!
+ * TODO: More prechecks
+ * TODO: When invoking refactoring on a file object, I also rename the file. I should (a) list the
  *   name it's going to change the file to, and (b) definitely "filenamize" it - e.g. for class FooBar the
  *   filename should be foo_bar.
- * @todo If you rename a Model, I should add a corresponding rename_table entry in the migrations...
+ * TODO: If you rename a Model, I should add a corresponding rename_table entry in the migrations...
  *
- * @todo Complete this. Most of the prechecks are not implemented - and the refactorings themselves need a lot of work.
+ * TODO: Complete this. Most of the prechecks are not implemented - and the refactorings themselves need a lot of work.
  */
 public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     
@@ -799,10 +799,10 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         }
         
         /**
-         * @todo P1: This is matching method names on classes that have nothing to do with the class we're searching for
+         * TODO: P1: This is matching method names on classes that have nothing to do with the class we're searching for
          *   - I've gotta filter fields, methods etc. that are not in the current class
          *  (but I also have to search for methods that are OVERRIDING the class... so I've gotta work a little harder!)
-         * @todo Arity matching on the methods to preclude methods that aren't overriding or aliasing!
+         * TODO: Arity matching on the methods to preclude methods that aren't overriding or aliasing!
          */
         @SuppressWarnings("fallthrough")
         private void find(AstPath path, RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name, boolean upperCase) {

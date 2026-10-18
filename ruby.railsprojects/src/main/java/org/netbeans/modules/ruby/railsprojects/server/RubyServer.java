@@ -89,7 +89,7 @@ public interface RubyServer extends RubyInstance {
 
     /**
      * Gets the path to the startup script of this server.
-     * @param project the project this server belongs to.
+     * @param version the Rails version for which to locate the server.
      * @return the path to the startup script.
      */
     String getServerPath(RailsVersion version);
@@ -140,7 +140,7 @@ public interface RubyServer extends RubyInstance {
      * 
      * @param listener
      * 
-     * @see addChangeListener(listener)
+     * @see #addChangeListener(ChangeListener)
      */
     void removeChangeListener(ChangeListener listener);
 }

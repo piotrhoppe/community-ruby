@@ -63,7 +63,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 /**
  * Token Ids for Embedded Ruby (RHTML)
  *
- * @todo Worry about trim mode - See section 22.1 of Agile Web Development With Rails
+ * TODO: Worry about trim mode - See section 22.1 of Agile Web Development With Rails
  * 
  * @author Marek Fukala
  * @author Tor Norbye
@@ -72,13 +72,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum RhtmlTokenId implements TokenId {
 
     HTML("html"),
-    /** Contents inside <%# %> */
+    /** Contents inside {@code <%# %>} */
     RUBYCOMMENT("comment"),
-    /** Contents inside <%= %> */
+    /** Contents inside {@code <%= %>} */
     RUBY_EXPR("ruby"),
-    /** Contents inside <% %> */
+    /** Contents inside {@code <% %>} */
     RUBY("ruby"),
-    /** <% or %> */
+    /** {@code <%} or {@code %>} */
     DELIMITER("ruby-delimiter"); // Note - referenced in LexUtilities
 
     public static final String MIME_TYPE = "application/x-httpd-eruby"; // NOI18N

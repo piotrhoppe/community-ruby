@@ -57,7 +57,7 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @author Marek Fukala
  * @author Tor Norbye
  * 
- * @todo <%% should be treated as HTML (<%) -- ditto for %%>
+ * TODO: {@code <%%} should be treated as HTML ({@code <%}) -- ditto for {@code %%>}
  *
  * @version 1.00
  */

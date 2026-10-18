@@ -54,7 +54,7 @@ import org.openide.modules.ModuleInstall;
  */
 public class RubyProjectModuleInstaller extends ModuleInstall {
     /** 
-     * @todo This should really be {@link #installed} instead,
+     * TODO: This should really be {@link #installed} instead,
      * but there's a problm where modules installed via AutoUpdate
      * doesn't run this code.
      * See http://www.netbeans.org/issues/show_bug.cgi?id=95965

@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
 
 /**
  * A helper class for checking what server, if any, has been explicitly set
- * in the <tt>script/server</tt> file.
+ * in the {@code script/server} file.
  *
  * @author Erno Mononen
  */

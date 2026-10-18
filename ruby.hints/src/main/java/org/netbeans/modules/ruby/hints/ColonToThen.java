@@ -75,10 +75,10 @@ import org.openide.util.NbBundle;
 
 /**
  * Convert "when foo : bar" to "when foo then bar" as required by Ruby 1.9
- * @todo This is not particular to when/case - the following is also illegal in 1.9
+ * TODO: This is not particular to when/case - the following is also illegal in 1.9
  *   if true: puts "True!"
  *   end
- * @todo Add a reference link to the wiki page with more information about the quickfix and 
+ * TODO: Add a reference link to the wiki page with more information about the quickfix and
  *   references
  * 
  * @author Tor Norbye

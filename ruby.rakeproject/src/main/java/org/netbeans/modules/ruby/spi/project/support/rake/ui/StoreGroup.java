@@ -77,7 +77,7 @@ import org.openide.util.EditableProperties;
  *       <ol>
  *          <li>Get the EditableProperties you want to store the model in e.g. private or project 
  *              properties</li>
- *          <li>Call the store method on given <CODE>SourceGroup<CODE> with the {@link EditableProperties} as parameter</li>
+ *          <li>Call the store method on given {@code SourceGroup} with the {@link EditableProperties} as parameter</li>
  *          <li>Manually store models which need some special handling.</li>
  *       </ol>
  *

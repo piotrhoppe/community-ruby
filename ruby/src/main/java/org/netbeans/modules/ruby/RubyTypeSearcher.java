@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @todo Figure out why "base" searches gives me lower-case matches on "base" (which seems invalid)
+ * TODO: Figure out why "base" searches gives me lower-case matches on "base" (which seems invalid)
  * 
  * @author Tor Norbye
  */

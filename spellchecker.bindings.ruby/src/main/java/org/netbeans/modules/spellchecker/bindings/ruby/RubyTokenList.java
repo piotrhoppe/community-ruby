@@ -56,11 +56,11 @@ import org.openide.filesystems.FileUtil;
 /**
  * Tokenize Ruby text for spell checking
  *
- * @todo Check spelling in documentation sections
- * @todo Suppress spelling checks on :rdoc: modifiers
- * @todo Remove surrounding +, _, * on spelling words
- * @todo Spell check string literals?
- * @todo Spell check constant names and method names?
+ * TODO: Check spelling in documentation sections
+ * TODO: Suppress spelling checks on :rdoc: modifiers
+ * TODO: Remove surrounding +, _, * on spelling words
+ * TODO: Spell check string literals?
+ * TODO: Spell check constant names and method names?
  *
  *
  *

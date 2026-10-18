@@ -68,9 +68,9 @@ import org.openide.util.NbBundle;
  * constructs; it adds warnings (and in some cases fixes) for these.
  * </p>
  *
- * @todo Offer customized messages per suggested fix, e.g. explaining why a particular
+ * TODO: Offer customized messages per suggested fix, e.g. explaining why a particular
  *   fix is necessary, which versions it applies to, and perhaps a link to more information.
- * @todo See http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/2397
+ * TODO: See http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/2397
  *  Looks like deprecations are marked like this:
  *  +warn "Warning: getopts.rb is deprecated after Ruby 1.8.1"
  * 

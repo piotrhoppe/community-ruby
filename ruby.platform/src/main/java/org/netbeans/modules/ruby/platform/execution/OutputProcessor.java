@@ -63,7 +63,7 @@ import org.openide.windows.OutputListener;
  * into real FileObjects is done lazily via user-supplied
  * FileLocators when the links are actually clicked.
  * 
- * @todo Rename me!
+ * TODO: Rename me!
  * @author Tor Norbye
  */
 public final class OutputProcessor {

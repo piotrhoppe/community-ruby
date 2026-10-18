@@ -51,13 +51,13 @@ import java.util.regex.Pattern;
 
 /**
  * Handles pluralizing/singularizing words Rails style
- * -- see <tt>activesupport/lib/active_support/inflections.rb</tt>. This
+ * -- see {@code activesupport/lib/active_support/inflections.rb}. This
  * is basically a poor man's simplified Java port of the Rails equivalent.
  * <p/>
  * See <a href="http://api.rubyonrails.org/classes/Inflector.html">Rails Inflector</a>
  * for the original implementation that this class tries to mimic.
  *
- * @todo move also all the others related methods from RubyUtils to here (tableize etc..)
+ * TODO: move also all the others related methods from RubyUtils to here (tableize etc..)
  *
  * @author Erno Mononen
  */

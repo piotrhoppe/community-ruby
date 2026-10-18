@@ -121,7 +121,7 @@ public final class RubyBreakpointManager {
     }
 
     /**
-     * Uses {@link DebuggerManager#getLineBreakpoints()} filtering out all non-Ruby
+     * Uses {@link DebuggerManager#getBreakpoints()} filtering out all non-Ruby
      * breakpoints.
      */
     public static RubyBreakpoint[] getBreakpoints() {

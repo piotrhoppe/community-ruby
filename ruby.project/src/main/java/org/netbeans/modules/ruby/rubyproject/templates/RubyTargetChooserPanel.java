@@ -414,7 +414,6 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     // helper methods copied from project/ui/ProjectUtilities
     /** Checks if the given file name can be created in the target folder.
      *
-     * @param targetFolder target folder (e.g. source group)
      * @param folderName name of the folder relative to target folder
      * @param newObjectName name of created file
      * @param extension extension of created file

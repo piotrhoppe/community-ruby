@@ -64,8 +64,8 @@ import org.jrubyparser.ast.VCallNode;
  * JRuby already has an Arity class (org.jrubyparser.runtime.Arity), but
  * it doesn't have all we need - such as a maximum number of arguments.
  *
- * @todo I handle optional arguments and splats (*), but what about blocks?
- *      def foo(arg1, arg2 = deflt, *rest, &block)
+ * TODO: I handle optional arguments and splats (*), but what about blocks?
+ *      {@code def foo(arg1, arg2 = deflt, *rest, &block)}
  *
  * @author Tor Norbye
  */

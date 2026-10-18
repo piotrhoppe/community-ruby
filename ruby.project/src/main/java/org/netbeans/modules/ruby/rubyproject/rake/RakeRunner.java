@@ -110,7 +110,7 @@ public final class RakeRunner {
     }
 
     /**
-     * @param warn if true, produce popups if {@link RubyPlatform} is not ready
+     * @param showWarnings if true, produce popups if {@link RubyPlatform} is not ready
      *   for running Rake.
      */
     public void showWarnings(boolean showWarnings) {

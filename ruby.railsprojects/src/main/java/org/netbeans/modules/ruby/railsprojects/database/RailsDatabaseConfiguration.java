@@ -67,7 +67,7 @@ public abstract class RailsDatabaseConfiguration {
      * possibly adds a reference to the required 
      * driver jar files to the properties of the <code>project</code>.
      * 
-     * @param projectDir the project whose <code>database.yml</code> is 
+     * @param project the project whose {@code database.yml} is
      * to be edited.
      */
     public abstract void editConfig(RailsProject project);

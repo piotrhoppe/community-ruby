@@ -983,12 +983,12 @@ public final class RakeProjectHelper {
      * is in a fixed location under a standard Ant-based project.
      * @param type the type of artifact, e.g. <a href="@org-netbeans-modules-java-project@/org/netbeans/modules/gsfpath/api/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
      * @param locationProperty an Ant property name giving the project-relative
-     *                         location of the artifact, e.g. <samp>dist.jar</samp>
+     *                         location of the artifact, e.g. <code>dist.jar</code>
      * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})
      * @param targetName the name of an Ant target which will build the artifact,
-     *                   e.g. <samp>jar</samp>
+     *                   e.g. <code>jar</code>
      * @param cleanTargetName the name of an Ant target which will delete the artifact
-     *                        (and maybe other build products), e.g. <samp>clean</samp>
+     *                        (and maybe other build products), e.g. <code>clean</code>
      * @return an artifact
      */
     public RakeArtifact createSimpleRakeArtifact(String type, String locationProperty, PropertyEvaluator eval, String targetName, String cleanTargetName) {
@@ -1039,16 +1039,16 @@ public final class RakeProjectHelper {
      * A quick rule of thumb is that the include list should contain any
      * source directories which <em>might</em> reside outside the project directory;
      * and the exclude list should contain any directories which you would want
-     * to add to a <samp>.cvsignore</samp> file if using CVS (for example).
+     * to add to a <code>.cvsignore</code> file if using CVS (for example).
      * </p>
      * <p>
-     * Note that in this case <samp>${src.dir}</samp> and <samp>${test.src.dir}</samp>
+     * Note that in this case <code>${src.dir}</code> and <code>${test.src.dir}</code>
      * may be relative paths inside the project directory; relative paths pointing
      * outside of the project directory; or absolute paths (generally outside of the
      * project directory). If they refer to locations inside the project directory,
      * including them does nothing but is harmless - since the project directory itself
      * is always treated as sharable. If they refer to external locations, you will
-     * need to also make sure that {@link org.netbeans.api.queries.FileOwnerQuery} actually maps files in those
+     * need to also make sure that {@link org.netbeans.api.project.FileOwnerQuery} actually maps files in those
      * directories to this project, or else {@link org.netbeans.api.queries.SharabilityQuery} will never find
      * this implementation in your project lookup and may return <code>UNKNOWN</code>.
      * </p>

@@ -100,10 +100,10 @@ import org.openide.filesystems.FileObject;
 /**
  * Walk through the JRuby AST and find occurrences of symbols related to the symbol under the cursor
  *
- * @todo Highlight exit points: break (if exits method?), uncaught exceptions, throws, etc.
+ * TODO: Highlight exit points: break (if exits method?), uncaught exceptions, throws, etc.
  *   It would be cool if I can highlight exits out of some types of blocks too, like for and while
  *   loops where I highlight retry, break, redo(?), return, uncaught throws.
- * @todo Highlight symbol nodes. If you have a "class Foo" and refer to :Foo then class Foo should
+ * TODO: Highlight symbol nodes. If you have a "class Foo" and refer to :Foo then class Foo should
  *   be marked.
  *
  * @author Tor Norbye

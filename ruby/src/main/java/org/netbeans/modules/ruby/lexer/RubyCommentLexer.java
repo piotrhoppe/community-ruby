@@ -67,12 +67,12 @@ import org.openide.util.NbPreferences;
  * Lexical analyzer for Ruby comments which identifies TODO markers
  * and highlights them specially.
  *
- * @todo Handle rdoc on/off directives (#++,#--). Since these occur on separate
+ * TODO: Handle rdoc on/off directives (#++,#--). Since these occur on separate
  *   lines I can't handle it now.
- * @todo Highlight only RDoc reserved words, or all that fit the pattern? For
+ * TODO: Highlight only RDoc reserved words, or all that fit the pattern? For
  *   now I'm highlighting :\w+: sequences. Possibly I should only highlight
- * @todo ___ shows up as an italic "_" - that aint right
- * @todo Tokenize Ruby-style symbols (:foo) and use the ruby color preferences?
+ * TODO: ___ shows up as an italic "_" - that aint right
+ * TODO: Tokenize Ruby-style symbols (:foo) and use the ruby color preferences?
  *
  * @author Tor Norbye
  */
@@ -126,7 +126,7 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
             markerList.addAll(Arrays.asList(preferences.get(TODO_MARKERS_KEY, "").split("\\|")));
 
             if (!markerList.isEmpty()) {
-                markerList.remove("@todo"); // Applies to javadoc, and these tags are now colorized separately
+                markerList.remove("TODO:"); // Applies to javadoc, and these tags are now colorized separately
                 for (Iterator<String> it = markerList.iterator(); it.hasNext();) {
                     if (it.next().trim().isEmpty()) {
                         it.remove();

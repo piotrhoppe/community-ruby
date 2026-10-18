@@ -56,10 +56,10 @@ import org.openide.filesystems.FileObject;
  * A class describing a Ruby method that is in "textual form" (signature, filename, etc.)
  * obtained from the code index.
  *
- * @todo Consider computing a lot of the extra info (requires, filenames, etc.)
+ * TODO: Consider computing a lot of the extra info (requires, filenames, etc.)
  *  lazily - by just stashing the index map into the RubyMethod. Hopefully Lucene
  *  won't mind if we hang on to this information...
- * @todo Make an IndexedAttribute subclass which just has a different kind!
+ * TODO: Make an IndexedAttribute subclass which just has a different kind!
  *
  * @author Tor Norbye
  */

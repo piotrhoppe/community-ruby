@@ -97,19 +97,20 @@ public class RailsProjectCreateData {
     
     /**
      * Constructs a new RailsProjectCreateData instance.
+     * @param platform Ruby platform for the project
      * @param dir the top-level directory for the project 
      * (need not yet exist but if it does it must be empty).
      * @param name the name for the project.
      * @param create specifies whether to generate base directory structure or not (use
      *        false for existing application)
      * @param database the type of the database to use, e.g. mysql, JavaDB etc.
-     * @param jdbc specifies whether JDBC should be used for accessing the database.
      * @param deploy specifies whether the Rake support targets for deploying 
      * the project as a .war file should be added.
      * @param serverInstanceId the id of the server instance to be used for this
      * project
      * @param railsVersion the version of Rails to be used for this project. 
      * If <code>null</code>, the latest installed version should be used.
+     * @param options additional Rails generator options
      */
     public RailsProjectCreateData(RubyPlatform platform, File dir, String name, boolean create, 
             RailsDatabaseConfiguration database, boolean deploy, String serverInstanceId, 
@@ -190,4 +191,3 @@ public class RailsProjectCreateData {
 
     
 }
-

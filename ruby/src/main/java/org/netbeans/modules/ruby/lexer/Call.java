@@ -172,7 +172,7 @@ public class Call {
         return constantExpected;
     }
 
-    /** foo.| or foo.b|  -> we're expecting a method call. For Foo:: we don't know. */
+    /** foo.| or foo.b|  -&gt; we're expecting a method call. For Foo:: we don't know. */
     public boolean isMethodExpected() {
         return methodExpected;
     }

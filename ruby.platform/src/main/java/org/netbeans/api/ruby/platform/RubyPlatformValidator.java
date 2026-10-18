@@ -70,7 +70,7 @@ final class RubyPlatformValidator {
     }
 
     /**
-     * Return <tt>null</tt> if there are no problems running gem. Otherwise
+     * Return {@code null} if there are no problems running gem. Otherwise
      * return an error message which describes the problem.
      */
     String getRubyGemsProblems() {

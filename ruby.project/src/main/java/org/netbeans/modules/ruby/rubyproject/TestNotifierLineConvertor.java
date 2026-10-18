@@ -225,7 +225,7 @@ public class TestNotifierLineConvertor implements LineConvertor {
     }
     
     /** For unit tests only.
-     * @todo Use a mock object for the status displayer and test processLine itself instead
+     * TODO: Use a mock object for the status displayer and test processLine itself instead
      */
     boolean recognizeLine(String line) {
         for (Pattern pattern : PATTERNS) {

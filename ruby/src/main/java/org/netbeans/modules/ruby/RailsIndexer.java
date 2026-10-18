@@ -185,7 +185,7 @@ final class RailsIndexer {
     /**
      * Action view has some special loading behavior of helpers - see actionview's
      * "load_helpers" method.
-     * @todo Make sure that the Partials loading is working too
+     * TODO: Make sure that the Partials loading is working too
      */
     private void handleActionViewHelpers() {
         if (analyzer.getFile() == null || analyzer.getFile().getParent() == null) {

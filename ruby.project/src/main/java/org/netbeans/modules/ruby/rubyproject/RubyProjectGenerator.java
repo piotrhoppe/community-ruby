@@ -91,7 +91,7 @@ public final class RubyProjectGenerator {
      * 
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
      * @param prjName the name for the project
-     * @param mainClass might be <tt>null</tt> to skip mainclass generation
+     * @param mainClass might be {@code null} to skip mainclass generation
      * @param platform project's platform
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong

@@ -178,7 +178,7 @@ public final class RakeSupport {
 
     /**
      * Checks whether the give file is a Rake file. Might be either {@link
-     * #isMainRakeFile main Rake file} or file with <tt>.rake</tt> extension.
+     * #isMainRakeFile main Rake file} or file with {@code .rake} extension.
      */
     public static boolean isRakeFile(FileObject fo) {
         if (!fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) return false;
@@ -241,7 +241,7 @@ public final class RakeSupport {
      * Runs 'rake -D' and returns the output.
      *
      * @param project project for which tasks are read
-     * @return rake output; might be <tt>null</tt> when underlying rake command fails.
+     * @return rake output; might be {@code null} when underlying rake command fails.
      */
     private static String readRakeTasksOutput(final Project project, boolean warn) {
         File pwd;
@@ -299,11 +299,11 @@ public final class RakeSupport {
     }
 
     /**
-     * Returns {@link RakeTask} for the give <tt>task</tt>.
+     * Returns {@link RakeTask} for the give {@code task}.
      *
      * @param project Ruby project
      * @param task task to be find
-     * @return <tt>null</tt> if not found; {@link RakeTask} instance othewise
+     * @return {@code null} if not found; {@link RakeTask} instance othewise
      */
     public static RakeTask getRakeTask(final Project project, final String task) {
         Set<RakeTask> tasks = getRakeTasks(project, false);

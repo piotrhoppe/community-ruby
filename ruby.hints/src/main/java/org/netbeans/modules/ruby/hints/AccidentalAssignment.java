@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 /**
  * Identify "accidental" assignments of the form "if (a = b)" which should have been "if (a == b)"
  * 
- * @todo Refine this by only warning about comparisons where the LHS is an existing variable in scope
+ * TODO: Refine this by only warning about comparisons where the LHS is an existing variable in scope
  * 
  * @author Tor Norbye
  */

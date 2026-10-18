@@ -97,15 +97,15 @@ import org.openide.util.NbBundle;
 /**
  * Wrapper around JRuby to parse a buffer into an AST.
  *
- * @todo Rename to RubyParser for symmetry with RubyLexer
- * @todo Idea: If you get a syntax error on the last line, it's probably a missing
+ * TODO: Rename to RubyParser for symmetry with RubyLexer
+ * TODO: Idea: If you get a syntax error on the last line, it's probably a missing
  *   "end" much earlier. Go back and look for a method inside a method, and the outer
  *   method is probably missing an end (can use indentation to look for this as well).
  *   Create a quickfix to insert it.
- * @todo Only look for missing-end if there's an unexpected end
- * @todo If you get a "class definition in method body" error, there's a missing
+ * TODO: Only look for missing-end if there's an unexpected end
+ * TODO: If you get a "class definition in method body" error, there's a missing
  *   end - prior to the class!
- * @todo "syntax error, unexpected tRCURLY" means that I also have a missing end,
+ * TODO: "syntax error, unexpected tRCURLY" means that I also have a missing end,
  *   but we encountered a } before we got to it. I need to be bracketing this stuff.
  * 
  * @author Tor Norbye

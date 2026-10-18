@@ -63,7 +63,7 @@ public class RailsFileLocator extends RubyFileLocator {
     /**
      * Find selected sources, the sources has to be under single source root.
      *
-     * @param context the lookup in which files should be found
+     * @param roots source roots in which files should be found
      */
     protected @Override FileObject[] findSources(List<FileObject> roots) {
         FileObject[] files = super.findSources(roots);

@@ -75,23 +75,23 @@ import org.openide.util.NbBundle;
 /**
  * Offer to introduce a variable for an expression
  * 
- * @todo If you just select an identifier I shouldn't offer to abstract it - how could it
+ * TODO: If you just select an identifier I shouldn't offer to abstract it - how could it
  *   possibly help?
- * @todo Suggest name: leaf if attribute or method access
- * @todo If you select the RHS of an assignment, don't offer to introduce a constant, field or
+ * TODO: Suggest name: leaf if attribute or method access
+ * TODO: If you select the RHS of an assignment, don't offer to introduce a constant, field or
  *   variable - it's already assigned!
- * @todo Support replace all duplicates
- * @todo Test hashes
- * @todo If you have comments at the beginning or end of the selection, I don't handle things right -
+ * TODO: Support replace all duplicates
+ * TODO: Test hashes
+ * TODO: If you have comments at the beginning or end of the selection, I don't handle things right -
  *   I end up with the wrong AST offsets (and I can't just skip these; they need to be included in the 
  *   move!)
- * @todo For statements containing break/next/continue I just disable this refactoring now; fix this
+ * TODO: For statements containing break/next/continue I just disable this refactoring now; fix this
  *   such that I can handle these statements by looking up the loop construct and allowing it if 
  *   it's all within the fragment!
- * @todo If I extract method, and there is only a single return value, and the last statement
+ * TODO: If I extract method, and there is only a single return value, and the last statement
  *   in the method assigns to that return value, there's no point in having an explicit return
  *   of it, just leave the statement as the last statement
- * @todo Invoke formatter via the infrastructure so that it works right in RHTML etc.
+ * TODO: Invoke formatter via the infrastructure so that it works right in RHTML etc.
  * 
  * @author Tor Norbye
  */

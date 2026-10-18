@@ -111,7 +111,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * @todo Rewrite various other helper classes to use the scanned structure
+ * TODO: Rewrite various other helper classes to use the scanned structure
  *   for the file instead of searching from scratch. For example, the code
  *   completion scanner should rely on the structure view to add local
  *   classes, fields and globals - it should only scan the current method

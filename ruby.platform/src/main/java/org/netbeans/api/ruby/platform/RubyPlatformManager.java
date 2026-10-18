@@ -350,7 +350,7 @@ public final class RubyPlatformManager {
 
     /**
      * Find a platform by its ID.
-     * @param id an ID (as in {@link #getID})
+     * @param id an ID (as in {@link RubyPlatform#getID})
      * @return the platform with that ID, or null
      */
     public static synchronized RubyPlatform getPlatformByID(String id) {
@@ -386,7 +386,7 @@ public final class RubyPlatformManager {
      * is already present.
      * 
      * @param interpreter interpreter to be added
-     * @return <tt>null</tt>, if the given <tt>interpreter</tt> is not valid
+     * @return {@code null}, if the given {@code interpreter} is not valid
      *         Ruby interpreter. If the platform is already present, returns it.
      *         Otherwise new platform instance is returned.
      * @throws java.io.IOException
@@ -536,8 +536,8 @@ public final class RubyPlatformManager {
      * from within EDT and similar threads.
      *
      * @param interpreter representing Ruby platform
-     * @return information about the platform or <tt>null</tt> if
-     *         <tt>interpreter</tt> is not recognized as platform
+     * @return information about the platform or {@code null} if
+     *         {@code interpreter} is not recognized as platform
      */
     static Info computeInfo(final File interpreter) {
         assert !EventQueue.isDispatchThread() : "computeInfo should not be run from EDT";

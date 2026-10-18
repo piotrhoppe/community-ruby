@@ -83,12 +83,12 @@ import org.openide.util.Lookup;
 /**
  * Editor kit implementation for RHTML content type
  *
- * @todo Automatic bracket matching for RHTML files should probably split Ruby blocks up,
- *  e.g. pressing enter here:  <% if true| %> should take you -outside- of the current
- *  block and insert a matching <% end %> outside!
- * @todo Hook up caret motion commands
- * @todo Hook up refactoring and inline rename operations
- * @todo Pressing newline in an EMPTY rhtml expression should NOT newline me out of the block!
+ * TODO: Automatic bracket matching for RHTML files should probably split Ruby blocks up,
+ *  e.g. pressing enter here: {@code <% if true| %>} should take you -outside- of the current
+ *  block and insert a matching {@code <% end %>} outside!
+ * TODO: Hook up caret motion commands
+ * TODO: Hook up refactoring and inline rename operations
+ * TODO: Pressing newline in an EMPTY rhtml expression should NOT newline me out of the block!
  * 
  * @author Marek Fukala
  * @author Tor Norbye
@@ -675,4 +675,3 @@ public class RhtmlKit extends HtmlKit {
         }
     }
 }
-

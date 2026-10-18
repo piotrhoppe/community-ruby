@@ -65,7 +65,7 @@ public class AstMethodElement extends AstElement implements MethodElement {
     }
 
     /**
-     * @todo Compute answer
+     * TODO: Compute answer
      */
     @Override
     public boolean isTopLevel() {
@@ -73,7 +73,7 @@ public class AstMethodElement extends AstElement implements MethodElement {
     }
 
     /**
-     * @todo Compute answer
+     * TODO: Compute answer
      */
     @Override
     public boolean isInherited() {

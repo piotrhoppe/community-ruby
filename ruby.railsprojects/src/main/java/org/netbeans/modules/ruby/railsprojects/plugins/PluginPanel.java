@@ -69,12 +69,12 @@ import org.openide.util.RequestProcessor;
 
 /**
  * 
- * @todo Use a table instead of a list for the plugin lists, use checkboxes to choose
+ * TODO: Use a table instead of a list for the plugin lists, use checkboxes to choose
  *   items to be uninstalled, and show the installation date (based
  *   on file timestamps)
- * @todo Add a project chooser at the top (with refresh behavior on selection)
+ * TODO: Add a project chooser at the top (with refresh behavior on selection)
  *   and add the Rails Plugins actions to the global menu?
- * @todo If there is an error, remember that and don't allow users to select error output
+ * TODO: If there is an error, remember that and don't allow users to select error output
  *   lines as regular plugins
  *
  * @author  Tor Norbye

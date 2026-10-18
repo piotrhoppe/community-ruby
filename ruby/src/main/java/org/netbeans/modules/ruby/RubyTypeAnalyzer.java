@@ -67,23 +67,23 @@ import org.openide.filesystems.FileObject;
  * Perform type analysis on a given AST tree, attempting to provide a type
  * associated with each variable, field etc.
  *
- * @todo Track boolean types for simple operators; e.g.
+ * TODO: Track boolean types for simple operators; e.g.
  *    cc_no_width = letter == '[' && !width
  *    etc.  The operators here let me conclude cc_no_width is of type boolean!
- * @todo Handle find* method in Rails to indicate object types
- * @todo A reference to "foo." in a method is an alias to "@foo" if the method
+ * TODO: Handle find* method in Rails to indicate object types
+ * TODO: A reference to "foo." in a method is an alias to "@foo" if the method
  *    has not been defined explicitly. Attributes are especially clear, but an
  *    index lookup from type analyzer may be too expensive.
- * @todo The structure analyzer already tracks field declarations for the current class;
+ * TODO: The structure analyzer already tracks field declarations for the current class;
  *    I should use that to track down the types
- * @todo Use some statistical results to improve this; .to_s => String, .to_f => float,
+ * TODO: Use some statistical results to improve this; .to_s => String, .to_f => float,
  *   etc.
- * @todo In     create_table :posts do |t|
+ * TODO: In     create_table :posts do |t|
  *   I need to realize the type of "t" is ActiveRecord::ConnectionAdapters::TableDefinition from schema_definitions.rb
- * @todo Methods whose names end with "?" probably return TrueClass or FalseClass
+ * TODO: Methods whose names end with "?" probably return TrueClass or FalseClass
  *   so I can handle those expressions without actual return value lookup
- * @todo Possible conventions - http://www.alexandria.ucsb.edu/~gjanee/archive/2005/python-type-checking.html
- * @todo http://www.codecommit.com/blog/ruby/adding-type-checking-to-ruby
+ * TODO: Possible conventions - http://www.alexandria.ucsb.edu/~gjanee/archive/2005/python-type-checking.html
+ * TODO: http://www.codecommit.com/blog/ruby/adding-type-checking-to-ruby
  *
  * @author Tor Norbye
  */

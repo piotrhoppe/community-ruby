@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
  *   http://langexplr.blogspot.com/2007/11/creating-netbeans-ruby-hints-with-scala_24.html
  * by Luis Diego Fallas.
  * 
- * @todo Check ?: nodes
+ * TODO: Check ?: nodes
  * 
  * @author Tor Norbye
  */

@@ -113,7 +113,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 }
 
                 /**
-                 * @todo For method calls, try to figure out the call type with the type analyzer
+                 * TODO: For method calls, try to figure out the call type with the type analyzer
                  */
                 @Override
                 public void run(ResultIterator ri) throws Exception {

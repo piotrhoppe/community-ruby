@@ -56,7 +56,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 /**
  * This represents a path in a JRuby AST.
  *
- * @todo Performance: Make a cache here since I tend to do AstPath(caretOffset) from
+ * TODO: Performance: Make a cache here since I tend to do AstPath(caretOffset) from
  *  several related services for a single parser result
  * 
  * @author Tor Norbye

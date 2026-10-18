@@ -97,19 +97,19 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
  * or something else? The Ruby lexer has lots of logic and state to determine
  * this. I think it would be better to switch to after-insert logic for this.
  *
- * @todo Match braces within literal strings, as in #{}
- * @todo Match || in the argument list of blocks? do { |foo| etc. }
- * @todo I'm currently highlighting the indentation tokens (else, elsif, ensure, etc.)
+ * TODO: Match braces within literal strings, as in #{}
+ * TODO: Match || in the argument list of blocks? do { |foo| etc. }
+ * TODO: I'm currently highlighting the indentation tokens (else, elsif, ensure, etc.)
  *   by finding the corresponding begin. For "illegal" tokens, e.g. def foo; else; end;
  *   this means I'll show "def" as the matching token for else, which is wrong.
  *   I should make the "indentation tokens" list into a map and associate them
  *   with their corresponding tokens, such that an else is only lined up with an if,
  *   etc.
- * @todo Pressing newline in a parameter list doesn't work well if it's on a blockdefining
- *    line - e.g. def foo(a,b => it will insert the end BEFORE the closing paren!
- * @todo Pressing space in a comment beyond the textline limit should wrap text?
+ * TODO: Pressing newline in a parameter list doesn't work well if it's on a blockdefining
+ *    line - e.g. def foo(a,b =&gt; it will insert the end BEFORE the closing paren!
+ * TODO: Pressing space in a comment beyond the textline limit should wrap text?
  *    http://ruby.netbeans.org/issues/show_bug.cgi?id=11553
- * @todo Make ast-selection pick up =begin/=end documentation blocks
+ * TODO: Make ast-selection pick up =begin/=end documentation blocks
  *
  * @author Tor Norbye
  */
@@ -1173,9 +1173,9 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
     * Hook called after a character *ch* was backspace-deleted from
     * *doc*. The function possibly removes bracket or quote pair if
     * appropriate.
-    * @param doc the document
+    * @param document the document
     * @param dotPos position of the change
-    * @param caret caret
+    * @param target target text component
     * @param ch the character that was deleted
     */
     @SuppressWarnings("fallthrough")

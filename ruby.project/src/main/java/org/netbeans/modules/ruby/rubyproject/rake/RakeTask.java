@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
 /**
  * Represent <em>task</em> or <em>namespace</em> element from Rakefile.
  * <p>
- * <strong>TODO</strong>: divide into <tt>RakeTask</tt> and <tt>Namespace</tt>
+ * <strong>TODO</strong>: divide into {@code RakeTask} and {@code Namespace}
  * classes.
  */
 public final class RakeTask implements Comparable<RakeTask> {
@@ -127,11 +127,11 @@ public final class RakeTask implements Comparable<RakeTask> {
     }
     
     /**
-     * Useful only for <em>task</em>, return <tt>null</tt> for
+     * Useful only for <em>task</em>, return {@code null} for
      * <em>namespace</em>.
      *
      * @return full name containing possible namespace(s), used for invoking a
-     *         task, e.g. <tt>test:coverage</tt>, <tt>db:migrate</tt>
+     *         task, e.g. {@code test:coverage}, {@code db:migrate}
      */
     public String getTask() {
         // return the task w/o its params
@@ -144,14 +144,14 @@ public final class RakeTask implements Comparable<RakeTask> {
     }
 
     /**
-     * @return description represented by <tt>:desc</tt> in the Rakefile.
+     * @return description represented by {@code :desc} in the Rakefile.
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * Useful only for <em>task</em>, return <tt>null</tt> for
+     * Useful only for <em>task</em>, return {@code null} for
      * <em>namespace</em>.
      *
      * @return task name without namespace

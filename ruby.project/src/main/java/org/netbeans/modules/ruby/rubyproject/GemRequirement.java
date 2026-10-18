@@ -164,7 +164,7 @@ public final class GemRequirement implements Comparable<GemRequirement>{
     }
 
     /**
-     * Gets the version requirement, e.g. <code>">= 1.2.3"</code>.
+     * Gets the version requirement, e.g. <code>"&gt;= 1.2.3"</code>.
      * 
      * @return the version requirement; returns an empty string if it isn't specified.
      */
@@ -177,7 +177,7 @@ public final class GemRequirement implements Comparable<GemRequirement>{
 
     /**
      * Checks whether the given <code>gemVersion</code> satisfies the
-     * version requirement of <codet>this</code>.
+     * version requirement of {@code this}.
      * 
      * @param gemVersion
      * @return
@@ -343,5 +343,3 @@ public final class GemRequirement implements Comparable<GemRequirement>{
     }
 
 }
-
-

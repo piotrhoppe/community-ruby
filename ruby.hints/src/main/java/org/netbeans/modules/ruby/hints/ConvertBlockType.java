@@ -383,7 +383,7 @@ public class ConvertBlockType extends RubyAstRule {
          * the NewlineNode inside the iter will be here: a1^[0] instead of ^a1[0].
          * To work around this problem, look at the left most children of a NewlineNode
          * and find the TRUE starting range of the newline node.
-         * @todo File JRuby issue
+         * TODO: File JRuby issue
          */
         private int findRealStart(Node node) {
             int min = Integer.MAX_VALUE;

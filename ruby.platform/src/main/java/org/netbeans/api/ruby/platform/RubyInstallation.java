@@ -115,9 +115,9 @@ public class RubyInstallation {
     }
     
     /**
-     * Returns directory where bundle JRuby is installed or <tt>null</tt> if it cannot be found.
+     * Returns directory where bundle JRuby is installed or {@code null} if it cannot be found.
      * 
-     * @return location or <tt>null</tt>
+     * @return location or {@code null}
      */
     public String getJRubyHome() {
         if (jrubyHome == null) { // Generally ~/.netbeans/{version}/jruby
@@ -141,7 +141,7 @@ public class RubyInstallation {
     /**
      * AutoUpdate may not set execute permissions on the bundled JRuby files,
      * so try to fix that here
-     * @todo Do this lazily before trying to actually execute any of these bits?
+     * TODO: Do this lazily before trying to actually execute any of these bits?
      */
     public void ensureExecutable() {
         if (Utilities.isWindows()) return; // No chmod on Windows.  Nothing to do...

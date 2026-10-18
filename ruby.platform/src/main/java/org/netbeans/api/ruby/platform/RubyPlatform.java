@@ -165,7 +165,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     /**
      * Tries to find a {@link RubyPlatform platform} for a given project. Might
-     * return <tt>null</tt>.
+     * return {@code null}.
      */
     @CheckForNull
     public static RubyPlatform platformFor(final Project project) {
@@ -181,7 +181,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     /**
      * Tries to find a {@link GemManager gem manager} for a given project, or
      * strictly speaking, for its {@link RubyPlatform platform}. Might return
-     * <tt>null</tt>.
+     * {@code null}.
      */
     @CheckForNull
     public static GemManager gemManagerFor(final Project project) {
@@ -624,7 +624,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     /**
      * See also {@link #hasRubyGemsInstalled}.
      *
-     * @return either an instance of {@link GemManager} or <tt>null</tt>.
+     * @return either an instance of {@link GemManager} or {@code null}.
      */
     @CheckForNull
     public synchronized GemManager getGemManager() {
@@ -643,11 +643,11 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /**
-     * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
+     * Try to find a path to the {@code toFind} executable in the "Ruby
      * specific" manner.
      *
      * @param toFind executable to be find, e.g. rails, rake, rdoc, irb ...
-     * @return path to the found executable; might be <tt>null</tt> if not
+     * @return path to the found executable; might be {@code null} if not
      *         found.
      */
     public String findExecutable(final String toFind) {
@@ -655,11 +655,11 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /**
-     * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
+     * Try to find a path to the {@code toFind} executable in the "Ruby
      * specific" manner.
      *
      * @param toFind executable to be find, e.g. rails, rake, rdoc, irb ...
-     * @return path to the found executable; might be <tt>null</tt> if not
+     * @return path to the found executable; might be {@code null} if not
      *         found.
      */
     private String findExecutable(final String toFind, final boolean searchInRubyGems) {
@@ -733,7 +733,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     /**
      * Return path to the <em>gem</em> tool if it does exist.
      *
-     * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
+     * @return path to the <em>gem</em> tool; might be {@code null} if not
      *         found.
      */
     public synchronized String getGemTool() {
@@ -848,7 +848,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /**
-     * Return <tt>null</tt> if there are no problems running gem. Otherwise
+     * Return {@code null} if there are no problems running gem. Otherwise
      * return an error message which describes the problem.
      */
     public String getRubyGemsProblems() {
@@ -861,7 +861,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * this platform can work only with 0.1.10 and 0.2.0, version 0.2.0 is
      * returned.
      *
-     * @return latest available valid version: <tt>null</tt> if none suitable
+     * @return latest available valid version: {@code null} if none suitable
      *         version is found
      */
     public String getLatestAvailableValidRDebugIDEVersions() {
@@ -890,7 +890,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * Tries to install fast Ruby debugger for the platform. That is an
      * appropriate version of <em>ruby-debug-ide</em> gem.
      *
-     * @return <tt>true</tt> whether the installation succeed; <tt>false</tt> otherwise
+     * @return {@code true} whether the installation succeed; {@code false} otherwise
      */
     public boolean installFastDebugger() {
         assert getGemManager() != null : "has gemManager when trying to install fast debugger";
@@ -1019,7 +1019,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /**
-     * Calls {@link #hasRubyGemsInstalled(boolean)} with <tt>false</tt> for warn
+     * Calls {@link #hasRubyGemsInstalled(boolean)} with {@code false} for warn
      * parameter.
      */
     public boolean hasRubyGemsInstalled() {

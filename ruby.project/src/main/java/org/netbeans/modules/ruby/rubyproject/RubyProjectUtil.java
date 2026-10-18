@@ -210,7 +210,7 @@ public class RubyProjectUtil {
     
     /**
      * Creates an URL of a classpath or sourcepath root
-     * For the existing directory it returns the URL obtained from {@link File#toUri()}
+     * For the existing directory it returns the URL obtained from {@link File#toURI()}
      * For archive file it returns an URL of the root of the archive file
      * For non existing directory it fixes the ending '/'
      * @param root the file of a root

@@ -191,7 +191,7 @@ public final class SourcesHelper {
      * Useful for project type providers which have external paths holding build
      * products. These should not appear in {@link Sources}, yet it may be useful
      * for {@link FileOwnerQuery} to know the owning project (for example, in order
-     * for a project-specific {@link org.netbeans.spi.queries.SourceForBinaryQueryImplementation} to work).
+     * for a project-specific {@code SourceForBinaryQueryImplementation} to work).
      * </p>
      * @param location a project-relative or absolute path giving the location
      *                 of a non-source tree; may contain Ant property substitutions

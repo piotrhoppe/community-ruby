@@ -659,7 +659,7 @@ public final class GeneratedFilesHelper {
      * this method for both {@link #BUILD_XML_PATH} and {@link #BUILD_IMPL_XML_PATH}
      * with the appropriate stylesheets and with <code>checkForProjectXmlModified</code>
      * false (the script is certainly out of date relative to <code>project.xml</code>).
-     * Typical usage from {@link org.netbeans.spi.project.ui.ProjectOpenedHook#projectOpened} is to call
+     * Typical usage from {@code ProjectOpenedHook.projectOpened} is to call
      * this method for both scripts with the appropriate stylesheets and with
      * <code>checkForProjectXmlModified</code> true.
      * </p>

@@ -116,8 +116,8 @@ public final class Util {
      * Offers to install fast debugger iff the debugger is not already installed.
      * 
      * @param platform platform for which to do a check and possibly installation
-     * @return <tt>true</tt> if the debugger is either installed or was
-     * successfully installed; <tt>false</tt> otherwise
+     * @return {@code true} if the debugger is either installed or was
+     * successfully installed; {@code false} otherwise
      */
     static FastDebugInstallationResult offerToInstallFastDebugger(final RubyPlatform platform) {
         return Util.ensureRubyDebuggerIsPresent(platform, false, "RubyDebugger.askMessage");

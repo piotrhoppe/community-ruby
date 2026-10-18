@@ -72,7 +72,7 @@ public interface RubyDebuggerImplementation {
      * Starts debugging of the given script.
      * 
      * @return debugger {@link java.lang.Process process}. Might be
-     *         <tt>null</tt> if debugging cannot be started for some reason.
+     *         {@code null} if debugging cannot be started for some reason.
      *         E.g. interpreter cannot be obtained from preferences.
      */
     Process debug();

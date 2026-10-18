@@ -88,11 +88,11 @@ import static org.netbeans.modules.ruby.RubyIndexer.*;
 /**
  * Access to the index of known Ruby classes - core, libraries, gems, user projects, etc.
  *
- * @todo Pull out attributes, fields and constants from the index as well
- * @todo Store signature attributes for methods: private/protected?, documented?, returntype?
- * @todo When there are multiple method/field definitions, pick access level from one which sets it
- * @todo I do case-sensitive startsWith filtering here which is probably not good
- * @todo Abort when search list .size() > N
+ * TODO: Pull out attributes, fields and constants from the index as well
+ * TODO: Store signature attributes for methods: private/protected?, documented?, returntype?
+ * TODO: When there are multiple method/field definitions, pick access level from one which sets it
+ * TODO: I do case-sensitive startsWith filtering here which is probably not good
+ * TODO: Abort when search list .size() &gt; N
  * 
  * @author Tor Norbye
  */
@@ -219,9 +219,10 @@ public final class RubyIndex {
      * @param name The name of the class - possibly a fqn like File::Stat, or just a class
      *   name like Stat, or just a prefix like St.
      * @param kind Whether we want the exact name, or whether we're searching by a prefix.
-     * @param includeAll If true, return multiple IndexedClasses for the same logical
-     *   class, one for each declaration point. For example, File is defined both in the
-     *   builtin stubs as well as in ftools.
+     * @param includeAll whether to include every declaration of a logical class
+     * @param skipClasses whether to exclude classes
+     * @param skipModules whether to exclude modules
+     * @param uniqueClasses optional set used to eliminate duplicate classes
      */
     public Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind, boolean includeAll,
         boolean skipClasses, boolean skipModules, Set<String> uniqueClasses) {
@@ -415,10 +416,8 @@ public final class RubyIndex {
      *
      * @param name The name of the class - possibly a fqn like File::Stat, or just a class
      *   name like Stat, or just a prefix like St.
+     * @param fqn fully qualified name of the superclass
      * @param kind Whether we want the exact name, or whether we're searching by a prefix.
-     * @param includeAll If true, return multiple IndexedClasses for the same logical
-     *   class, one for each declaration point. For example, File is defined both in the
-     *   builtin stubs as well as in ftools.
      */
     public Set<IndexedClass> getSubClasses(String name, String fqn, final QuerySupport.Kind kind) {
 

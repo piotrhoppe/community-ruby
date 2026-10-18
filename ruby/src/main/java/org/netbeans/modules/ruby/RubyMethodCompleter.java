@@ -110,7 +110,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
      * on (such as strings or regexps), or types inferred through data flow
      * analysis
      *
-     * @todo Look for self or this or super; these should be limited to
+     * TODO: Look for self or this or super; these should be limited to
      *       inherited.
      */
     private boolean complete() {

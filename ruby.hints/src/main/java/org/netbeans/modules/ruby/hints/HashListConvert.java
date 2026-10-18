@@ -68,7 +68,7 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * Convert {a,b,c,d,...} to {a=>b,c=>d,...} as required by Ruby 1.9.
+ * Convert {a,b,c,d,...} to {a=&gt;b,c=&gt;d,...} as required by Ruby 1.9.
  * 
  * @author Tor Norbye
  */

@@ -38,14 +38,14 @@ import org.openide.windows.WindowManager;
  * but changed since IRBConsole extends from JFrame and we want to extend
  * TopComponent (which is a JPanel).
  * 
- * @todo Use the equivalent of "jirb -rirb/completion" to get autocompletion?
+ * TODO: Use the equivalent of "jirb -rirb/completion" to get autocompletion?
  *    (include "irb/completion"). See http://jira.codehaus.org/browse/JRUBY-389?page=all
- * @todo It might be interesting to set the mime type of the embedded
+ * TODO: It might be interesting to set the mime type of the embedded
  *   text pane to Ruby, and see if syntax highlighting works. Might
  *   need some tweaks, e.g. a derived mode for shell ruby.
  *   Also, if the TextAreaReadline messes with attributes in the StyledDocument,
  *   we're hosed. The NetBeans editor GuardedDocument implementation does not like that.
- * @todo Use output2's APIs: AbstractOutputTab - it has a lot of good
+ * TODO: Use output2's APIs: AbstractOutputTab - it has a lot of good
  *   logic for keeping the pane scrolled to track output, locking the caret on the
  *   last line, etc.
  */

@@ -77,10 +77,10 @@ import org.openide.util.NbBundle;
  *  <li> http://i.nfectio.us/articles/2006/11/02/deprecations-in-rails-1-2
  * </ul>
  * 
- * @todo Infer deprecations dynamically; Rails seems to annotate them - see
+ * TODO: Infer deprecations dynamically; Rails seems to annotate them - see
  *   for example has_many_association.rb
  *   <pre>
- *       deprecate :find_all => "use find(:all, ...) instead"
+ *       deprecate :find_all =&gt; "use find(:all, ...) instead"
  *   </pre>
  *
  * @author Tor Norbye

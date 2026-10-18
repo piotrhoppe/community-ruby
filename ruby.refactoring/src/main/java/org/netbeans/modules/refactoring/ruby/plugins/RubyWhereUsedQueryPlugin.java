@@ -93,9 +93,9 @@ import org.openide.util.NbBundle;
 /**
  * Actual implementation of Find Usages query search for Ruby
  * 
- * @todo Perform index lookups to determine the set of files to be checked!
- * @todo Scan comments!
- * @todo Do more prechecks of the elements we're trying to find usages for
+ * TODO: Perform index lookups to determine the set of files to be checked!
+ * TODO: Scan comments!
+ * TODO: Do more prechecks of the elements we're trying to find usages for
  * 
  * @author  Jan Becicka
  * @author Tor Norbye
@@ -454,10 +454,10 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         }
 
         /**
-         * @todo P1: This is matching method names on classes that have nothing to do with the class we're searching for
+         * TODO: P1: This is matching method names on classes that have nothing to do with the class we're searching for
          *   - I've gotta filter fields, methods etc. that are not in the current class
          *  (but I also have to search for methods that are OVERRIDING the class... so I've gotta work a little harder!)
-         * @todo Arity matching on the methods to preclude methods that aren't overriding or aliasing!
+         * TODO: Arity matching on the methods to preclude methods that aren't overriding or aliasing!
          */
         @SuppressWarnings("fallthrough")
         private void find(AstPath path, RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name, boolean upperCase) {

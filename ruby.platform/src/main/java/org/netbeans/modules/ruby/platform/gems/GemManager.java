@@ -290,7 +290,7 @@ public final class GemManager {
      * repository used by the currently set Ruby interpreter.
      *
      * @param gemName name of a gem to be checked
-     * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
+     * @return {@code true} if installed; {@code false} otherwise
      */
     public boolean isGemInstalled(final String gemName) {
         return !getVersions(gemName).isEmpty();
@@ -330,7 +330,7 @@ public final class GemManager {
      *
      * @param gemName name of a gem to be checked
      * @param version version of the gem to be checked
-     * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
+     * @return {@code true} if installed; {@code false} otherwise
      */
     public boolean isGemInstalled(final String gemName, final String version) {
         String currVersion = getLatestVersion(gemName);
@@ -341,9 +341,9 @@ public final class GemManager {
      * Checks whether the installed version matches.
      *
      * @param gemName cf. {@link #isGemInstalled(String, String)}
-     * @param version cf. {@link #isGemInstalled(String, String)}
-     * @param exact whether exact match should be performed. If <tt>false</tt>,
-     * equal or greater matches. If <tt>true</tt>, only exact version matches.
+     * @param expectedVersion cf. {@link #isGemInstalled(String, String)}
+     * @param exact whether exact match should be performed. If {@code false},
+     * equal or greater matches. If {@code true}, only exact version matches.
      * @return whether the installed version matches
      */
     public boolean isGemInstalledForPlatform(final String gemName, final String expectedVersion, final boolean exact) {
@@ -503,7 +503,7 @@ public final class GemManager {
      * @param errors list to which the errors, which happen during gems
      *        reload, will be accumulated
      * @return list of the installed gems. Returns an empty list if they could
-     *         not be read, never <tt>null</tt>.
+     *         not be read, never {@code null}.
      */
     public List<Gem> getInstalledGems(List<? super String> errors) {
         Collection<? super String> c = errors;
@@ -517,7 +517,7 @@ public final class GemManager {
      * @param errors list to which the errors, which happen during gems
      *        reload, will be accumulated
      * @return list of the available remote gems. Returns an empty list if they could not
-     *         be read, never <tt>null</tt>.
+     *         be read, never {@code null}.
      */
     public List<Gem> getRemoteGems(List<? super String> errors) {
         Collection<? super String> c = errors;
@@ -530,7 +530,7 @@ public final class GemManager {
      * reload was triggered.
      *
      * @return list of the available installed gems. Returns an empty list if
-     *         they could not be read, never <tt>null</tt>.
+     *         they could not be read, never {@code null}.
      */
     public synchronized List<Gem> getLocalGems() {
         return local != null ? local : Collections.<Gem>emptyList();
@@ -541,7 +541,7 @@ public final class GemManager {
      * was triggered.
      *
      * @return list of the available remote gems. Returns an empty list if they
-     *         could not be read, never <tt>null</tt>.
+     *         could not be read, never {@code null}.
      */
     public synchronized List<Gem> getRemoteGems() {
         return remote != null ? remote : Collections.<Gem>emptyList();
@@ -694,12 +694,13 @@ public final class GemManager {
     /**
      * Install the given gems.
      *
-     * @param gem Gem description for the gem to be installed. Only the name is relevant.
+     * @param gems Gem descriptions for the gems to be installed. Only the names are relevant.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
      * @param rdoc If true, generate RDoc as part of the installation
      * @param ri If true, generate RI data as part of the installation
      * @param version If non null, install the specified version rather than the latest remote version
+     * @param includeDeps If true, install required dependencies
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.

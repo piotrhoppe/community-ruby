@@ -161,7 +161,7 @@ public class RubyFileLocator implements LineConvertors.FileLocator {
     /**
      * Find selected sources, the sources has to be under single source root.
      *
-     * @param context the lookup in which files should be found
+     * @param roots source roots in which files should be found
      */
     protected FileObject[] findSources(List<FileObject> roots) {
         for (FileObject root : roots) {

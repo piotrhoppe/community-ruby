@@ -84,14 +84,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * @todo Index global variables
- * @todo Think about searching for modules; I will now hit EVERY class that refers to it
+ * TODO: Index global variables
+ * TODO: Think about searching for modules; I will now hit EVERY class that refers to it
  *   (as their parent) whereas I really only want to hit individual module entries, right?
- * @todo Do I index anything outside of module or classnodes? How do these get deleted?
- * @todo Index migration and model files specially to extract database information that
+ * TODO: Do I index anything outside of module or classnodes? How do these get deleted?
+ * TODO: Index migration and model files specially to extract database information that
  *   I can use to build dynamic model object attributes
- * @todo Index require_gem separately?
- * @todo Remove the FILENAME url since it's maintained elsewhere (in infrastructure) now!
+ * TODO: Index require_gem separately?
+ * TODO: Remove the FILENAME url since it's maintained elsewhere (in infrastructure) now!
  *
  * @author Tor Norbye
  */
@@ -140,10 +140,10 @@ public class RubyIndexer extends EmbeddingIndexer {
      * The methodname can be any valid Ruby method name - including operator
      *    names like those identified by {@link RubyUtils#isOperator}. The
      *    method name is mandatory.
-     *  optional:  (arg1,arg2,arg3="def",arg4=null,&block)
+     *  optional:  {@code (arg1,arg2,arg3="def",arg4=null,&block)}
      * <p>
      *
-     * The args should be of the format (arg1,arg2,...argn,optional1=val1,..,&blockarg)
+     * The args should be of the format {@code (arg1,arg2,...argn,optional1=val1,..,&blockarg)}
      * In particular, the parens should be there, and elements should be separated by
      * comma.
      * <p>
@@ -224,7 +224,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     //static final String FIELD_PARAMS = "params"; //NOI18N
     //static final String FIELD_RDOC = "rdoc"; //NOI18N
     //
-    /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "D" - documented */
+    /** Attributes: "i" -&gt; private, "o" -&gt; protected, ", "s" - static/notinstance, "D" - documented */
     //static final String FIELD_METHOD_ATTRS = "mattrs"; //NOI18N
     // TODO: Return types
 

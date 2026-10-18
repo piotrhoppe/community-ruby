@@ -268,7 +268,7 @@ public class RailsProjectUtil {
     
     /**
      * Creates an URL of a classpath or sourcepath root
-     * For the existing directory it returns the URL obtained from {@link File#toUri()}
+     * For the existing directory it returns the URL obtained from {@link File#toURI()}
      * For archive file it returns an URL of the root of the archive file
      * For non existing directory it fixes the ending '/'
      * @param root the file of a root
@@ -293,7 +293,7 @@ public class RailsProjectUtil {
     /**
      * Parses a <code>RailsVersion</code> from the given <code>version</code>. 
      * The excepted format is <code>"X.Y.Z"</code>, all but the major version
-     * being optional. The returned <code>RailsVersion<code> will always have also
+     * being optional. The returned {@code RailsVersion} will always have also
      * the minor and revision version specified, both defaulting to <code>0</code>.
      * <strong>Returns a version representing 0.0.0 if the
      * version could not be parsed</strong>.

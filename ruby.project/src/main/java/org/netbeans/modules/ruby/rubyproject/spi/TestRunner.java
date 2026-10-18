@@ -47,7 +47,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  * An interface for unit test runner implementations.
- *<p/>
+ * <p>
  * <i>A work in progress, bound to change</i>.
  * 
  * @author Erno Mononen

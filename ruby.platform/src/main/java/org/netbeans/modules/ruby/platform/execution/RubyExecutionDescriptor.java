@@ -309,7 +309,7 @@ public class RubyExecutionDescriptor {
      * for the executed process. The default is false. If it is set, it will be
      * added at the end of the PATH, so any existing JDKs on the PATH will take
      * precedence.
-     * @param addJdkToPath Whether the JDK should be appended to the path.
+     * @param appendJdkToPath Whether the JDK should be appended to the path.
      */
     public RubyExecutionDescriptor appendJdkToPath(boolean appendJdkToPath) {
         this.appendJdkToPath = appendJdkToPath;

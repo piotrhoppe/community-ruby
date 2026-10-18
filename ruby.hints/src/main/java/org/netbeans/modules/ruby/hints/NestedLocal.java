@@ -66,8 +66,8 @@ import org.openide.util.NbBundle;
  * This will (-possibly- unintentionally) reassign the local variable
  * so might be something the user want to be alerted to
  * 
- * @todo Doesn't seem to work for params
- * @todo Don't warn on last lines?
+ * TODO: Doesn't seem to work for params
+ * TODO: Don't warn on last lines?
  *
  * @author Tor Norbye
  */

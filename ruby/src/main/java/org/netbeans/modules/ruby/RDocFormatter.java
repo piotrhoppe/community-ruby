@@ -86,16 +86,16 @@ import org.openide.xml.XMLUtil;
  * and produce reasonably similar HTML. It also relies on
  * the RubyCommentLexer.
  *
- * @todo Handle definition-style labelled blocks (I only do tabular ones at this point)
+ * TODO: Handle definition-style labelled blocks (I only do tabular ones at this point)
  *   where you have double brackets:  [[foo]]
- * @todo Only recognize call-seqs if they are the first pre block in the comment AND
+ * TODO: Only recognize call-seqs if they are the first pre block in the comment AND
  *   there is no preceeding text!
- * @todo Add italics around class names in the callseqs
- * @todo Swing Text often breaks up symbols in tables where it's on the left side; try 
+ * TODO: Add italics around class names in the callseqs
+ * TODO: Swing Text often breaks up symbols in tables where it's on the left side; try
  *   wrapping these in &lt;nobr&gt; tags. (Look at ClassMethods.paginate for example)
- * @todo This is broken for the callseq handling of Kernel.raise. It includes the various
+ * TODO: This is broken for the callseq handling of Kernel.raise. It includes the various
  *   overloaded methods in place.
- * @todo When syntax highlighting potential ruby snippets, look for the common "=>" pattern
+ * TODO: When syntax highlighting potential ruby snippets, look for the common "=>" pattern
  *   and only attempt to tokenize the left hand side (and POSSIBLY) the right hand side)
  *   Look at the abbrev methods for example. It contains:
  *    <pre>
@@ -423,9 +423,9 @@ class RDocFormatter {
                     char c = s.charAt(0);
 
                     if (c == '+') {
-                        sb.append("<tt>");
+                        sb.append("{@code ");
                         sb.append(s.substring(1, s.length() - 1));
-                        sb.append("</tt>");
+                        sb.append("}");
                     } else {
                         sb.append(s);
                     }

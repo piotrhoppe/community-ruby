@@ -140,7 +140,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     /**
      * Helper method delegating to {@link RubyPlatform#platformFor(Project)}.
      * 
-     * @return platform for this project; might be <tt>null</tt>
+     * @return platform for this project; might be {@code null}
      */
     public RubyPlatform getPlatform() {
         return RubyPlatform.platformFor(this);

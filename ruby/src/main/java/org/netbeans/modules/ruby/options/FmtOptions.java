@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
  *
  * @author phrebejk
  * 
- * @todo Add an RHTML options category, such that I can see the effects of
+ * TODO: Add an RHTML options category, such that I can see the effects of
  *   switching the RHTML toggles?
  */
 public class FmtOptions {

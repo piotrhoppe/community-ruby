@@ -591,12 +591,15 @@ public class RubyUtils {
     /**
      * Move from something like app/controllers/credit_card_controller.rb#debit()
      * to app/views/credit_card/debit.rhtml
-     * 
+     *
+     * @param file source file
+     * @param methodName method whose view should be found
+     * @param fileSuffix view file suffix
+     * @param parentAppDir parent application directory
      * @param strict If true, limit view searches to the given method name, don't find other views
-     * @param isHelper If false, it's a controller, else it's a helper
-     * 
+     *
      */
-    public static FileObject getRailsViewFor(FileObject file, String methodName, 
+    public static FileObject getRailsViewFor(FileObject file, String methodName,
             String fileSuffix, String parentAppDir, boolean strict) {
         
         FileObject viewFile = null;

@@ -61,7 +61,7 @@ import org.openide.util.Utilities;
 
 
 /**
- * @todo PLUGIN has a --with-generator flag - how do I support that?
+ * TODO: PLUGIN has a --with-generator flag - how do I support that?
  *
  * @author Tor Norbye
  */

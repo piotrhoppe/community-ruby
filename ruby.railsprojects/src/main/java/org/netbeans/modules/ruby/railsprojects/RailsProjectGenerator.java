@@ -86,7 +86,7 @@ import org.w3c.dom.Element;
 /**
  * Creates a RailsProject from scratch according to some initial configuration.
  * 
- * @todo Take the "README" file in the Rails project and run it through rdoc and
+ * TODO: Take the "README" file in the Rails project and run it through rdoc and
  *   display in internal HTML viewer?
  */
 public class RailsProjectGenerator {

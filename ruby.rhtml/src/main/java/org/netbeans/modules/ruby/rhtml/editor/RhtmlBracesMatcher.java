@@ -52,7 +52,7 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
 
 /**
- * BracesMatcher for RHTML. The main purpose of this class is to handle '=>' in hash
+ * BracesMatcher for RHTML. The main purpose of this class is to handle '=&gt;' in hash
  * assigments; for other cases this just delegates to the default matcher.
  *
  * @author Erno Mononen

@@ -239,8 +239,8 @@ public final class RakeBasedProjectFactorySingleton implements ProjectFactory {
     
     /**
      * Get the helper corresponding to a project.
-     * For use from {@link ProjectGenerator}.
-     * @param project an Ant-based project
+     * For use from {@link org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator}.
+     * @param p an Ant-based project
      * @return the corresponding Ant project helper object, or null if it is unknown
      */
     public static RakeProjectHelper getHelperFor(Project p) {
