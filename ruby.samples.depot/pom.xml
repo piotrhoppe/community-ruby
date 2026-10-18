@@ -11,6 +11,8 @@
     <artifactId>samples.depot</artifactId>
     <packaging>nbm</packaging>
 
+    <name>Ruby Depot Sample</name>
+
     <build>
         <plugins>
             <plugin>

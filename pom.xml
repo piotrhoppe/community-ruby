@@ -11,6 +11,14 @@
     <description>Ruby and Ruby on Rails support for Apache NetBeans IDE.</description>
     <url>https://github.com/piotrhoppe/community-ruby</url>
 
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <developers>
         <developer>
             <name>Piotr Hoppe</name>
