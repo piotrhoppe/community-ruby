@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.netbeans.modules.ruby</groupId>
+        <groupId>io.github.piotrhoppe.org.netbeans.modules.ruby</groupId>
         <artifactId>community-ruby</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.netbeans.modules.ruby</groupId>
+    <groupId>io.github.piotrhoppe.org.netbeans.modules.ruby</groupId>
     <artifactId>hints</artifactId>
     <packaging>nbm</packaging>
 
@@ -62,7 +62,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.netbeans.libs</groupId>
+            <groupId>io.github.piotrhoppe.org.netbeans.modules.ruby</groupId>
             <artifactId>jrubyparser</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
@@ -112,7 +112,7 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.netbeans.modules.ruby</groupId>
+            <groupId>io.github.piotrhoppe.org.netbeans.modules.ruby</groupId>
             <artifactId>editing</artifactId>
             <version>1.0-SNAPSHOT</version>
             <type>jar</type>
@@ -171,7 +171,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.netbeans.modules.ruby</groupId>
+            <groupId>io.github.piotrhoppe.org.netbeans.modules.ruby</groupId>
             <artifactId>platform</artifactId>
             <version>1.0-SNAPSHOT</version>
             <classifier>tests</classifier>
@@ -179,7 +179,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.netbeans.modules.ruby</groupId>
+            <groupId>io.github.piotrhoppe.org.netbeans.modules.ruby</groupId>
             <artifactId>editing</artifactId>
             <version>1.0-SNAPSHOT</version>
             <classifier>tests</classifier>
