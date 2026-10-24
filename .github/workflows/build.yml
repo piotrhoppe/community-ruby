@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: piotrhoppe/jruby-parser
-          ref: 06f50c4b4e1f0edff086da9487d6f01ab616803d
+          ref: 1a4d3322a18ab0e668fb6d7ba12dc1ef7cd3dd0b
           path: jruby-parser
           fetch-depth: 0
 
