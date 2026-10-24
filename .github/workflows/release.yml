@@ -8,6 +8,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: CI
 
     permissions:
       contents: write
@@ -84,3 +85,13 @@ jobs:
           files: |
             target/community-ruby-${{ steps.version.outputs.FULL_VERSION }}-nbms.zip
             target/community-ruby-${{ steps.version.outputs.FULL_VERSION }}-update-center.zip
+
+      - name: Publish to Maven Central
+        uses: ./.github/actions/publish-maven-central
+        with:
+          central-username: ${{ secrets.CENTRAL_USERNAME }}
+          central-password: ${{ secrets.CENTRAL_PASSWORD }}
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          central-namespaces-verified: ${{ vars.CENTRAL_NAMESPACES_VERIFIED }}
+          new-version: ${{ steps.version.outputs.FULL_VERSION }}

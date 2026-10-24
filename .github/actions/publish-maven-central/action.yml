@@ -1,0 +1,82 @@
+name: Publish to Maven Central
+description: Validate publication prerequisites, configure Maven Central credentials, and publish the Maven reactor.
+
+inputs:
+  central-username:
+    description: Maven Central Portal user-token username.
+    required: true
+  central-password:
+    description: Maven Central Portal user-token password.
+    required: true
+  gpg-private-key:
+    description: ASCII-armored GPG private key used to sign published artifacts.
+    required: true
+  gpg-passphrase:
+    description: Passphrase for the GPG signing key.
+    required: true
+  central-namespaces-verified:
+    description: Set to true after confirming Maven Central ownership of all published groupIds.
+    required: true
+  new-version:
+    description: Version from tag
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Verify Maven Central release secrets
+      shell: bash
+      env:
+        CENTRAL_USERNAME: ${{ inputs.central-username }}
+        CENTRAL_PASSWORD: ${{ inputs.central-password }}
+        GPG_PRIVATE_KEY: ${{ inputs.gpg-private-key }}
+        GPG_PASSPHRASE: ${{ inputs.gpg-passphrase }}
+      run: |
+        if [ -z "$CENTRAL_USERNAME" ] || [ -z "$CENTRAL_PASSWORD" ] || [ -z "$GPG_PRIVATE_KEY" ] || [ -z "$GPG_PASSPHRASE" ]; then
+          echo "::error::Configure CENTRAL_USERNAME, CENTRAL_PASSWORD, GPG_PRIVATE_KEY, and GPG_PASSPHRASE before publishing to Maven Central."
+          exit 1
+        fi
+
+    - name: Check Maven Central publication prerequisites
+      shell: bash
+      env:
+        CENTRAL_NAMESPACES_VERIFIED: ${{ inputs.central-namespaces-verified }}
+      run: |
+        if [ "$CENTRAL_NAMESPACES_VERIFIED" != "true" ]; then
+          echo "::error::Set CENTRAL_NAMESPACES_VERIFIED=true after confirming ownership of org.netbeans.libs, org.netbeans.modules, org.netbeans.modules.jellytools.ruby, org.netbeans.modules.ruby, and org.netbeans.modules.ruby.rhtml."
+          exit 1
+        fi
+        if ! grep -q '<licenses>' pom.xml; then
+          echo "::error::Add the confirmed project license to the parent POM before publishing to Maven Central."
+          exit 1
+        fi
+        if grep -q '<version>0.6.0-SNAPSHOT</version>' libs.jrubyparser/pom.xml; then
+          echo "::error::Resolve the unpublished org.jruby:jrubyparser snapshot dependency before publishing to Maven Central."
+          exit 1
+        fi
+
+    - name: Set up Maven Central credentials
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        server-id: central
+        server-username: CENTRAL_USERNAME
+        server-password: CENTRAL_PASSWORD
+        gpg-private-key: ${{ inputs.gpg-private-key }}
+        gpg-passphrase: ${{ inputs.gpg-passphrase }}
+      env:
+        CENTRAL_USERNAME: ${{ inputs.central-username }}
+        CENTRAL_PASSWORD: ${{ inputs.central-password }}
+        GPG_PASSPHRASE: ${{ inputs.gpg-passphrase }}
+
+    - name: Publish Maven reactor
+      shell: bash
+      env:
+        CENTRAL_USERNAME: ${{ inputs.central-username }}
+        CENTRAL_PASSWORD: ${{ inputs.central-password }}
+        GPG_PASSPHRASE: ${{ inputs.gpg-passphrase }}
+        NEW_VERSION: ${{ inputs.new-version }}
+      run: |
+        mvn versions:set -DnewVersion=$NEW_VERSION
+        mvn -B --no-transfer-progress -DskipTests -Pcentral-release deploy
